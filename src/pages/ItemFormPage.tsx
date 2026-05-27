@@ -107,6 +107,14 @@ export default function ItemFormPage() {
   const set = (k: keyof ItemFormData) => (v: string) =>
     setForm(f => ({ ...f, [k]: v }) as ItemFormData)
 
+  const nameFromFile = (file: File) =>
+    file.name
+      .replace(/\.[^.]+$/, '')
+      .replace(/[-_.]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, c => c.toUpperCase())
+
   const imagePreview = imageFile ? URL.createObjectURL(imageFile) : existingImageUrl
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -245,7 +253,13 @@ export default function ItemFormPage() {
             type="file"
             accept="image/*"
             style={{ display: 'none' }}
-            onChange={e => setImageFile(e.target.files?.[0] ?? null)}
+            onChange={e => {
+              const file = e.target.files?.[0] ?? null
+              setImageFile(file)
+              if (file && !form.name.trim()) {
+                setForm(f => ({ ...f, name: nameFromFile(file) }))
+              }
+            }}
           />
         </div>
 

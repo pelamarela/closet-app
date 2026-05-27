@@ -38,6 +38,14 @@ export default function BatchUploadPage() {
   const [error, setError] = useState<string | null>(null)
   const [savedCount, setSavedCount] = useState(0)
 
+  const nameFromFile = (file: File) =>
+    file.name
+      .replace(/\.[^.]+$/, '')
+      .replace(/[-_.]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, c => c.toUpperCase())
+
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
@@ -45,7 +53,7 @@ export default function BatchUploadPage() {
     const newDrafts: Draft[] = files.map(file => ({
       file,
       preview: URL.createObjectURL(file),
-      name: '',
+      name: nameFromFile(file),
       category: 'top',
       warmth: 3,
       formality: 3,
@@ -53,6 +61,12 @@ export default function BatchUploadPage() {
     setDrafts(newDrafts)
     setCurrent(0)
     setStage('fill')
+  }
+
+  const handleSkip = () => {
+    if (drafts.length === 1) { navigate('/wardrobe'); return }
+    setDrafts(ds => ds.filter((_, i) => i !== current))
+    setCurrent(c => Math.min(c, drafts.length - 2))
   }
 
   const update = (field: keyof Draft, value: unknown) => {
@@ -283,16 +297,20 @@ export default function BatchUploadPage() {
         padding: '12px 20px',
         display: 'flex', gap: 8,
       }}>
-        {current > 0 && (
+        {current > 0 ? (
           <UButton variant="ghost" onClick={() => setCurrent(c => c - 1)} style={{ flex: 1 }}>
             ← Back
+          </UButton>
+        ) : (
+          <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1 }}>
+            Skip
           </UButton>
         )}
         {current < drafts.length - 1 ? (
           <UButton
             onClick={() => canAdvance && setCurrent(c => c + 1)}
             disabled={!canAdvance}
-            style={{ flex: current > 0 ? 1.6 : 1, width: current > 0 ? undefined : '100%' }}
+            style={{ flex: 1.6 }}
           >
             Next →
           </UButton>
@@ -300,7 +318,7 @@ export default function BatchUploadPage() {
           <UButton
             onClick={handleSaveAll}
             disabled={!canAdvance}
-            style={{ flex: current > 0 ? 1.6 : 1, width: current > 0 ? undefined : '100%' }}
+            style={{ flex: 1.6 }}
           >
             Save all {drafts.length} items
           </UButton>

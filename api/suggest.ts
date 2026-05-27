@@ -71,8 +71,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return true
   })
 
-  // Fall back to all items if filter is too restrictive
-  const candidates = filtered.length >= 3 ? filtered : items
+  // Fall back to all items if filtered set can't form a complete outfit
+  const canForm = (pool: Item[]) => {
+    const cats = new Set(pool.map(i => i.category))
+    const hasShoes = cats.has('shoes')
+    return hasShoes && (cats.has('dress') || (cats.has('top') && cats.has('bottom')))
+  }
+  const candidates = canForm(filtered) ? filtered : items
 
   const itemList = candidates.map(i =>
     `ID:${i.id} | ${i.name}${i.color ? ` (${i.color})` : ''} | ${i.category}${i.subcategory ? `/${i.subcategory}` : ''} | warmth:${i.warmth} formality:${i.formality}`
@@ -97,9 +102,10 @@ RECENT OUTFIT HISTORY (avoid repeating recent combinations):
 ${historyText}
 
 Rules:
-- Only use items from the list above (use the exact IDs)
-- Each outfit needs at least a top or dress, and a bottom (unless it's a dress)
-- Add shoes and outerwear where they exist and are appropriate
+- Only use items from the list above (exact IDs)
+- Every outfit MUST include shoes — no exceptions
+- Valid outfit structures: (top + bottom + shoes) OR (dress + shoes)
+- Outerwear and accessories are optional additions — never a substitute for the above
 - Vary the suggestions — don't repeat the same item across all outfits
 - Keep reasoning to 1–2 sentences
 
@@ -122,12 +128,21 @@ Respond with JSON only, no markdown:
     return res.status(500).json({ error: 'Failed to parse suggestions', raw: text })
   }
 
-  // Validate that all returned IDs actually exist in our candidate set
-  const validIds = new Set(candidates.map(i => i.id))
-  const safe = suggestions.map(s => ({
-    ...s,
-    item_ids: s.item_ids.filter(id => validIds.has(id)),
-  })).filter(s => s.item_ids.length > 0)
+  // Validate IDs and enforce outfit completeness rules:
+  // must be (top + bottom + shoes) or (dress + shoes); accessories/outerwear optional
+  const idToItem = new Map(candidates.map(i => [i.id, i]))
+
+  const isCompleteOutfit = (ids: string[]) => {
+    const cats = new Set(ids.map(id => idToItem.get(id)?.category ?? ''))
+    const hasShoes = cats.has('shoes')
+    if (!hasShoes) return false
+    if (cats.has('dress')) return true
+    return cats.has('top') && cats.has('bottom')
+  }
+
+  const safe = suggestions
+    .map(s => ({ ...s, item_ids: s.item_ids.filter(id => idToItem.has(id)) }))
+    .filter(s => isCompleteOutfit(s.item_ids))
 
   return res.json({ suggestions: safe })
 }
