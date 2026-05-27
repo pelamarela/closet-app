@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Camera, Check, Loader2 } from 'lucide-react'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
@@ -11,14 +11,16 @@ function today() {
 
 export default function LogOutfitPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const navState = location.state as { preselectedIds?: string[]; occasion?: string } | null
   const { items, loading: itemsLoading } = useItems()
   const { logOutfit } = useOutfitMutations()
 
   const [date, setDate] = useState(today())
-  const [occasion, setOccasion] = useState('')
+  const [occasion, setOccasion] = useState(navState?.occasion ?? '')
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
