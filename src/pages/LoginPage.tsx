@@ -4,11 +4,12 @@ import { MONO, UI, INK, BLUSH, RULE, UButton } from '../components/ui'
 
 type Mode = 'signin' | 'signup'
 
-function Field({ label, type, value, onChange }: {
+function Field({ label, type, value, onChange, autoComplete }: {
   label: string
   type: string
   value: string
   onChange: (v: string) => void
+  autoComplete?: string
 }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -21,6 +22,7 @@ function Field({ label, type, value, onChange }: {
       <input
         type={type}
         required
+        autoComplete={autoComplete}
         value={value}
         onChange={e => onChange(e.target.value)}
         style={{
@@ -46,14 +48,23 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = mode === 'signin'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password })
-
-    if (error) {
-      setError(error.message)
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      }
+      // on success: onAuthStateChange fires → ProtectedRoutes redirects → no need to setLoading(false)
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) {
+        setError(error.message)
+      } else {
+        setError('Account created — you can now sign in.')
+        setMode('signin')
+      }
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -104,11 +115,16 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Field label="email address" type="email" value={email} onChange={setEmail} />
-          <Field label="password" type="password" value={password} onChange={setPassword} />
+          <Field label="email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
+          <Field label="password" type="password" value={password} onChange={setPassword} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
 
           {error && (
-            <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 12 }}>{error}</div>
+            <div style={{
+              fontFamily: MONO, fontSize: 10, marginBottom: 12,
+              color: error.startsWith('Account created') ? '#2a7a4b' : '#9C5544',
+              padding: '8px 10px', border: `1px solid ${error.startsWith('Account created') ? 'rgba(42,122,75,0.3)' : 'rgba(156,85,68,0.3)'}`,
+              borderRadius: 3,
+            }}>{error}</div>
           )}
 
           <UButton type="submit" disabled={loading} style={{ width: '100%' }}>
