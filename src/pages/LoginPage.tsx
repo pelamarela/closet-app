@@ -2,9 +2,42 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { MONO, UI, INK, BLUSH, RULE, UButton } from '../components/ui'
 
+type Mode = 'signin' | 'signup'
+
+function Field({ label, type, value, onChange }: {
+  label: string
+  type: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{
+        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+      }}>
+        {label} <span style={{ color: '#9C5544' }}>*</span>
+      </div>
+      <input
+        type={type}
+        required
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          width: '100%', height: 44,
+          border: RULE, borderRadius: 3, padding: '0 12px',
+          fontFamily: UI, fontSize: 14, color: INK,
+          background: '#fff', outline: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 export default function LoginPage() {
+  const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -13,15 +46,12 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
-    })
+    const { error } = mode === 'signin'
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password })
 
     if (error) {
       setError(error.message)
-    } else {
-      setSent(true)
     }
     setLoading(false)
   }
@@ -52,52 +82,39 @@ export default function LoginPage() {
 
         <div style={{ borderTop: RULE, marginBottom: 28 }} />
 
-        {sent ? (
-          <div style={{ border: RULE, borderRadius: 4, padding: 24 }}>
-            <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-              // check-email
-            </div>
-            <div style={{ fontFamily: UI, fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', marginBottom: 8 }}>
-              Magic link sent.
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', lineHeight: 1.5 }}>
-              We sent a link to <span style={{ color: INK, fontWeight: 600 }}>{email}</span>.<br/>
-              Click it to sign in — no password needed.
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{
-                fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-                textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-              }}>
-                email address <span style={{ color: '#9C5544' }}>*</span>
-              </div>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                style={{
-                  width: '100%', height: 44,
-                  border: RULE, borderRadius: 3, padding: '0 12px',
-                  fontFamily: UI, fontSize: 14, color: INK,
-                  background: '#fff', outline: 'none',
-                }}
-              />
-            </div>
+        {/* Mode toggle */}
+        <div style={{ display: 'flex', marginBottom: 24, border: RULE, borderRadius: 3, overflow: 'hidden' }}>
+          {(['signin', 'signup'] as Mode[]).map(m => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); setError(null) }}
+              style={{
+                flex: 1, height: 36,
+                background: mode === m ? INK : 'transparent',
+                color: mode === m ? '#fff' : 'rgba(0,0,0,0.5)',
+                border: 'none', cursor: 'pointer',
+                fontFamily: MONO, fontSize: 9.5,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+              }}
+            >
+              {m === 'signin' ? 'sign in' : 'create account'}
+            </button>
+          ))}
+        </div>
 
-            {error && (
-              <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 12 }}>{error}</div>
-            )}
+        <form onSubmit={handleSubmit}>
+          <Field label="email address" type="email" value={email} onChange={setEmail} />
+          <Field label="password" type="password" value={password} onChange={setPassword} />
 
-            <UButton type="submit" disabled={loading} style={{ width: '100%' }}>
-              {loading ? 'Sending…' : 'Send magic link'}
-            </UButton>
-          </form>
-        )}
+          {error && (
+            <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 12 }}>{error}</div>
+          )}
+
+          <UButton type="submit" disabled={loading} style={{ width: '100%' }}>
+            {loading ? '…' : mode === 'signin' ? 'Sign in' : 'Create account'}
+          </UButton>
+        </form>
       </div>
     </div>
   )
