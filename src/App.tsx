@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import WardrobePage from './pages/WardrobePage'
+import ItemFormPage from './pages/ItemFormPage'
 import OutfitsPage from './pages/OutfitsPage'
 import SuggestPage from './pages/SuggestPage'
 
@@ -30,6 +31,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoutes />}>
             <Route path="/wardrobe" element={<WardrobePage />} />
+            <Route path="/wardrobe/new" element={<ItemFormPage />} />
+            <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/outfits" element={<OutfitsPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/" element={<Navigate to="/wardrobe" replace />} />
