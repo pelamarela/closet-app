@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { compressImage } from '../lib/imageUtils'
 import { useAuth } from './useAuth'
 import type { ItemFormData } from './useItems'
+import type { ItemUpdate } from '../types/database'
 
 export function useItemMutations() {
   const { user } = useAuth()
@@ -40,7 +41,7 @@ export function useItemMutations() {
   }
 
   const updateItem = async (id: string, data: ItemFormData, imageFile?: File): Promise<void> => {
-    const patch: Record<string, unknown> = {
+    const patch: ItemUpdate = {
       name: data.name.trim(),
       category: data.category,
       subcategory: toNull(data.subcategory),
@@ -58,7 +59,7 @@ export function useItemMutations() {
   }
 
   const archiveItem = async (id: string): Promise<void> => {
-    const { error } = await supabase.from('items').update({ status: 'archived' }).eq('id', id)
+    const { error } = await supabase.from('items').update({ status: 'archived' as const }).eq('id', id)
     if (error) throw error
   }
 
