@@ -5,6 +5,8 @@ import Layout from './components/Layout'
 import WardrobePage from './pages/WardrobePage'
 import ItemFormPage from './pages/ItemFormPage'
 import OutfitsPage from './pages/OutfitsPage'
+import LogOutfitPage from './pages/LogOutfitPage'
+import OutfitDetailPage from './pages/OutfitDetailPage'
 import SuggestPage from './pages/SuggestPage'
 import BatchUploadPage from './pages/BatchUploadPage'
 
@@ -36,6 +38,8 @@ export default function App() {
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/outfits" element={<OutfitsPage />} />
+            <Route path="/outfits/new" element={<LogOutfitPage />} />
+            <Route path="/outfits/:id" element={<OutfitDetailPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/" element={<Navigate to="/wardrobe" replace />} />
           </Route>
