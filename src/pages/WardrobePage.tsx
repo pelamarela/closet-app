@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Shirt } from 'lucide-react'
+import { Plus, Shirt, Images, X } from 'lucide-react'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
 import type { Category } from '../types/database'
@@ -19,6 +19,7 @@ export default function WardrobePage() {
   const navigate = useNavigate()
   const { items, loading, error } = useItems()
   const [filter, setFilter] = useState<'all' | Category>('all')
+  const [fabOpen, setFabOpen] = useState(false)
 
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
 
@@ -64,12 +65,20 @@ export default function WardrobePage() {
           </div>
           <h3 className="font-medium text-stone-800 mb-1">Your wardrobe is empty</h3>
           <p className="text-stone-400 text-sm mb-6">Start adding items to build your digital closet</p>
-          <button
-            onClick={() => navigate('/wardrobe/new')}
-            className="bg-stone-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium"
-          >
-            Add your first item
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/wardrobe/new')}
+              className="bg-stone-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium"
+            >
+              Add one
+            </button>
+            <button
+              onClick={() => navigate('/wardrobe/batch')}
+              className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl text-sm font-medium"
+            >
+              Add multiple
+            </button>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-12 text-center text-stone-400 text-sm">
@@ -88,12 +97,32 @@ export default function WardrobePage() {
       )}
 
       {items.length > 0 && (
-        <button
-          onClick={() => navigate('/wardrobe/new')}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-stone-800 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-        >
-          <Plus size={24} />
-        </button>
+        <div className="fixed bottom-20 right-4 flex flex-col items-end gap-2">
+          {fabOpen && (
+            <>
+              <button
+                onClick={() => { setFabOpen(false); navigate('/wardrobe/batch') }}
+                className="flex items-center gap-2 bg-white text-stone-800 border border-stone-200 shadow-md px-4 py-2.5 rounded-full text-sm font-medium"
+              >
+                <Images size={16} />
+                Add multiple
+              </button>
+              <button
+                onClick={() => { setFabOpen(false); navigate('/wardrobe/new') }}
+                className="flex items-center gap-2 bg-white text-stone-800 border border-stone-200 shadow-md px-4 py-2.5 rounded-full text-sm font-medium"
+              >
+                <Plus size={16} />
+                Add one
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setFabOpen(o => !o)}
+            className="w-14 h-14 bg-stone-800 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          >
+            {fabOpen ? <X size={22} /> : <Plus size={24} />}
+          </button>
+        </div>
       )}
     </div>
   )

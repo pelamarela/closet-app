@@ -6,6 +6,7 @@ import WardrobePage from './pages/WardrobePage'
 import ItemFormPage from './pages/ItemFormPage'
 import OutfitsPage from './pages/OutfitsPage'
 import SuggestPage from './pages/SuggestPage'
+import BatchUploadPage from './pages/BatchUploadPage'
 
 function ProtectedRoutes() {
   const { session, loading } = useAuth()
@@ -32,6 +33,7 @@ export default function App() {
           <Route element={<ProtectedRoutes />}>
             <Route path="/wardrobe" element={<WardrobePage />} />
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
+            <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/outfits" element={<OutfitsPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
