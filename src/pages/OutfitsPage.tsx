@@ -1,53 +1,67 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Plus, BookOpen } from 'lucide-react'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
-
-// ─── Calendar helpers ────────────────────────────────────────────────────────
+import { SectionLabel, MONO, UI, INK, RULE } from '../components/ui'
 
 function daysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate()
 }
 
 function firstDayOfMonth(year: number, month: number) {
-  // 0=Sun→6, shift so Mon=0
   return (new Date(year, month, 1).getDay() + 6) % 7
 }
 
-const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const DAY_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su']
 
-// ─── Outfit card ─────────────────────────────────────────────────────────────
-
-function OutfitCard({ outfit, onClick }: { outfit: OutfitWithItems; onClick: () => void }) {
-  const date = new Date(outfit.date_worn + 'T00:00:00')
-  const label = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
-
+function OutfitRow({ outfit, onClick }: { outfit: OutfitWithItems; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full text-left flex items-center gap-3 py-3 border-b border-stone-100 last:border-0">
-      <div className="w-12 h-12 rounded-xl bg-stone-100 flex-shrink-0 overflow-hidden">
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', textAlign: 'left',
+        display: 'grid', gridTemplateColumns: '34px 1fr 60px 14px',
+        alignItems: 'center', gap: 12,
+        padding: '8px 0',
+        background: 'none', border: 'none', borderBottom: RULE, cursor: 'pointer',
+      }}
+    >
+      {/* Thumbnail */}
+      <div style={{ height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
         {outfit.image_url ? (
-          <div className="w-full h-full bg-stone-200" />
+          <div style={{ width: '100%', height: '100%', background: '#DCD9D3' }} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-stone-300 text-xs">
-            {outfit.item_ids.length}
-          </div>
+          <div style={{
+            width: '100%', height: '100%',
+            background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)',
+          }} />
         )}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-stone-800 text-sm font-medium">{label}</p>
-        {outfit.occasion && <p className="text-stone-500 text-xs truncate">{outfit.occasion}</p>}
-        <p className="text-stone-400 text-xs">{outfit.item_ids.length} item{outfit.item_ids.length !== 1 ? 's' : ''}</p>
+
+      {/* Meta */}
+      <div>
+        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>
+          {outfit.occasion || 'outfit'}
+        </div>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
+          {outfit.date_worn} · {outfit.item_ids.length} pieces
+        </div>
       </div>
-      {outfit.rating && (
-        <span className="text-xs text-stone-400 flex-shrink-0">{'★'.repeat(outfit.rating)}</span>
-      )}
+
+      {/* Wear count */}
+      <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textAlign: 'right' }}>
+        {outfit.rating ? `${outfit.rating}/5` : ''}
+      </div>
+
+      {/* Arrow */}
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(0,0,0,0.3)', flexShrink: 0 }}>
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
     </button>
   )
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function OutfitsPage() {
   const navigate = useNavigate()
@@ -69,9 +83,7 @@ export default function OutfitsPage() {
     setSelectedDate(null)
   }
 
-  // Build set of dates that have outfits in this month
   const outfitDates = new Set(outfits.map(o => o.date_worn))
-
   const firstDay = firstDayOfMonth(viewYear, viewMonth)
   const totalDays = daysInMonth(viewYear, viewMonth)
   const cells: (number | null)[] = [
@@ -82,26 +94,42 @@ export default function OutfitsPage() {
   const toDateStr = (day: number) =>
     `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 
-  // Filter outfits for list below calendar
   const visibleOutfits = selectedDate
     ? outfits.filter(o => o.date_worn === selectedDate)
     : outfits.filter(o => o.date_worn.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`))
 
+  const monthOutfits = outfits.filter(o => o.date_worn.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`))
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-stone-400 text-sm">Loading…</div>
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+        <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
+      </div>
+    )
   }
 
   if (outfits.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
-        <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mb-4">
-          <BookOpen className="text-stone-300" size={28} />
+      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+        <div style={{ borderTop: RULE, marginBottom: 32 }} />
+        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+          // outfit-log
         </div>
-        <h3 className="font-medium text-stone-800 mb-1">No outfits logged yet</h3>
-        <p className="text-stone-400 text-sm mb-6">Start building your outfit history</p>
+        <div style={{ fontFamily: UI, fontSize: 26, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05, marginBottom: 8 }}>
+          No outfits<br />logged yet.
+        </div>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginBottom: 28 }}>
+          Start building your outfit history.
+        </div>
         <button
           onClick={() => navigate('/outfits/new')}
-          className="bg-stone-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium"
+          style={{
+            height: 48, padding: '0 20px',
+            background: INK, color: '#fff',
+            border: 'none', borderRadius: 4,
+            fontFamily: UI, fontSize: 13, fontWeight: 600,
+            cursor: 'pointer',
+          }}
         >
           Log your first outfit
         </button>
@@ -110,30 +138,58 @@ export default function OutfitsPage() {
   }
 
   return (
-    <div className="pb-24">
+    <div style={{ paddingBottom: 24 }}>
+      {/* AppBar */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 6 }}>
+              <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>
+            </svg>
+            Outfit Log
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>
+            {outfits.length} total
+          </div>
+        </div>
+        <div style={{ borderTop: RULE, marginTop: 12 }} />
+      </div>
+
       {/* Month navigator */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <button onClick={prevMonth} className="p-1.5 text-stone-500">
-          <ChevronLeft size={20} />
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '14px 20px 0',
+      }}>
+        <button onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: INK }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 6l-6 6 6 6"/>
+          </svg>
         </button>
-        <span className="font-semibold text-stone-800">
-          {MONTH_NAMES[viewMonth]} {viewYear}
-        </span>
-        <button onClick={nextMonth} className="p-1.5 text-stone-500">
-          <ChevronRight size={20} />
+        <div style={{ fontFamily: MONO, fontSize: 11, color: INK, letterSpacing: '0.04em' }}>
+          {MONTH_FULL[viewMonth]} {viewYear}
+          <span style={{ color: 'rgba(0,0,0,0.4)', marginLeft: 8 }}>{monthOutfits.length} outfits</span>
+        </div>
+        <button onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: INK }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
         </button>
       </div>
 
       {/* Calendar grid */}
-      <div className="px-4">
+      <div style={{ padding: '10px 20px 0' }}>
         {/* Day labels */}
-        <div className="grid grid-cols-7 mb-1">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
           {DAY_LABELS.map(d => (
-            <div key={d} className="text-center text-xs text-stone-400 py-1">{d}</div>
+            <div key={d} style={{
+              textAlign: 'center', fontFamily: MONO, fontSize: 9,
+              color: 'rgba(0,0,0,0.4)', padding: '4px 0',
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+            }}>{d}</div>
           ))}
         </div>
         {/* Day cells */}
-        <div className="grid grid-cols-7 gap-y-1">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px 0' }}>
           {cells.map((day, i) => {
             if (!day) return <div key={`empty-${i}`} />
             const ds = toDateStr(day)
@@ -144,37 +200,51 @@ export default function OutfitsPage() {
               <button
                 key={ds}
                 onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
-                className="flex flex-col items-center py-1"
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  padding: '3px 0', background: 'none', border: 'none', cursor: 'pointer',
+                }}
               >
-                <span className={`w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors ${
-                  isSelected ? 'bg-stone-800 text-white' :
-                  isToday ? 'bg-stone-100 text-stone-800 font-semibold' :
-                  'text-stone-700'
-                }`}>
+                <span style={{
+                  width: 30, height: 30,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: 2,
+                  background: isSelected ? INK : (isToday ? 'rgba(0,0,0,0.07)' : 'transparent'),
+                  color: isSelected ? '#fff' : INK,
+                  fontFamily: MONO, fontSize: 11,
+                  fontWeight: isToday ? 600 : 400,
+                  border: hasOutfit && !isSelected ? '1px solid rgba(0,0,0,0.15)' : 'none',
+                }}>
                   {day}
                 </span>
-                <span className={`w-1.5 h-1.5 rounded-full mt-0.5 ${hasOutfit ? (isSelected ? 'bg-white' : 'bg-stone-400') : 'bg-transparent'}`} />
+                <span style={{
+                  width: 4, height: 4, borderRadius: '50%', marginTop: 2,
+                  background: hasOutfit ? (isSelected ? '#fff' : '#DFAFA1') : 'transparent',
+                }} />
               </button>
             )
           })}
         </div>
       </div>
 
+      <div style={{ borderTop: RULE, margin: '16px 20px 0' }} />
+
       {/* Outfit list */}
-      <div className="mt-4 px-4">
-        <p className="text-xs text-stone-400 mb-2">
+      <div style={{ padding: '16px 20px 0' }}>
+        <SectionLabel right={`${visibleOutfits.length} shown`}>
           {selectedDate
-            ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
-            : `${MONTH_NAMES[viewMonth]} ${viewYear}`}
-          {' · '}{visibleOutfits.length} outfit{visibleOutfits.length !== 1 ? 's' : ''}
-        </p>
+            ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+            : MONTH_NAMES[viewMonth]}
+        </SectionLabel>
 
         {visibleOutfits.length === 0 ? (
-          <p className="text-stone-400 text-sm py-4">No outfits this {selectedDate ? 'day' : 'month'}.</p>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
+            no outfits this {selectedDate ? 'day' : 'month'}
+          </div>
         ) : (
           <div>
             {visibleOutfits.map(o => (
-              <OutfitCard key={o.id} outfit={o} onClick={() => navigate(`/outfits/${o.id}`)} />
+              <OutfitRow key={o.id} outfit={o} onClick={() => navigate(`/outfits/${o.id}`)} />
             ))}
           </div>
         )}
@@ -183,9 +253,19 @@ export default function OutfitsPage() {
       {/* FAB */}
       <button
         onClick={() => navigate('/outfits/new')}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-stone-800 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+        style={{
+          position: 'fixed', bottom: 100, right: 16,
+          width: 52, height: 52,
+          background: INK, color: '#fff',
+          border: 'none', borderRadius: 4,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+          zIndex: 30,
+        }}
       >
-        <Plus size={24} />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
       </button>
     </div>
   )

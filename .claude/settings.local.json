@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/spelaanzeljcgacnik/Downloads/claude-hub/**)",
+      "Bash(git clone *)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(./node_modules/.bin/tsc *)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(gh auth *)",
+      "Bash(brew install *)",
+      "Bash(npm install *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c \"/Users/spelaanzeljcgacnik/.claude-personal/projects/-Users-spelaanzeljcgacnik-Downloads-claude-hub-closet-app/3599aa8e-8923-4ac6-90c1-a3096fd58cf6/tool-results/webfetch-1779915300582-sincmh.bin\")",
+      "Read(//tmp/**)",
+      "Bash(mkdir -p /tmp/closet-design)",
+      "Bash(tar -xf \"/Users/spelaanzeljcgacnik/.claude-personal/projects/-Users-spelaanzeljcgacnik-Downloads-claude-hub-closet-app/3599aa8e-8923-4ac6-90c1-a3096fd58cf6/tool-results/webfetch-1779915300582-sincmh.bin\" -C /tmp/closet-design)"
+    ]
+  }
+}

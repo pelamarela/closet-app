@@ -1,25 +1,67 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Camera, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import RatingPicker from '../components/RatingPicker'
+import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: 'top', label: 'Top' },
-  { value: 'bottom', label: 'Bottom' },
-  { value: 'dress', label: 'Dress' },
-  { value: 'outerwear', label: 'Outerwear' },
-  { value: 'shoes', label: 'Shoes' },
-  { value: 'accessory', label: 'Accessory' },
+  { value: 'top', label: 'top' },
+  { value: 'bottom', label: 'btm' },
+  { value: 'dress', label: 'dress' },
+  { value: 'outerwear', label: 'coat' },
+  { value: 'shoes', label: 'shoe' },
+  { value: 'accessory', label: 'acc' },
 ]
 
 const EMPTY: ItemFormData = {
   name: '', category: 'top', subcategory: '', color: '',
   pattern: '', material: '', warmth: 3, formality: 3, brand: '',
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  required,
+  mono,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  required?: boolean
+  mono?: boolean
+}) {
+  return (
+    <div style={{ padding: '12px 0', borderBottom: RULE }}>
+      <div style={{
+        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+      }}>
+        {label}{required && <span style={{ color: '#9C5544', marginLeft: 3 }}>*</span>}
+      </div>
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          fontFamily: mono ? MONO : UI,
+          fontSize: mono ? 12 : 15,
+          fontWeight: 500,
+          color: value ? INK : 'rgba(0,0,0,0.35)',
+          background: 'none', border: 'none', outline: 'none', padding: 0,
+        }}
+      />
+    </div>
+  )
 }
 
 export default function ItemFormPage() {
@@ -62,13 +104,13 @@ export default function ItemFormPage() {
       })
   }, [id, isEdit, user])
 
-  const set = (k: keyof ItemFormData) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }) as ItemFormData)
+  const set = (k: keyof ItemFormData) => (v: string) =>
+    setForm(f => ({ ...f, [k]: v }) as ItemFormData)
 
   const imagePreview = imageFile ? URL.createObjectURL(imageFile) : existingImageUrl
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault()
     if (!form.name.trim()) return
     setSaving(true)
     setError(null)
@@ -99,144 +141,180 @@ export default function ItemFormPage() {
 
   if (loadingItem) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-stone-400" size={24} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+        <Loader2 className="animate-spin" size={20} style={{ color: 'rgba(0,0,0,0.3)' }} />
       </div>
     )
   }
 
   return (
-    <div className="pb-28">
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between z-10">
-        <button onClick={() => navigate('/wardrobe')} className="p-1 -ml-1">
-          <ArrowLeft size={20} className="text-stone-600" />
-        </button>
-        <h1 className="font-semibold text-stone-800">{isEdit ? 'Edit item' : 'Add item'}</h1>
-        {isEdit ? (
-          <button onClick={handleArchive} disabled={saving} className="text-sm text-red-500 font-medium disabled:opacity-40">
-            Archive
+    <div style={{ paddingBottom: 100 }}>
+      {/* AppBar */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/wardrobe')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: UI, fontSize: 13, fontWeight: 600,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 6l-6 6 6 6"/>
+            </svg>
+            Closet
           </button>
-        ) : <div className="w-14" />}
+          {isEdit && (
+            <button
+              onClick={handleArchive}
+              disabled={saving}
+              style={{
+                fontFamily: MONO, fontSize: 9.5, color: '#9C5544',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                opacity: saving ? 0.4 : 1,
+              }}
+            >
+              archive
+            </button>
+          )}
+        </div>
+        <div style={{ borderTop: RULE, marginTop: 12 }} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-5">
-        {/* Photo */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full aspect-video bg-stone-100 rounded-2xl overflow-hidden flex items-center justify-center relative"
-        >
-          {imagePreview ? (
-            <>
-              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <div className="bg-white/80 rounded-full p-2">
-                  <Camera size={18} className="text-stone-700" />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-stone-400">
-              <Camera size={28} />
-              <span className="text-sm">Add photo</span>
-            </div>
-          )}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={e => setImageFile(e.target.files?.[0] ?? null)}
-        />
+      <form onSubmit={handleSubmit}>
+        {/* Page title */}
+        <div style={{ padding: '14px 20px 0' }}>
+          <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+            {isEdit ? 'Edit item' : 'Add an item'}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
+            {isEdit ? 'update details · save changes' : 'compress · save · sync'}
+          </div>
+        </div>
 
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">Name *</label>
+        {/* Photo uploader */}
+        <div style={{ padding: '16px 20px 0' }}>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              width: '100%', aspectRatio: '4/3',
+              border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.25)',
+              borderRadius: 3, overflow: 'hidden',
+              background: '#fff',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8,
+              position: 'relative', cursor: 'pointer',
+            }}
+          >
+            {imagePreview ? (
+              <>
+                <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'rgba(0,0,0,0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{
+                    border: '1px solid rgba(255,255,255,0.7)', borderRadius: 2,
+                    padding: '6px 12px',
+                    fontFamily: MONO, fontSize: 9, color: '#fff',
+                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                  }}>change photo</div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  width: 40, height: 40, border: RULE, borderRadius: 2,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: INK }}>
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                </div>
+                <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
+              </>
+            )}
+          </button>
           <input
-            type="text"
-            required
-            value={form.name}
-            onChange={set('name')}
-            placeholder="e.g. Black linen blazer"
-            className="w-full border border-stone-300 rounded-xl px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={e => setImageFile(e.target.files?.[0] ?? null)}
           />
         </div>
 
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">Category *</label>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(c => (
-              <button
-                key={c.value}
-                type="button"
-                onClick={() => setForm(f => ({ ...f, category: c.value }))}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  form.category === c.value
-                    ? 'bg-stone-800 text-white'
-                    : 'bg-stone-100 text-stone-600'
-                }`}
-              >
-                {c.label}
-              </button>
-            ))}
+        {/* Attributes */}
+        <div style={{ padding: '20px 20px 0' }}>
+          <SectionLabel right="required *">attributes</SectionLabel>
+
+          <Field label="name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" required />
+
+          {/* Category picker */}
+          <div style={{ padding: '12px 0', borderBottom: RULE }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
+            }}>
+              category <span style={{ color: '#9C5544' }}>*</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {CATEGORIES.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, category: c.value }))}
+                  style={{
+                    padding: '3px 10px', borderRadius: 2,
+                    border: `1px solid ${form.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
+                    background: form.category === c.value ? INK : 'transparent',
+                    color: form.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
+                    fontFamily: MONO, fontSize: 10, cursor: 'pointer',
+                    letterSpacing: '0.04em',
+                  }}
+                >{c.label}</button>
+              ))}
+            </div>
           </div>
+
+          <RatingPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} label="Warmth" hint="1 = light · 5 = heavy" />
+          <RatingPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} label="Formality" hint="1 = casual · 5 = formal" />
+
+          <Field label="color" value={form.color} onChange={set('color')} placeholder="white, navy, black…" mono />
+          <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" mono />
+          <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" mono />
+          <Field label="pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" mono />
+          <Field label="subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" mono />
         </div>
 
-        {/* Warmth & Formality */}
-        <RatingPicker
-          value={form.warmth}
-          onChange={v => setForm(f => ({ ...f, warmth: v }))}
-          label="Warmth"
-          hint="1 = light · 5 = heavy"
-        />
-        <RatingPicker
-          value={form.formality}
-          onChange={v => setForm(f => ({ ...f, formality: v }))}
-          label="Formality"
-          hint="1 = casual · 5 = formal"
-        />
-
-        {/* Optional text fields */}
-        <div>
-          <p className="text-sm font-medium text-stone-700 mb-2">Details <span className="text-stone-400 font-normal">(optional)</span></p>
-          <div className="grid grid-cols-2 gap-3">
-            {([
-              ['color', 'Color', 'e.g. Navy'],
-              ['brand', 'Brand', 'e.g. Zara'],
-              ['subcategory', 'Subcategory', 'e.g. Blazer'],
-              ['material', 'Material', 'e.g. Linen'],
-              ['pattern', 'Pattern', 'e.g. Striped'],
-            ] as [keyof ItemFormData, string, string][]).map(([key, label, placeholder]) => (
-              <div key={key}>
-                <label className="block text-xs font-medium text-stone-500 mb-1">{label}</label>
-                <input
-                  type="text"
-                  value={form[key] as string}
-                  onChange={set(key)}
-                  placeholder={placeholder}
-                  className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-300"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && (
+          <div style={{ padding: '12px 20px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+        )}
       </form>
 
-      {/* Save button — fixed above bottom nav */}
-      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 pb-2 bg-gradient-to-t from-stone-50 pt-4">
-        <button
-          onClick={handleSubmit}
+      {/* Footer actions */}
+      <div style={{
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px',
+        display: 'flex', gap: 8,
+      }}>
+        <UButton variant="ghost" onClick={() => navigate('/wardrobe')} style={{ flex: 1 }}>
+          Cancel
+        </UButton>
+        <UButton
+          onClick={() => handleSubmit()}
           disabled={saving || !form.name.trim()}
-          className="w-full bg-stone-800 text-white rounded-xl py-3.5 font-medium disabled:opacity-40 flex items-center justify-center gap-2 active:scale-98 transition-transform"
+          style={{ flex: 1.6 }}
         >
-          {saving && <Loader2 size={18} className="animate-spin" />}
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to wardrobe'}
-        </button>
+          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}
+        </UButton>
       </div>
     </div>
   )

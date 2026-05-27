@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, Camera, Check, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import RatingPicker from '../components/RatingPicker'
+import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
+
+const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
 
 function today() {
   return new Date().toISOString().slice(0, 10)
@@ -59,153 +61,279 @@ export default function LogOutfitPage() {
   }
 
   return (
-    <div className="pb-32">
-      {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between z-10">
-        <button onClick={() => navigate('/outfits')} className="p-1 -ml-1">
-          <ArrowLeft size={20} className="text-stone-600" />
-        </button>
-        <h1 className="font-semibold text-stone-800">Log outfit</h1>
-        <div className="w-6" />
+    <div style={{ paddingBottom: 100 }}>
+      {/* AppBar */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button
+            onClick={() => navigate('/outfits')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: UI, fontSize: 13, fontWeight: 600,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 6l-6 6 6 6"/>
+            </svg>
+            Cancel
+          </button>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
+            {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'new outfit'}
+          </div>
+        </div>
+        <div style={{ borderTop: RULE, marginTop: 12 }} />
       </div>
 
-      <div className="p-4 space-y-6">
+      {/* Page title */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
+          Log an outfit
+        </div>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
+          pick items · add context · save
+        </div>
+      </div>
+
+      <div style={{ padding: '20px 20px 0' }}>
         {/* Date */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">Date</label>
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{
+            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+          }}>
+            date <span style={{ color: '#9C5544' }}>*</span>
+          </div>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full border border-stone-300 rounded-xl px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400"
+            style={{
+              fontFamily: MONO, fontSize: 13, fontWeight: 500, color: INK,
+              background: 'none', border: 'none', outline: 'none', padding: 0,
+              width: '100%',
+            }}
           />
         </div>
 
         {/* Occasion */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
-            Occasion <span className="text-stone-400 font-normal">(optional)</span>
-          </label>
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{
+            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+          }}>
+            occasion
+          </div>
           <input
             type="text"
             value={occasion}
             onChange={e => setOccasion(e.target.value)}
-            placeholder="e.g. Work, Date night, Casual"
-            className="w-full border border-stone-300 rounded-xl px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400"
+            placeholder="e.g. work, dinner, weekend…"
+            style={{
+              width: '100%', fontFamily: UI, fontSize: 15, fontWeight: 500,
+              color: occasion ? INK : 'rgba(0,0,0,0.35)',
+              background: 'none', border: 'none', outline: 'none', padding: 0,
+            }}
           />
-        </div>
-
-        {/* Item picker */}
-        <div>
-          <div className="flex items-baseline justify-between mb-3">
-            <label className="text-sm font-medium text-stone-700">Items *</label>
-            {selectedIds.size > 0 && (
-              <span className="text-xs text-stone-500">{selectedIds.size} selected</span>
-            )}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+            {OCCASION_PRESETS.map(p => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setOccasion(p)}
+                style={{
+                  padding: '2px 8px', borderRadius: 2,
+                  border: `1px solid ${occasion === p ? INK : 'rgba(0,0,0,0.15)'}`,
+                  background: occasion === p ? INK : 'transparent',
+                  color: occasion === p ? '#fff' : 'rgba(0,0,0,0.55)',
+                  fontFamily: MONO, fontSize: 9, cursor: 'pointer',
+                  letterSpacing: '0.04em',
+                }}
+              >{p}</button>
+            ))}
           </div>
-
-          {itemsLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin text-stone-400" size={24} />
-            </div>
-          ) : items.length === 0 ? (
-            <p className="text-stone-400 text-sm text-center py-6">No items in your wardrobe yet.</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {items.map(item => {
-                const selected = selectedIds.has(item.id)
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => toggleItem(item.id)}
-                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                      selected ? 'border-stone-800' : 'border-transparent'
-                    }`}
-                  >
-                    {item.signedImageUrl ? (
-                      <img src={item.signedImageUrl} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-stone-100 flex items-center justify-center text-xs text-stone-400 p-1 text-center">
-                        {item.name}
-                      </div>
-                    )}
-                    {selected && (
-                      <div className="absolute inset-0 bg-stone-800/30 flex items-center justify-center">
-                        <div className="w-6 h-6 bg-stone-800 rounded-full flex items-center justify-center">
-                          <Check size={14} className="text-white" />
-                        </div>
-                      </div>
-                    )}
-                    {!selected && item.signedImageUrl && (
-                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/50 px-1.5 pb-1">
-                        <p className="text-white text-[10px] truncate">{item.name}</p>
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
         </div>
+      </div>
 
-        {/* Rating */}
-        <RatingPicker
-          value={rating ?? 0}
-          onChange={v => setRating(prev => prev === v ? null : v)}
-          label="Rating"
-          hint="optional"
-        />
+      {/* Item picker */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <SectionLabel right={selectedIds.size > 0 ? `${selectedIds.size} selected` : undefined}>
+          items
+        </SectionLabel>
+
+        {itemsLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+            <Loader2 className="animate-spin" size={20} style={{ color: 'rgba(0,0,0,0.3)' }} />
+          </div>
+        ) : items.length === 0 ? (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
+            no items in your wardrobe yet
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {items.map(item => {
+              const selected = selectedIds.has(item.id)
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => toggleItem(item.id)}
+                  style={{
+                    position: 'relative', aspectRatio: '3/4',
+                    border: `${selected ? 2 : 1}px solid ${selected ? INK : 'rgba(0,0,0,0.10)'}`,
+                    borderRadius: 3, overflow: 'hidden',
+                    background: 'none', cursor: 'pointer', padding: 0,
+                  }}
+                >
+                  {item.signedImageUrl ? (
+                    <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{
+                      width: '100%', height: '100%',
+                      background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)',
+                    }} />
+                  )}
+
+                  {/* Category label */}
+                  <div style={{
+                    position: 'absolute', top: 4, left: 4,
+                    fontFamily: MONO, fontSize: 8,
+                    background: '#fff', color: INK, padding: '1px 4px',
+                    letterSpacing: '0.04em',
+                  }}>{item.category}</div>
+
+                  {/* Check overlay */}
+                  {selected && (
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'rgba(10,10,10,0.25)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <div style={{
+                        width: 22, height: 22, background: INK, borderRadius: 2,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12l5 5 9-11"/>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Rating */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
+          }}>
+            <span>rating</span>
+            <span style={{ color: INK }}>{rating ? `${rating} / 5` : 'none'}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {[1,2,3,4,5].map(n => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(prev => prev === n ? null : n)}
+                style={{
+                  flex: 1, height: 28,
+                  border: `1px solid ${rating && n <= rating ? INK : 'rgba(0,0,0,0.15)'}`,
+                  background: rating && n <= rating ? INK : 'transparent',
+                  color: rating && n <= rating ? '#fff' : 'rgba(0,0,0,0.35)',
+                  borderRadius: 2, cursor: 'pointer',
+                  fontFamily: MONO, fontSize: 11, fontWeight: 600,
+                }}
+              >{n}</button>
+            ))}
+          </div>
+        </div>
 
         {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
-            Notes <span className="text-stone-400 font-normal">(optional)</span>
-          </label>
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{
+            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+          }}>
+            notes
+          </div>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="How did you feel wearing this?"
+            placeholder="how did you feel wearing this?"
             rows={3}
-            className="w-full border border-stone-300 rounded-xl px-4 py-3 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400 resize-none"
+            style={{
+              width: '100%', fontFamily: UI, fontSize: 13, color: INK,
+              background: 'none', border: 'none', outline: 'none', padding: 0,
+              resize: 'none',
+            }}
           />
         </div>
 
         {/* Outfit photo */}
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
-            Outfit photo <span className="text-stone-400 font-normal">(optional)</span>
-          </label>
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{
+            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
+          }}>
+            photo (optional)
+          </div>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full aspect-video bg-stone-100 rounded-2xl overflow-hidden flex items-center justify-center"
+            style={{
+              width: '100%', aspectRatio: '4/3',
+              border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.2)',
+              borderRadius: 3, overflow: 'hidden',
+              background: imagePreview ? 'none' : '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'relative', cursor: 'pointer',
+            }}
           >
             {imagePreview ? (
-              <img src={imagePreview} alt="Outfit" className="w-full h-full object-cover" />
+              <img src={imagePreview} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, display: 'block' }} />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-stone-400">
-                <Camera size={24} />
-                <span className="text-sm">Add photo</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(0,0,0,0.3)' }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>tap to add photo</span>
               </div>
             )}
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
         </div>
-
-        {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
 
-      {/* Save */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 pb-6 pt-4 bg-gradient-to-t from-stone-50 from-80%">
-        <button
+      {error && (
+        <div style={{ padding: '0 20px 12px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+      )}
+
+      {/* Footer */}
+      <div style={{
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px',
+        display: 'flex', gap: 8,
+      }}>
+        <UButton variant="ghost" onClick={() => navigate('/outfits')} style={{ flex: 1 }}>
+          Cancel
+        </UButton>
+        <UButton
           onClick={handleSave}
           disabled={saving || selectedIds.size === 0}
-          className="w-full bg-stone-800 text-white rounded-xl py-3.5 font-medium disabled:opacity-40 flex items-center justify-center gap-2"
+          style={{ flex: 1.6 }}
         >
-          {saving && <Loader2 size={18} className="animate-spin" />}
           {saving ? 'Saving…' : 'Save outfit'}
-        </button>
+        </UButton>
       </div>
     </div>
   )

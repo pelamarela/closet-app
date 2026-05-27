@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Sparkles, Loader2, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
+import { SectionLabel, MonoTag, UButton, MONO, UI, INK, RULE } from '../components/ui'
 
-const OCCASION_PRESETS = ['Casual', 'Work', 'Date night', 'Weekend', 'Formal event', 'Gym']
+const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
 
 type Suggestion = { item_ids: string[]; reasoning: string }
 
@@ -37,24 +38,39 @@ function StyleProfileEditor({ userId }: { userId: string }) {
   if (!loaded) return null
 
   return (
-    <div className="border border-stone-200 rounded-xl overflow-hidden">
-      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between px-4 py-3 text-sm text-stone-700">
-        <span className="font-medium">My style</span>
-        {open ? <ChevronUp size={16} className="text-stone-400" /> : <ChevronDown size={16} className="text-stone-400" />}
+    <div style={{ border: RULE, borderRadius: 3, overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 14px',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
+          textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}
+      >
+        <span>// my style profile</span>
+        <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.3)' }}>{open ? '−' : '+'}</span>
       </button>
       {open && (
-        <div className="px-4 pb-4 border-t border-stone-100">
-          <p className="text-xs text-stone-400 mt-3 mb-2">Describe your style — Claude uses this to tailor suggestions.</p>
+        <div style={{ padding: '0 14px 14px', borderTop: RULE }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', margin: '10px 0 8px', lineHeight: 1.5 }}>
+            describe your style — Claude uses this to tailor suggestions
+          </div>
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder="e.g. I prefer minimal, classic pieces in neutral tones. I lean towards relaxed silhouettes but like to look polished."
             rows={4}
-            className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
+            style={{
+              width: '100%', border: RULE, borderRadius: 3,
+              padding: '8px 10px', fontFamily: UI, fontSize: 12,
+              color: INK, background: '#fff', outline: 'none', resize: 'none',
+            }}
           />
-          <button onClick={save} disabled={saving} className="mt-2 bg-stone-800 text-white text-sm px-4 py-2 rounded-lg font-medium disabled:opacity-40">
-            {saving ? 'Saving…' : 'Save'}
-          </button>
+          <UButton onClick={save} disabled={saving} style={{ marginTop: 8 }}>
+            {saving ? 'Saving…' : 'Save style'}
+          </UButton>
         </div>
       )}
     </div>
@@ -77,31 +93,48 @@ function SuggestionCard({
     .filter((x): x is { name: string; category: string; signedImageUrl: string | null } => !!x)
 
   return (
-    <div className="border border-stone-200 rounded-2xl overflow-hidden">
-      <div className={`grid gap-0.5 ${outfitItems.length === 1 ? 'grid-cols-1' : outfitItems.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-        {outfitItems.slice(0, 3).map((item, i) => (
-          <div key={i} className="aspect-square bg-stone-100">
+    <div style={{ border: RULE, borderRadius: 3, overflow: 'hidden' }}>
+      {/* Item thumbnails */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${Math.min(outfitItems.length, 4)}, 1fr)`,
+        gap: 2,
+      }}>
+        {outfitItems.slice(0, 4).map((item, i) => (
+          <div key={i} style={{ aspectRatio: '3/4', background: '#ECEAE6', overflow: 'hidden', position: 'relative' }}>
             {item.signedImageUrl
-              ? <img src={item.signedImageUrl} alt={item.name} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center text-stone-400 text-xs p-2 text-center">{item.name}</div>
+              ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
             }
+            <div style={{
+              position: 'absolute', bottom: 4, left: 4,
+              fontFamily: MONO, fontSize: 7.5,
+              background: 'rgba(255,255,255,0.9)', color: INK,
+              padding: '1px 4px',
+            }}>{item.category}</div>
           </div>
         ))}
       </div>
 
-      <div className="p-4">
-        <div className="flex flex-wrap gap-1.5 mb-3">
+      <div style={{ padding: '12px 14px' }}>
+        {/* Item name tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
           {outfitItems.map((item, i) => (
-            <span key={i} className="bg-stone-100 text-stone-700 text-xs px-2.5 py-1 rounded-full">{item.name}</span>
+            <MonoTag key={i}>{item.name}</MonoTag>
           ))}
         </div>
-        <p className="text-stone-500 text-sm mb-4">{suggestion.reasoning}</p>
-        <button
-          onClick={() => onLog(suggestion.item_ids)}
-          className="w-full bg-stone-800 text-white rounded-xl py-2.5 text-sm font-medium"
-        >
+
+        {/* Reasoning */}
+        <div style={{
+          fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
+          lineHeight: 1.6, marginBottom: 12,
+        }}>
+          {suggestion.reasoning}
+        </div>
+
+        <UButton onClick={() => onLog(suggestion.item_ids)} style={{ width: '100%' }}>
           Log this outfit
-        </button>
+        </UButton>
       </div>
     </div>
   )
@@ -188,78 +221,158 @@ export default function SuggestPage() {
   )
 
   return (
-    <div className="p-4 pb-24 space-y-5">
-      <h2 className="text-xl font-semibold text-stone-800">Outfit suggestions</h2>
-
-      {user && <StyleProfileEditor userId={user.id} />}
-
-      {/* Weather strip */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 bg-stone-100 rounded-xl px-4 py-3 flex items-center gap-2">
-          <MapPin size={16} className="text-stone-400 flex-shrink-0" />
-          {weatherLoading ? (
-            <span className="text-stone-400 text-sm">Getting weather…</span>
-          ) : weather ? (
-            <span className="text-stone-700 text-sm">{weather.temp_c}°C · {weather.conditions}</span>
-          ) : (
-            <span className="text-stone-400 text-sm">{weatherError ?? 'No weather data'}</span>
-          )}
+    <div style={{ paddingBottom: 40 }}>
+      {/* AppBar */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 6 }}>
+              <path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z"/>
+            </svg>
+            Suggest
+          </div>
         </div>
-        <button onClick={fetchWeather} disabled={weatherLoading} className="p-2.5 bg-stone-100 rounded-xl text-stone-500 disabled:opacity-40">
-          <RefreshCw size={16} className={weatherLoading ? 'animate-spin' : ''} />
-        </button>
+        <div style={{ borderTop: RULE, marginTop: 12 }} />
       </div>
 
-      {/* Occasion */}
-      <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">Occasion</label>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {OCCASION_PRESETS.map(o => (
+      <div style={{ padding: '16px 20px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Style profile */}
+        {user && <StyleProfileEditor userId={user.id} />}
+
+        {/* Weather strip */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          border: RULE, borderRadius: 3,
+        }}>
+          <div style={{ padding: '12px 14px', borderRight: RULE }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6,
+            }}>weather</div>
+            {weatherLoading ? (
+              <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
+            ) : weather ? (
+              <>
+                <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  {weather.temp_c}°
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
+                  {weather.conditions}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
+                {weatherError ?? 'unavailable'}
+              </div>
+            )}
+          </div>
+          <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6,
+            }}>closet</div>
+            <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1 }}>
+              {items.length}
+              <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', marginLeft: 5 }}>items</span>
+            </div>
             <button
-              key={o}
-              onClick={() => setOccasion(prev => prev === o ? '' : o)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                occasion === o ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'
-              }`}
+              onClick={fetchWeather}
+              disabled={weatherLoading}
+              style={{
+                marginTop: 8,
+                fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+                background: 'none', border: RULE, borderRadius: 2,
+                padding: '3px 8px', cursor: 'pointer',
+                opacity: weatherLoading ? 0.4 : 1,
+                alignSelf: 'flex-start',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+              }}
             >
-              {o}
+              ↻ refresh
             </button>
-          ))}
+          </div>
         </div>
-        <input
-          type="text"
-          value={occasion}
-          onChange={e => setOccasion(e.target.value)}
-          placeholder="Or type a custom occasion…"
-          className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
-        />
+
+        {/* Occasion */}
+        <div style={{ border: RULE, borderRadius: 3 }}>
+          <div style={{ padding: '12px 14px', borderBottom: RULE }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
+            }}>occasion</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {OCCASION_PRESETS.map(o => (
+                <button
+                  key={o}
+                  onClick={() => setOccasion(prev => prev === o ? '' : o)}
+                  style={{
+                    padding: '3px 10px', borderRadius: 2,
+                    border: `1px solid ${occasion === o ? INK : 'rgba(0,0,0,0.15)'}`,
+                    background: occasion === o ? INK : 'transparent',
+                    color: occasion === o ? '#fff' : 'rgba(0,0,0,0.55)',
+                    fontFamily: MONO, fontSize: 9.5, cursor: 'pointer',
+                    letterSpacing: '0.04em',
+                  }}
+                >{o}</button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={occasion}
+              onChange={e => setOccasion(e.target.value)}
+              placeholder="or type custom occasion…"
+              style={{
+                width: '100%', fontFamily: UI, fontSize: 14, fontWeight: 500,
+                color: occasion ? INK : 'rgba(0,0,0,0.35)',
+                background: 'none', border: 'none', outline: 'none', padding: 0,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Suggest button */}
+        <UButton
+          onClick={handleSuggest}
+          disabled={loading || !occasion.trim() || !weather}
+          style={{ width: '100%' }}
+        >
+          {loading ? (
+            <><Loader2 size={16} className="animate-spin" style={{ marginRight: 6 }} />Getting suggestions…</>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                <path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z"/>
+              </svg>
+              Suggest an outfit
+            </>
+          )}
+        </UButton>
+
+        {error && (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+        )}
+
+        {/* Results */}
+        {suggestions.length > 0 && (
+          <div>
+            <SectionLabel right={`${suggestions.length} option${suggestions.length > 1 ? 's' : ''}`}>
+              suggestions · {occasion}
+            </SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {suggestions.map((s, i) => (
+                <SuggestionCard key={i} suggestion={s} itemMap={itemMap} onLog={handleLog} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {items.length === 0 && (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', textAlign: 'center', padding: '16px 0' }}>
+            add items to your wardrobe first
+          </div>
+        )}
       </div>
-
-      <button
-        onClick={handleSuggest}
-        disabled={loading || !occasion.trim() || !weather}
-        className="w-full bg-stone-800 text-white rounded-xl py-3.5 font-medium disabled:opacity-40 flex items-center justify-center gap-2"
-      >
-        {loading
-          ? <><Loader2 size={18} className="animate-spin" />Getting suggestions…</>
-          : <><Sparkles size={18} />Suggest an outfit</>
-        }
-      </button>
-
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-
-      {suggestions.length > 0 && (
-        <div className="space-y-4">
-          <p className="text-sm text-stone-500">{suggestions.length} suggestion{suggestions.length > 1 ? 's' : ''} for {occasion}</p>
-          {suggestions.map((s, i) => (
-            <SuggestionCard key={i} suggestion={s} itemMap={itemMap} onLog={handleLog} />
-          ))}
-        </div>
-      )}
-
-      {items.length === 0 && (
-        <p className="text-stone-400 text-sm text-center py-4">Add items to your wardrobe first.</p>
-      )}
     </div>
   )
 }

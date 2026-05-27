@@ -1,10 +1,5 @@
-import { Shirt } from 'lucide-react'
+import { MONO, UI, INK, RULE } from './ui'
 import type { ItemWithSignedUrl } from '../hooks/useItems'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  top: 'Top', bottom: 'Bottom', dress: 'Dress',
-  outerwear: 'Outerwear', shoes: 'Shoes', accessory: 'Accessory',
-}
 
 interface ItemCardProps {
   item: ItemWithSignedUrl
@@ -12,24 +7,66 @@ interface ItemCardProps {
 }
 
 export default function ItemCard({ item, onClick }: ItemCardProps) {
+  const shortId = item.id.slice(0, 6)
+
   return (
-    <button onClick={onClick} className="w-full text-left">
-      <div className="aspect-square bg-stone-100 rounded-2xl overflow-hidden mb-2">
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', textAlign: 'left', background: 'none',
+        border: 'none', padding: 0, cursor: 'pointer',
+      }}
+    >
+      <div style={{
+        position: 'relative', width: '100%', aspectRatio: '3/4',
+        border: RULE, borderRadius: 3, overflow: 'hidden',
+      }}>
         {item.signedImageUrl ? (
           <img
             src={item.signedImageUrl}
             alt={item.name}
-            className="w-full h-full object-cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-stone-300">
-            <Shirt size={32} />
-          </div>
+          <div style={{
+            width: '100%', height: '100%',
+            background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)',
+          }} />
         )}
+
+        {/* Category badge top-left */}
+        <div style={{
+          position: 'absolute', top: 6, left: 6,
+          fontFamily: MONO, fontSize: 8.5,
+          background: '#fff', color: INK,
+          padding: '2px 5px', letterSpacing: '0.04em',
+        }}>{item.category}</div>
+
+        {/* ID badge top-right */}
+        <div style={{
+          position: 'absolute', top: 6, right: 6,
+          fontFamily: MONO, fontSize: 8.5,
+          color: 'rgba(255,255,255,0.9)',
+          background: 'rgba(0,0,0,0.45)',
+          padding: '2px 5px',
+        }}>{shortId}</div>
       </div>
-      <p className="text-sm font-medium text-stone-800 truncate">{item.name}</p>
-      <p className="text-xs text-stone-400 mt-0.5">{CATEGORY_LABELS[item.category] ?? item.category}</p>
+
+      <div style={{ padding: '6px 2px 0' }}>
+        <div style={{
+          fontFamily: UI, fontSize: 11, fontWeight: 600,
+          letterSpacing: '-0.005em', color: INK,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{item.name}</div>
+        <div style={{
+          fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+          marginTop: 2, display: 'flex', gap: 6,
+        }}>
+          <span>w{item.warmth}</span>
+          <span>f{item.formality}</span>
+        </div>
+      </div>
     </button>
   )
 }
