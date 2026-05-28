@@ -61,7 +61,7 @@ export function TopBar({ title, meta }: {
           color: INK, minWidth: 0,
         }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <img src="/favicon.svg" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
+            <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
           </button>
           {title}
         </div>
@@ -98,7 +98,7 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <img src="/favicon.svg" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
+            <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
           </button>
           <button
             onClick={back ? (onBack ?? (() => navigate(-1))) : undefined}
