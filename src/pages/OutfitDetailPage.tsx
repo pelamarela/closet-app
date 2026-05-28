@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Loader2, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { SectionLabel, MONO, UI, INK, RULE } from '../components/ui'
+import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import type { Outfit, Item } from '../types/database'
 
-type ItemWithMeta = Item & {
-  signedImageUrl: string | null
-  wearCount: number
-  lastWorn: string | null
-}
+type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
 
 export default function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -27,202 +22,163 @@ export default function OutfitDetailPage() {
 
   useEffect(() => {
     if (!id || !user) return
-
     async function load() {
       setLoading(true)
-
-      const { data: outfitData } = await supabase
-        .from('outfits')
-        .select('*, outfit_items(item_id)')
-        .eq('id', id!)
-        .eq('user_id', user!.id)
-        .single()
-
-      if (!outfitData) { setLoading(false); return }
+      const { data: raw } = await supabase
+        .from('outfits').select('*, outfit_items(item_id)').eq('id', id!).eq('user_id', user!.id).single()
+      if (!raw) { setLoading(false); return }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = outfitData as any
-      setOutfit(raw)
+      setOutfit(raw as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const itemIds: string[] = ((raw as any).outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
 
-      const itemIds: string[] = (raw.outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
-
-      if (raw.image_url) {
-        const { data: s } = await supabase.storage.from('item-photos').createSignedUrl(raw.image_url, 3600)
+      if ((raw as any).image_url) {
+        const { data: s } = await supabase.storage.from('item-photos').createSignedUrl((raw as any).image_url, 3600)
         setOutfitImageUrl(s?.signedUrl ?? null)
       }
 
       if (itemIds.length === 0) { setLoading(false); return }
 
       const { data: itemData } = await supabase.from('items').select('*').in('id', itemIds)
-
-      const { data: wearData } = await supabase
-        .from('outfit_items')
-        .select('item_id, outfits(date_worn)')
-        .in('item_id', itemIds)
-
-      const wearMap: Record<string, { count: number; lastWorn: string | null }> = {}
+      const { data: wearData } = await supabase.from('outfit_items').select('item_id').in('item_id', itemIds)
+      const wearCount: Record<string, number> = {}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(wearData as any[] ?? []).forEach((row: any) => {
-        const iid = row.item_id
-        const date = row.outfits?.date_worn ?? null
-        if (!wearMap[iid]) wearMap[iid] = { count: 0, lastWorn: null }
-        wearMap[iid].count++
-        if (date && (!wearMap[iid].lastWorn || date > wearMap[iid].lastWorn!)) {
-          wearMap[iid].lastWorn = date
-        }
-      })
+      ;(wearData as any[] ?? []).forEach((r: any) => { wearCount[r.item_id] = (wearCount[r.item_id] ?? 0) + 1 })
 
       const paths = (itemData ?? []).filter(i => i.image_url).map(i => i.image_url as string)
-      const signedUrlMap: Record<string, string> = {}
+      const urlMap: Record<string, string> = {}
       if (paths.length > 0) {
         const { data: signed } = await supabase.storage.from('item-photos').createSignedUrls(paths, 3600)
-        signed?.forEach(({ path, signedUrl }) => { if (path && signedUrl) signedUrlMap[path] = signedUrl })
+        signed?.forEach(({ path, signedUrl }) => { if (path && signedUrl) urlMap[path] = signedUrl })
       }
 
       setItems(
         (itemData ?? []).map(item => ({
           ...item,
-          signedImageUrl: item.image_url ? (signedUrlMap[item.image_url] ?? null) : null,
-          wearCount: wearMap[item.id]?.count ?? 0,
-          lastWorn: wearMap[item.id]?.lastWorn ?? null,
+          signedImageUrl: item.image_url ? (urlMap[item.image_url] ?? null) : null,
+          wearCount: wearCount[item.id] ?? 0,
         }))
       )
       setLoading(false)
     }
-
     load()
   }, [id, user])
 
   const handleDelete = async () => {
-    if (!id || !confirm('Delete this outfit? This cannot be undone.')) return
+    if (!id || !confirm('Delete this outfit?')) return
     setDeleting(true)
-    try {
-      await deleteOutfit(id)
-      navigate('/outfits')
-    } catch {
-      setDeleting(false)
-    }
+    try { await deleteOutfit(id); navigate('/outfits') }
+    catch { setDeleting(false) }
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-        <Loader2 className="animate-spin" size={20} style={{ color: 'rgba(0,0,0,0.3)' }} />
-      </div>
-    )
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
+    </div>
+  )
 
-  if (!outfit) {
-    return <div style={{ padding: '20px', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>Outfit not found.</div>
-  }
+  if (!outfit) return <div style={{ padding: '20px', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>Not found.</div>
+
+  const dateStr = outfit.date_worn
+  const d = new Date(dateStr + 'T00:00:00')
+  const dow = ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      {/* AppBar */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button
-            onClick={() => navigate('/outfits')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: UI, fontSize: 13, fontWeight: 600,
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 6l-6 6 6 6"/>
-            </svg>
-            Library
-          </button>
+      <AppBar
+        title="Library"
+        back
+        onBack={() => navigate('/outfits')}
+        right={
           <button
             onClick={handleDelete}
             disabled={deleting}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'rgba(0,0,0,0.35)', padding: 4,
-              opacity: deleting ? 0.4 : 1,
-            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.35)', padding: 4, opacity: deleting ? 0.4 : 1 }}
           >
-            <Trash2 size={16} />
+            <Icon name="trash" size={16} stroke={1.4} />
           </button>
-        </div>
-        <div style={{ borderTop: RULE, marginTop: 12 }} />
-      </div>
+        }
+      />
 
       {/* Title block */}
       <div style={{ padding: '20px 20px 0' }}>
         <div style={{
+          display: 'flex', alignItems: 'baseline', gap: 8,
           fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
           textTransform: 'uppercase', letterSpacing: '0.08em',
-          display: 'flex', alignItems: 'baseline', gap: 8,
         }}>
-          {outfit.date_worn}
+          {dateStr} · {dow}
           {outfit.occasion && (
             <>
-              <div style={{ width: 4, height: 4, background: '#DFAFA1', display: 'inline-block' }} />
+              <div style={{ width: 4, height: 4, background: BLUSH, display: 'inline-block', flexShrink: 0 }} />
               {outfit.occasion}
             </>
           )}
         </div>
-        <div style={{
-          fontFamily: UI, fontSize: 26, fontWeight: 500,
-          letterSpacing: '-0.025em', marginTop: 6, lineHeight: 1.05,
-        }}>
-          {outfit.occasion || 'Outfit'}
-          {outfit.occasion && '.'}
+        <div style={{ fontFamily: UI, fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.05 }}>
+          {outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}
         </div>
-        {outfit.rating && (
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>
-            rated {outfit.rating} / 5
-          </div>
-        )}
         {outfit.notes && (
-          <div style={{
-            fontFamily: UI, fontSize: 13, color: 'rgba(0,0,0,0.6)',
-            marginTop: 10, fontStyle: 'italic',
-          }}>"{outfit.notes}"</div>
+          <div style={{ fontFamily: UI, fontSize: 13, color: 'rgba(0,0,0,0.6)', marginTop: 10, fontStyle: 'italic' }}>"{outfit.notes}"</div>
         )}
       </div>
 
-      {/* Hero image or item grid */}
+      {/* Hero */}
       <div style={{ padding: '16px 20px 0' }}>
-        {outfitImageUrl ? (
-          <img
-            src={outfitImageUrl}
-            alt="Outfit"
-            style={{ width: '100%', aspectRatio: '5/4', objectFit: 'cover', borderRadius: 3, border: RULE, display: 'block' }}
-          />
-        ) : items.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
-            gap: 3, borderRadius: 3, overflow: 'hidden', border: RULE,
-          }}>
-            {items.slice(0, 4).map(item => (
-              <div key={item.id} style={{ aspectRatio: '1/1', background: '#ECEAE6', overflow: 'hidden' }}>
-                {item.signedImageUrl
-                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                }
-              </div>
-            ))}
-          </div>
-        ) : null}
+        <div style={{
+          width: '100%', aspectRatio: '5/4',
+          border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
+        }}>
+          {outfitImageUrl ? (
+            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          ) : items.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+              gap: 3, width: '100%', height: '100%',
+            }}>
+              {items.slice(0, 4).map(item => (
+                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', minHeight: 0 }}>
+                  {item.signedImageUrl
+                    ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                  }
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
+          )}
+
+          {/* Weather overlay */}
+          {outfit.weather && (
+            <div style={{
+              position: 'absolute', top: 8, left: 8,
+              display: 'flex', flexDirection: 'column', gap: 2,
+              background: '#fff', padding: '4px 6px',
+            }}>
+              <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+              <MonoKV k="cond" v={outfit.weather.conditions} />
+              {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Pieces table */}
+      {/* Pieces */}
       {items.length > 0 && (
         <div style={{ padding: '20px 20px 0' }}>
           <SectionLabel>pieces ({items.length})</SectionLabel>
-
           {items.map((item) => (
-            <div
+            <button
               key={item.id}
+              onClick={() => navigate(`/wardrobe/${item.id}`)}
               style={{
-                display: 'grid',
-                gridTemplateColumns: '34px 1fr 60px 14px',
+                width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                display: 'grid', gridTemplateColumns: '34px 1fr 60px 14px',
                 alignItems: 'center', gap: 12,
-                padding: '8px 0', borderBottom: RULE,
+                paddingTop: 8, paddingBottom: 8, borderBottom: RULE,
               }}
             >
               <div style={{ height: 42, borderRadius: 2, overflow: 'hidden', border: RULE }}>
@@ -231,24 +187,17 @@ export default function OutfitDetailPage() {
                   : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
                 }
               </div>
-
               <div>
-                <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>
-                  {item.name}
-                </div>
+                <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
                   {item.id.slice(0, 6)} · {item.category}{item.color ? ` · ${item.color}` : ''}
                 </div>
               </div>
-
               <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textAlign: 'right' }}>
                 worn {item.wearCount}×
               </div>
-
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(0,0,0,0.2)' }}>
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </div>
+              <Icon name="forward" size={12} stroke={1.2} />
+            </button>
           ))}
         </div>
       )}

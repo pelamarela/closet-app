@@ -1,15 +1,28 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
+import { AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED } from '../components/ui'
+import type { Category } from '../types/database'
 
-const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
+const OCCASION_PRESETS = ['casual', 'work', 'dinner', 'gallery', 'weekend', 'errands']
+const SLOT_CATS: { key: Category | 'outerwear'; label: string }[] = [
+  { key: 'outerwear', label: 'outerwear' },
+  { key: 'top',       label: 'top' },
+  { key: 'bottom',    label: 'bottom' },
+  { key: 'shoes',     label: 'shoes' },
+  { key: 'accessory', label: 'accessory' },
+]
+const PICKER_CATS: { value: Category; label: string }[] = [
+  { value: 'top',       label: 'top' },
+  { value: 'bottom',    label: 'btm' },
+  { value: 'outerwear', label: 'coat' },
+  { value: 'shoes',     label: 'shoe' },
+  { value: 'accessory', label: 'acc' },
+  { value: 'dress',     label: 'dress' },
+]
 
-function today() {
-  return new Date().toISOString().slice(0, 10)
-}
+function today() { return new Date().toISOString().slice(0, 10) }
 
 export default function LogOutfitPage() {
   const navigate = useNavigate()
@@ -18,38 +31,35 @@ export default function LogOutfitPage() {
   const { items, loading: itemsLoading } = useItems()
   const { logOutfit } = useOutfitMutations()
 
-  const [date, setDate] = useState(today())
+  const [date] = useState(today())
+  const now = new Date()
+  const dateLabel = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} · ${ ['sun','mon','tue','wed','thu','fri','sat'][now.getDay()]}`
+
   const [occasion, setOccasion] = useState(navState?.occasion ?? '')
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
+  const [pickerCat, setPickerCat] = useState<Category>('top')
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const toggleItem = (id: string) =>
-    setSelectedIds(s => {
-      const next = new Set(s)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+    setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
   }
 
   const handleSave = async () => {
     if (selectedIds.size === 0) { setError('Select at least one item.'); return }
-    setSaving(true)
-    setError(null)
+    setSaving(true); setError(null)
     try {
       const id = await logOutfit(
-        { date_worn: date, occasion, rating, notes },
+        { date_worn: date, occasion: occasion || null, rating, notes: notes || null },
         Array.from(selectedIds),
         imageFile ?? undefined,
       )
@@ -60,279 +70,218 @@ export default function LogOutfitPage() {
     }
   }
 
-  return (
-    <div style={{ paddingBottom: 100 }}>
-      {/* AppBar */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button
-            onClick={() => navigate('/outfits')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: UI, fontSize: 13, fontWeight: 600,
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 6l-6 6 6 6"/>
-            </svg>
-            Cancel
-          </button>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
-            {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'new outfit'}
-          </div>
-        </div>
-        <div style={{ borderTop: RULE, marginTop: 12 }} />
-      </div>
+  const selectedItems = items.filter(i => selectedIds.has(i.id))
+  const pickerItems = items.filter(i => i.category === pickerCat)
+  const filledCount = selectedIds.size
 
-      {/* Page title */}
+  return (
+    <div style={{ paddingBottom: 200 }}>
+      <AppBar
+        title="Cancel"
+        back
+        onBack={() => navigate(-1)}
+        meta={dateLabel}
+      />
+
+      {/* Title */}
       <div style={{ padding: '14px 20px 0' }}>
         <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
-          Log an outfit
+          Log today's outfit
         </div>
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
-          pick items · add context · save
+          {filledCount} of {SLOT_CATS.length} slots filled
         </div>
       </div>
 
-      <div style={{ padding: '20px 20px 0' }}>
-        {/* Date */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-          }}>
-            date <span style={{ color: '#9C5544' }}>*</span>
+      {/* Occasion chips */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <SectionLabel>context</SectionLabel>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {OCCASION_PRESETS.map(o => (
+            <button key={o} onClick={() => setOccasion(prev => prev === o ? '' : o)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+              <MonoTag filled={occasion === o}>{o}</MonoTag>
+            </button>
+          ))}
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={OCCASION_PRESETS.includes(occasion) ? '' : occasion}
+              onChange={e => setOccasion(e.target.value)}
+              placeholder="+ custom"
+              style={{
+                width: 80, fontFamily: MONO, fontSize: 9.5,
+                letterSpacing: '0.04em', textTransform: 'lowercase',
+                padding: '3px 6px', border: '1px solid rgba(0,0,0,0.15)',
+                background: 'transparent', color: INK, borderRadius: 2,
+                outline: 'none',
+              }}
+            />
           </div>
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            style={{
-              fontFamily: MONO, fontSize: 13, fontWeight: 500, color: INK,
-              background: 'none', border: 'none', outline: 'none', padding: 0,
-              width: '100%',
-            }}
-          />
         </div>
+      </div>
 
-        {/* Occasion */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-          }}>
-            occasion
-          </div>
-          <input
-            type="text"
-            value={occasion}
-            onChange={e => setOccasion(e.target.value)}
-            placeholder="e.g. work, dinner, weekend…"
-            style={{
-              width: '100%', fontFamily: UI, fontSize: 15, fontWeight: 500,
-              color: occasion ? INK : 'rgba(0,0,0,0.35)',
-              background: 'none', border: 'none', outline: 'none', padding: 0,
-            }}
-          />
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-            {OCCASION_PRESETS.map(p => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setOccasion(p)}
+      {/* Selected items strip */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <SectionLabel right={`${filledCount} / ${SLOT_CATS.length}`}>pieces</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+          {SLOT_CATS.map((slot) => {
+            const slotItems = selectedItems.filter(i => i.category === slot.key)
+            const filled = slotItems.length > 0
+            return (
+              <div
+                key={slot.key}
                 style={{
-                  padding: '2px 8px', borderRadius: 2,
-                  border: `1px solid ${occasion === p ? INK : 'rgba(0,0,0,0.15)'}`,
-                  background: occasion === p ? INK : 'transparent',
-                  color: occasion === p ? '#fff' : 'rgba(0,0,0,0.55)',
-                  fontFamily: MONO, fontSize: 9, cursor: 'pointer',
-                  letterSpacing: '0.04em',
+                  border: filled ? RULE : '1.5px dashed rgba(0,0,0,0.22)',
+                  background: filled ? '#fff' : 'transparent',
+                  borderRadius: 3, aspectRatio: '3/4',
+                  position: 'relative', overflow: 'hidden',
+                  display: 'flex', flexDirection: 'column',
                 }}
-              >{p}</button>
-            ))}
-          </div>
+              >
+                {filled ? (
+                  <>
+                    {slotItems[0].signedImageUrl ? (
+                      <img src={slotItems[0].signedImageUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
+                    )}
+                    <div style={{
+                      position: 'absolute', top: 4, left: 4,
+                      fontFamily: MONO, fontSize: 7.5, background: '#fff', padding: '1px 4px', zIndex: 1,
+                    }}>{slot.label}</div>
+                    <button
+                      onClick={() => toggleItem(slotItems[0].id)}
+                      style={{
+                        position: 'absolute', top: 4, right: 4,
+                        width: 16, height: 16, background: 'rgba(0,0,0,0.5)', color: '#fff',
+                        fontFamily: MONO, fontSize: 10, lineHeight: 1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: 'none', cursor: 'pointer', padding: 0, zIndex: 1,
+                      }}
+                    >×</button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setPickerCat(slot.key as Category)}
+                    style={{
+                      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                      fontFamily: MONO, fontSize: 8.5, color: 'rgba(0,0,0,0.4)',
+                      background: 'none', border: 'none', cursor: 'pointer', width: '100%',
+                    }}
+                  >
+                    <Icon name="plus" size={14} stroke={1.4} />
+                    {slot.label}
+                  </button>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      {/* Item picker */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel right={selectedIds.size > 0 ? `${selectedIds.size} selected` : undefined}>
-          items
-        </SectionLabel>
+      {/* Rating */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <SectionLabel>rating</SectionLabel>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[1,2,3,4,5].map(n => (
+            <button
+              key={n}
+              onClick={() => setRating(prev => prev === n ? null : n)}
+              style={{
+                flex: 1, height: 32,
+                border: `1px solid ${rating !== null && n <= rating ? INK : 'rgba(0,0,0,0.15)'}`,
+                background: rating !== null && n <= rating ? INK : 'transparent',
+                color: rating !== null && n <= rating ? '#fff' : 'rgba(0,0,0,0.35)',
+                borderRadius: 2,
+                fontFamily: MONO, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              }}
+            >{n}</button>
+          ))}
+        </div>
+      </div>
 
+      {/* Notes */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <SectionLabel>notes</SectionLabel>
+        <input
+          type="text"
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="any notes about today's outfit…"
+          style={{
+            width: '100%', fontFamily: UI, fontSize: 13, color: notes ? INK : 'rgba(0,0,0,0.35)',
+            background: 'none', border: 'none', outline: 'none', borderBottom: RULE,
+            padding: '6px 0',
+          }}
+        />
+      </div>
+
+      {/* Photo */}
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+
+      {/* Item picker drawer */}
+      <div style={{
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#fff', borderTop: RULE, borderBottom: RULE,
+        padding: '12px 20px 12px', zIndex: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            // pick from closet
+          </div>
+          <div style={{ flex: 1, borderTop: RULE_DASHED }} />
+        </div>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {PICKER_CATS.map(c => (
+            <button key={c.value} onClick={() => setPickerCat(c.value)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
+              <MonoTag filled={pickerCat === c.value}>{c.label}</MonoTag>
+            </button>
+          ))}
+        </div>
         {itemsLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-            <Loader2 className="animate-spin" size={20} style={{ color: 'rgba(0,0,0,0.3)' }} />
-          </div>
-        ) : items.length === 0 ? (
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
-            no items in your wardrobe yet
-          </div>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {items.map(item => {
-              const selected = selectedIds.has(item.id)
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggleItem(item.id)}
-                  style={{
-                    position: 'relative', aspectRatio: '3/4',
-                    border: `${selected ? 2 : 1}px solid ${selected ? INK : 'rgba(0,0,0,0.10)'}`,
-                    borderRadius: 3, overflow: 'hidden',
-                    background: 'none', cursor: 'pointer', padding: 0,
-                  }}
-                >
-                  {item.signedImageUrl ? (
-                    <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    <div style={{
-                      width: '100%', height: '100%',
-                      background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)',
-                    }} />
-                  )}
-
-                  {/* Category label */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 5, overflow: 'hidden', maxHeight: 70 }}>
+            {pickerItems.slice(0, 8).map(item => (
+              <button
+                key={item.id}
+                onClick={() => toggleItem(item.id)}
+                style={{
+                  aspectRatio: '3/4', border: selectedIds.has(item.id) ? `1.5px solid ${INK}` : RULE,
+                  padding: 0, background: 'none', cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                  borderRadius: 2,
+                }}
+              >
+                {item.signedImageUrl ? (
+                  <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 5px, #DCD9D3 5px 10px)' }} />
+                )}
+                {selectedIds.has(item.id) && (
                   <div style={{
-                    position: 'absolute', top: 4, left: 4,
-                    fontFamily: MONO, fontSize: 8,
-                    background: '#fff', color: INK, padding: '1px 4px',
-                    letterSpacing: '0.04em',
-                  }}>{item.category}</div>
-
-                  {/* Check overlay */}
-                  {selected && (
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'rgba(10,10,10,0.25)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <div style={{
-                        width: 22, height: 22, background: INK, borderRadius: 2,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12l5 5 9-11"/>
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-                </button>
-              )
-            })}
+                    position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Icon name="check" size={12} stroke={2} />
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Rating */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            <span>rating</span>
-            <span style={{ color: INK }}>{rating ? `${rating} / 5` : 'none'}</span>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[1,2,3,4,5].map(n => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(prev => prev === n ? null : n)}
-                style={{
-                  flex: 1, height: 28,
-                  border: `1px solid ${rating && n <= rating ? INK : 'rgba(0,0,0,0.15)'}`,
-                  background: rating && n <= rating ? INK : 'transparent',
-                  color: rating && n <= rating ? '#fff' : 'rgba(0,0,0,0.35)',
-                  borderRadius: 2, cursor: 'pointer',
-                  fontFamily: MONO, fontSize: 11, fontWeight: 600,
-                }}
-              >{n}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-          }}>
-            notes
-          </div>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="how did you feel wearing this?"
-            rows={3}
-            style={{
-              width: '100%', fontFamily: UI, fontSize: 13, color: INK,
-              background: 'none', border: 'none', outline: 'none', padding: 0,
-              resize: 'none',
-            }}
-          />
-        </div>
-
-        {/* Outfit photo */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            photo (optional)
-          </div>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              width: '100%', aspectRatio: '4/3',
-              border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.2)',
-              borderRadius: 3, overflow: 'hidden',
-              background: imagePreview ? 'none' : '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'relative', cursor: 'pointer',
-            }}
-          >
-            {imagePreview ? (
-              <img src={imagePreview} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, display: 'block' }} />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(0,0,0,0.3)' }}>
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                </svg>
-                <span style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>tap to add photo</span>
-              </div>
-            )}
-          </button>
-          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
-        </div>
-      </div>
-
-      {error && (
-        <div style={{ padding: '0 20px 12px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
-      )}
-
-      {/* Footer */}
+      {/* Bottom actions */}
       <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430,
         background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px',
-        display: 'flex', gap: 8,
+        padding: '12px 20px 28px', zIndex: 20,
       }}>
-        <UButton variant="ghost" onClick={() => navigate('/outfits')} style={{ flex: 1 }}>
-          Cancel
-        </UButton>
-        <UButton
-          onClick={handleSave}
-          disabled={saving || selectedIds.size === 0}
-          style={{ flex: 1.6 }}
-        >
-          {saving ? 'Saving…' : 'Save outfit'}
+        {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
+        <UButton full icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave}>
+          {saving ? 'Saving…' : 'Log this outfit'}
         </UButton>
       </div>
     </div>

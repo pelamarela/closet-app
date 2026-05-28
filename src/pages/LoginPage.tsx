@@ -1,40 +1,8 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { MONO, UI, INK, BLUSH, RULE, UButton } from '../components/ui'
+import { MONO, UI, INK, BLUSH, CREAM, RULE, ACCENT } from '../components/ui'
 
 type Mode = 'signin' | 'signup'
-
-function Field({ label, type, value, onChange, autoComplete }: {
-  label: string
-  type: string
-  value: string
-  onChange: (v: string) => void
-  autoComplete?: string
-}) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{
-        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-      }}>
-        {label} <span style={{ color: '#9C5544' }}>*</span>
-      </div>
-      <input
-        type={type}
-        required
-        autoComplete={autoComplete}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{
-          width: '100%', height: 44,
-          border: RULE, borderRadius: 3, padding: '0 12px',
-          fontFamily: UI, fontSize: 14, color: INK,
-          background: '#fff', outline: 'none',
-        }}
-      />
-    </div>
-  )
-}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>('signin')
@@ -54,7 +22,6 @@ export default function LoginPage() {
         setError(error.message)
         setLoading(false)
       }
-      // on success: onAuthStateChange fires → ProtectedRoutes redirects → no need to setLoading(false)
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) {
@@ -68,69 +35,146 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100svh', background: '#F7F6F5',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0 24px',
-    }}>
-      <div style={{ width: '100%', maxWidth: 360 }}>
+    <div style={{ minHeight: '100svh', background: '#F7F6F5', maxWidth: 430, margin: '0 auto' }}>
+      {/* Brand header */}
+      <div style={{ padding: '4px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', color: INK }}>
+          <div style={{ width: 18, height: 18, background: BLUSH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 6, height: 6, background: INK }} />
+          </div>
+          closet
+          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
+        </div>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)' }}>private · invite only</div>
+      </div>
+      <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
 
-        {/* Mark */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <div style={{
-              width: 28, height: 28, background: BLUSH,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: 8, height: 8, background: INK }} />
-            </div>
-            <span style={{ fontFamily: UI, fontSize: 18, fontWeight: 600, letterSpacing: '-0.015em' }}>closet</span>
+      {/* Hero text */}
+      <div style={{ padding: '50px 20px 0' }}>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          // welcome back
+        </div>
+        <div style={{ fontFamily: UI, fontSize: 44, lineHeight: 1, fontWeight: 500, letterSpacing: '-0.03em', marginTop: 14 }}>
+          Your closet,<br />
+          on every<br />
+          device.
+        </div>
+      </div>
+
+      {/* Striped visual block */}
+      <div style={{
+        margin: '32px 20px 0', height: 80,
+        background: `repeating-linear-gradient(135deg, ${CREAM} 0 16px, #E8D3BD 16px 32px)`,
+        border: RULE,
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        padding: 10,
+      }}>
+        <span style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          your wardrobe
+        </span>
+        <span style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          v 0.1.0
+        </span>
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{ margin: '24px 20px 0', display: 'flex', border: RULE, overflow: 'hidden' }}>
+        {(['signin', 'signup'] as Mode[]).map(m => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => { setMode(m); setError(null) }}
+            style={{
+              flex: 1, height: 36,
+              background: mode === m ? INK : 'transparent',
+              color: mode === m ? '#fff' : 'rgba(0,0,0,0.5)',
+              border: 'none', cursor: 'pointer',
+              fontFamily: MONO, fontSize: 9.5,
+              textTransform: 'uppercase', letterSpacing: '0.06em',
+            }}
+          >
+            {m === 'signin' ? 'sign in' : 'create account'}
+          </button>
+        ))}
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} style={{ padding: '0 20px' }}>
+        {/* Email */}
+        <div style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            email <span style={{ color: ACCENT }}>*</span>
           </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            your personal wardrobe — v0.1
-          </div>
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{
+              width: '100%', background: 'none', border: 'none', outline: 'none',
+              fontFamily: MONO, fontSize: 14, fontWeight: 500, color: INK,
+              marginTop: 6, padding: 0,
+            }}
+          />
         </div>
 
-        <div style={{ borderTop: RULE, marginBottom: 28 }} />
-
-        {/* Mode toggle */}
-        <div style={{ display: 'flex', marginBottom: 24, border: RULE, borderRadius: 3, overflow: 'hidden' }}>
-          {(['signin', 'signup'] as Mode[]).map(m => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => { setMode(m); setError(null) }}
-              style={{
-                flex: 1, height: 36,
-                background: mode === m ? INK : 'transparent',
-                color: mode === m ? '#fff' : 'rgba(0,0,0,0.5)',
-                border: 'none', cursor: 'pointer',
-                fontFamily: MONO, fontSize: 9.5,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}
-            >
-              {m === 'signin' ? 'sign in' : 'create account'}
-            </button>
-          ))}
+        {/* Password */}
+        <div style={{ padding: '12px 0', borderBottom: RULE, marginBottom: 18 }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            password <span style={{ color: ACCENT }}>*</span>
+          </div>
+          <input
+            type="password"
+            required
+            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            style={{
+              width: '100%', background: 'none', border: 'none', outline: 'none',
+              fontFamily: MONO, fontSize: 14, fontWeight: 500, color: INK,
+              marginTop: 6, padding: 0,
+            }}
+          />
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <Field label="email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
-          <Field label="password" type="password" value={password} onChange={setPassword} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
+        {error && (
+          <div style={{
+            fontFamily: MONO, fontSize: 10, marginBottom: 12,
+            color: error.startsWith('Account') ? '#2a7a4b' : ACCENT,
+            padding: '8px 10px',
+            border: `1px solid ${error.startsWith('Account') ? 'rgba(42,122,75,0.3)' : 'rgba(156,85,68,0.3)'}`,
+          }}>{error}</div>
+        )}
 
-          {error && (
-            <div style={{
-              fontFamily: MONO, fontSize: 10, marginBottom: 12,
-              color: error.startsWith('Account created') ? '#2a7a4b' : '#9C5544',
-              padding: '8px 10px', border: `1px solid ${error.startsWith('Account created') ? 'rgba(42,122,75,0.3)' : 'rgba(156,85,68,0.3)'}`,
-              borderRadius: 3,
-            }}>{error}</div>
-          )}
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%', height: 48, padding: '0 20px',
+            background: INK, color: '#fff', border: 'none',
+            borderRadius: 4, cursor: loading ? 'default' : 'pointer',
+            fontFamily: UI, fontSize: 13, fontWeight: 600,
+            letterSpacing: '-0.005em',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: loading ? 0.6 : 1,
+          }}
+        >
+          {loading ? '…' : mode === 'signin' ? 'Sign in' : 'Create account'}
+        </button>
+      </form>
 
-          <UButton type="submit" disabled={loading} style={{ width: '100%' }}>
-            {loading ? '…' : mode === 'signin' ? 'Sign in' : 'Create account'}
-          </UButton>
-        </form>
+      {/* Footer */}
+      <div style={{
+        margin: '32px 20px 28px',
+        display: 'flex', justifyContent: 'space-between',
+        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        paddingTop: 14, borderTop: RULE,
+      }}>
+        <span>supabase auth</span>
+        <span>rls enabled</span>
+        <span>v 0.1.0</span>
       </div>
     </div>
   )

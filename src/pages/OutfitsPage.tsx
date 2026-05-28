@@ -2,75 +2,52 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
-import { SectionLabel, MONO, UI, INK, RULE } from '../components/ui'
+import { AppBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, CREAM } from '../components/ui'
 
-function daysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate()
-}
+function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
+function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
 
-function firstDayOfMonth(year: number, month: number) {
-  return (new Date(year, month, 1).getDay() + 6) % 7
-}
-
-const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
-const DAY_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su']
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const DAY_LABELS = ['sun','mon','tue','wed','thu','fri','sat']
 
-function OutfitRow({ outfit, onClick }: { outfit: OutfitWithItems; onClick: () => void }) {
+function calcStreak(outfits: OutfitWithItems[]): number {
+  const dates = new Set(outfits.map(o => o.date_worn))
+  const today = new Date()
+  let streak = 0
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    const s = d.toISOString().slice(0, 10)
+    if (dates.has(s)) streak++
+    else if (i > 0) break
+  }
+  return streak
+}
+
+function topOccasion(outfits: OutfitWithItems[]): string {
+  const freq: Record<string, number> = {}
+  outfits.forEach(o => { if (o.occasion) freq[o.occasion] = (freq[o.occasion] ?? 0) + 1 })
+  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
+}
+
+function OutfitThumb({ small }: { outfit?: OutfitWithItems; small?: boolean }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        width: '100%', textAlign: 'left',
-        display: 'grid', gridTemplateColumns: '34px 1fr 60px 14px',
-        alignItems: 'center', gap: 12,
-        padding: '8px 0',
-        background: 'none', border: 'none', borderBottom: RULE, cursor: 'pointer',
-      }}
-    >
-      {/* Thumbnail */}
-      <div style={{ height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
-        {outfit.image_url ? (
-          <div style={{ width: '100%', height: '100%', background: '#DCD9D3' }} />
-        ) : (
-          <div style={{
-            width: '100%', height: '100%',
-            background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)',
-          }} />
-        )}
-      </div>
-
-      {/* Meta */}
-      <div>
-        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>
-          {outfit.occasion || 'outfit'}
-        </div>
-        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-          {outfit.date_worn} · {outfit.item_ids.length} pieces
-        </div>
-      </div>
-
-      {/* Wear count */}
-      <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textAlign: 'right' }}>
-        {outfit.rating ? `${outfit.rating}/5` : ''}
-      </div>
-
-      {/* Arrow */}
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(0,0,0,0.3)', flexShrink: 0 }}>
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
+    <div style={{
+      width: '100%', height: '100%',
+      background: `repeating-linear-gradient(135deg, ${CREAM} 0 ${small ? 8 : 10}px, #E8D3BD ${small ? 8 : 10}px ${small ? 16 : 20}px)`,
+    }} />
   )
 }
 
 export default function OutfitsPage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
-
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [libView, setLibView] = useState<'list' | 'grid'>('list')
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
@@ -83,22 +60,32 @@ export default function OutfitsPage() {
     setSelectedDate(null)
   }
 
-  const outfitDates = new Set(outfits.map(o => o.date_worn))
+  const monthPrefix = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`
+  const outfitsByDate: Record<string, OutfitWithItems[]> = {}
+  outfits.forEach(o => {
+    if (!outfitsByDate[o.date_worn]) outfitsByDate[o.date_worn] = []
+    outfitsByDate[o.date_worn].push(o)
+  })
+
   const firstDay = firstDayOfMonth(viewYear, viewMonth)
   const totalDays = daysInMonth(viewYear, viewMonth)
   const cells: (number | null)[] = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: totalDays }, (_, i) => i + 1),
   ]
+  while (cells.length % 7 !== 0) cells.push(null)
 
-  const toDateStr = (day: number) =>
-    `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const toDateStr = (day: number) => `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const todayStr = now.toISOString().slice(0, 10)
+
+  const monthOutfits = outfits.filter(o => o.date_worn.startsWith(monthPrefix))
+  const loggedDays = new Set(monthOutfits.map(o => o.date_worn)).size
+  const streak = calcStreak(outfits)
+  const topOcc = topOccasion(monthOutfits)
 
   const visibleOutfits = selectedDate
-    ? outfits.filter(o => o.date_worn === selectedDate)
-    : outfits.filter(o => o.date_worn.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`))
-
-  const monthOutfits = outfits.filter(o => o.date_worn.startsWith(`${viewYear}-${String(viewMonth + 1).padStart(2, '0')}`))
+    ? (outfitsByDate[selectedDate] ?? [])
+    : monthOutfits
 
   if (loading) {
     return (
@@ -108,165 +95,209 @@ export default function OutfitsPage() {
     )
   }
 
-  if (outfits.length === 0) {
-    return (
-      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-        <div style={{ borderTop: RULE, marginBottom: 32 }} />
-        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
-          // outfit-log
-        </div>
-        <div style={{ fontFamily: UI, fontSize: 26, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05, marginBottom: 8 }}>
-          No outfits<br />logged yet.
-        </div>
-        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginBottom: 28 }}>
-          Start building your outfit history.
-        </div>
-        <button
-          onClick={() => navigate('/outfits/new')}
-          style={{
-            height: 48, padding: '0 20px',
-            background: INK, color: '#fff',
-            border: 'none', borderRadius: 4,
-            fontFamily: UI, fontSize: 13, fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Log your first outfit
-        </button>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ paddingBottom: 24 }}>
-      {/* AppBar */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 6 }}>
-              <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>
-            </svg>
-            Outfit Log
+    <div style={{ paddingBottom: 40 }}>
+      <AppBar
+        title="Calendar"
+        right={
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <button onClick={() => navigate('/outfits/new')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 4 }}>
+              <Icon name="plus" size={17} stroke={1.8} />
+            </button>
           </div>
-          <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>
-            {outfits.length} total
+        }
+      />
+
+      {/* Month nav */}
+      <div style={{ padding: '16px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            {viewYear}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 32, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1, marginTop: 4 }}>
+            {MONTH_FULL[viewMonth]}
           </div>
         </div>
-        <div style={{ borderTop: RULE, marginTop: 12 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11, paddingBottom: 4 }}>
+          <button onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
+            ‹ {MONTH_SHORT[viewMonth === 0 ? 11 : viewMonth - 1].toLowerCase()}
+          </button>
+          <button onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
+            {MONTH_SHORT[viewMonth === 11 ? 0 : viewMonth + 1].toLowerCase()} ›
+          </button>
+        </div>
       </div>
 
-      {/* Month navigator */}
+      {/* Stats strip */}
+      <div style={{ margin: '14px 20px 0', border: RULE, borderRadius: 4, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+        {[
+          ['logged', `${loggedDays} days`],
+          ['streak', `${streak} days`],
+          ['top occ', topOcc],
+        ].map(([k, v], i) => (
+          <div key={i} style={{ padding: 10, borderRight: i < 2 ? RULE : 'none' }}>
+            <div style={{ fontFamily: MONO, fontSize: 8.5, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k}</div>
+            <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, letterSpacing: '-0.015em', marginTop: 4 }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Day headers */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 20px 0',
+        margin: '20px 20px 0',
+        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
+        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        paddingBottom: 6, borderBottom: RULE,
       }}>
-        <button onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: INK }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 6l-6 6 6 6"/>
-          </svg>
-        </button>
-        <div style={{ fontFamily: MONO, fontSize: 11, color: INK, letterSpacing: '0.04em' }}>
-          {MONTH_FULL[viewMonth]} {viewYear}
-          <span style={{ color: 'rgba(0,0,0,0.4)', marginLeft: 8 }}>{monthOutfits.length} outfits</span>
-        </div>
-        <button onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: INK }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </button>
+        {DAY_LABELS.map(d => (
+          <div key={d} style={{ textAlign: 'center' }}>{d}</div>
+        ))}
       </div>
 
       {/* Calendar grid */}
-      <div style={{ padding: '10px 20px 0' }}>
-        {/* Day labels */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
-          {DAY_LABELS.map(d => (
-            <div key={d} style={{
-              textAlign: 'center', fontFamily: MONO, fontSize: 9,
-              color: 'rgba(0,0,0,0.4)', padding: '4px 0',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>{d}</div>
-          ))}
-        </div>
-        {/* Day cells */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px 0' }}>
-          {cells.map((day, i) => {
-            if (!day) return <div key={`empty-${i}`} />
-            const ds = toDateStr(day)
-            const hasOutfit = outfitDates.has(ds)
-            const isSelected = selectedDate === ds
-            const isToday = ds === now.toISOString().slice(0, 10)
-            return (
-              <button
-                key={ds}
-                onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center',
-                  padding: '3px 0', background: 'none', border: 'none', cursor: 'pointer',
-                }}
-              >
-                <span style={{
-                  width: 30, height: 30,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 2,
-                  background: isSelected ? INK : (isToday ? 'rgba(0,0,0,0.07)' : 'transparent'),
-                  color: isSelected ? '#fff' : INK,
-                  fontFamily: MONO, fontSize: 11,
-                  fontWeight: isToday ? 600 : 400,
-                  border: hasOutfit && !isSelected ? '1px solid rgba(0,0,0,0.15)' : 'none',
-                }}>
-                  {day}
-                </span>
-                <span style={{
-                  width: 4, height: 4, borderRadius: '50%', marginTop: 2,
-                  background: hasOutfit ? (isSelected ? '#fff' : '#DFAFA1') : 'transparent',
+      <div style={{ margin: '0 20px', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderRight: RULE, borderBottom: RULE }}>
+        {cells.map((day, i) => {
+          if (!day) return <div key={`blank-${i}`} style={{ aspectRatio: '1/1.05', borderLeft: RULE, borderTop: RULE, background: 'transparent', opacity: 0.35 }} />
+          const ds = toDateStr(day)
+          const dayOutfits = outfitsByDate[ds] ?? []
+          const hasOutfit = dayOutfits.length > 0
+          const isSelected = selectedDate === ds
+          const isToday = ds === todayStr
+          return (
+            <button
+              key={ds}
+              onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
+              style={{
+                aspectRatio: '1/1.05',
+                background: isSelected ? INK : (isToday ? '#F2E1D0' : 'transparent'),
+                position: 'relative', padding: 4,
+                cursor: 'pointer', border: 'none',
+                borderLeft: RULE, borderTop: RULE,
+              }}
+            >
+              <div style={{
+                fontFamily: MONO, fontSize: 9.5,
+                color: isSelected ? '#fff' : (isToday ? INK : 'rgba(0,0,0,0.65)'),
+                fontWeight: isToday ? 600 : 400,
+                position: 'relative', zIndex: 1,
+              }}>{String(day).padStart(2, '0')}</div>
+              {hasOutfit && (
+                <div style={{ position: 'absolute', left: 4, right: 4, bottom: 4, top: 18, overflow: 'hidden' }}>
+                  <OutfitThumb outfit={dayOutfits[0]} small />
+                </div>
+              )}
+              {!hasOutfit && !isToday && day <= now.getDate() && viewYear === now.getFullYear() && viewMonth === now.getMonth() && (
+                <div style={{
+                  position: 'absolute', left: '50%', top: '60%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 3, height: 3,
+                  background: 'rgba(0,0,0,0.15)',
                 }} />
-              </button>
-            )
-          })}
-        </div>
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      <div style={{ borderTop: RULE, margin: '16px 20px 0' }} />
-
-      {/* Outfit list */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <SectionLabel right={`${visibleOutfits.length} shown`}>
-          {selectedDate
-            ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-            : MONTH_NAMES[viewMonth]}
-        </SectionLabel>
+      {/* Library section */}
+      <div style={{ padding: '24px 20px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flex: 1 }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+              // {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : MONTH_FULL[viewMonth]}
+            </div>
+            <div style={{ flex: 1, borderTop: RULE_DASHED }} />
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>{visibleOutfits.length}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginLeft: 12, fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)' }}>
+            <button
+              onClick={() => setLibView('list')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: libView === 'list' ? INK : 'rgba(0,0,0,0.4)', borderBottom: libView === 'list' ? `1px solid ${INK}` : 'none', paddingBottom: 2, fontFamily: MONO, fontSize: 10 }}
+            >list</button>
+            <span style={{ color: 'rgba(0,0,0,0.3)' }}>·</span>
+            <button
+              onClick={() => setLibView('grid')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: libView === 'grid' ? INK : 'rgba(0,0,0,0.4)', borderBottom: libView === 'grid' ? `1px solid ${INK}` : 'none', paddingBottom: 2, fontFamily: MONO, fontSize: 10 }}
+            >grid</button>
+          </div>
+        </div>
 
         {visibleOutfits.length === 0 ? (
           <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
-            no outfits this {selectedDate ? 'day' : 'month'}
+            no outfits {selectedDate ? 'this day' : 'this month'}
+          </div>
+        ) : libView === 'list' ? (
+          /* List view */
+          <div style={{ borderTop: RULE }}>
+            {visibleOutfits.map((o) => {
+              const d = new Date(o.date_worn + 'T00:00:00')
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => navigate(`/outfits/${o.id}`)}
+                  style={{
+                    width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    display: 'grid', gridTemplateColumns: '50px 48px 1fr 14px',
+                    gap: 12, alignItems: 'center',
+                    paddingTop: 12, paddingBottom: 12, borderBottom: RULE,
+                  }}
+                >
+                  <div style={{ fontFamily: MONO }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1 }}>{String(d.getDate()).padStart(2,'0')}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 3, letterSpacing: '0.04em' }}>
+                      {MONTH_SHORT[d.getMonth()].toLowerCase()} · {DAY_LABELS[d.getDay()]}
+                    </div>
+                  </div>
+                  <div style={{ width: 48, height: 60, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
+                    <OutfitThumb outfit={o} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                      {o.occasion || 'outfit'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
+                      <span>{o.item_ids.length} pieces</span>
+                      {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
+                      {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
+                    </div>
+                  </div>
+                  <Icon name="forward" size={12} stroke={1.2} />
+                </button>
+              )
+            })}
           </div>
         ) : (
-          <div>
-            {visibleOutfits.map(o => (
-              <OutfitRow key={o.id} outfit={o} onClick={() => navigate(`/outfits/${o.id}`)} />
-            ))}
+          /* Grid view */
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {visibleOutfits.map(o => {
+              const d = new Date(o.date_worn + 'T00:00:00')
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => navigate(`/outfits/${o.id}`)}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: '100%', aspectRatio: '3/4', border: RULE, position: 'relative', overflow: 'hidden' }}>
+                    <OutfitThumb outfit={o} />
+                    <div style={{
+                      position: 'absolute', top: 6, left: 6,
+                      fontFamily: MONO, fontSize: 9.5, fontWeight: 600,
+                      background: '#fff', padding: '2px 5px', color: INK,
+                    }}>{String(d.getDate()).padStart(2,'0')}</div>
+                    <div style={{
+                      position: 'absolute', top: 6, right: 6,
+                      fontFamily: MONO, fontSize: 8,
+                      color: 'rgba(255,255,255,0.85)', background: 'rgba(0,0,0,0.45)',
+                      padding: '2px 4px', textTransform: 'uppercase', letterSpacing: '0.06em',
+                    }}>{MONTH_SHORT[d.getMonth()].toLowerCase()}</div>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
-
-      {/* FAB */}
-      <button
-        onClick={() => navigate('/outfits/new')}
-        style={{
-          position: 'fixed', bottom: 100, right: 16,
-          width: 52, height: 52,
-          background: INK, color: '#fff',
-          border: 'none', borderRadius: 4,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-          zIndex: 30,
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-      </button>
     </div>
   )
 }
