@@ -23,6 +23,11 @@ interface Draft {
   category: Category
   warmth: number
   formality: number
+  color: string
+  brand: string
+  material: string
+  pattern: string
+  subcategory: string
 }
 
 type Stage = 'pick' | 'fill' | 'saving' | 'done'
@@ -57,6 +62,11 @@ export default function BatchUploadPage() {
       category: 'top',
       warmth: 3,
       formality: 3,
+      color: '',
+      brand: '',
+      material: '',
+      pattern: '',
+      subcategory: '',
     }))
     setDrafts(newDrafts)
     setCurrent(0)
@@ -83,7 +93,12 @@ export default function BatchUploadPage() {
       try {
         const compressed = await compressImage(draft.file)
         await addItem(
-          { name: draft.name.trim(), category: draft.category, warmth: draft.warmth, formality: draft.formality, subcategory: '', color: '', pattern: '', material: '', brand: '' },
+          {
+            name: draft.name.trim(), category: draft.category,
+            warmth: draft.warmth, formality: draft.formality,
+            subcategory: draft.subcategory, color: draft.color,
+            pattern: draft.pattern, material: draft.material, brand: draft.brand,
+          },
           compressed,
         )
         count++
@@ -283,6 +298,32 @@ export default function BatchUploadPage() {
 
         <RatingPicker value={draft.warmth} onChange={v => update('warmth', v)} label="Warmth" hint="1 = light · 5 = heavy" />
         <RatingPicker value={draft.formality} onChange={v => update('formality', v)} label="Formality" hint="1 = casual · 5 = formal" />
+
+        {([
+          ['color',       'white, navy, black…',    draft.color],
+          ['brand',       'e.g. Toteme',             draft.brand],
+          ['material',    'cotton, wool, silk…',     draft.material],
+          ['pattern',     'solid, stripe, floral…',  draft.pattern],
+          ['subcategory', 'e.g. blazer, midi skirt…', draft.subcategory],
+        ] as [keyof Draft, string, string][]).map(([field, placeholder, value]) => (
+          <div key={field} style={{ padding: '12px 0', borderBottom: RULE }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+            }}>{field}</div>
+            <input
+              type="text"
+              value={value}
+              onChange={e => update(field, e.target.value)}
+              placeholder={placeholder}
+              style={{
+                width: '100%', fontFamily: MONO, fontSize: 12, fontWeight: 500,
+                color: value ? INK : 'rgba(0,0,0,0.35)',
+                background: 'none', border: 'none', outline: 'none', padding: 0,
+              }}
+            />
+          </div>
+        ))}
 
         {error && (
           <div style={{ padding: '12px 0', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
