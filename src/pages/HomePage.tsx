@@ -41,9 +41,6 @@ export default function HomePage() {
     <div style={{ paddingBottom: 24 }}>
       <TopBar
         title={<>
-          <div style={{ width: 18, height: 18, background: BLUSH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <div style={{ width: 6, height: 6, background: INK }} />
-          </div>
           closet
           <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
         </>}

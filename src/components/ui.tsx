@@ -59,7 +59,10 @@ export function TopBar({ title, meta }: {
           display: 'flex', alignItems: 'center', gap: 8,
           fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
           color: INK, minWidth: 0,
-        }}>{title}</div>
+        }}>
+          <img src="/favicon.svg" style={{ width: 18, height: 18, display: 'block', flexShrink: 0 }} alt="" />
+          {title}
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
           {meta && (
             <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
@@ -91,18 +94,21 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
         padding: '4px 20px 0',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <button
-          onClick={back ? (onBack ?? (() => navigate(-1))) : undefined}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
-            color: INK, background: 'none', border: 'none',
-            cursor: back ? 'pointer' : 'default', padding: 0,
-          }}
-        >
-          {back && <Icon name="back" size={16} stroke={1.6} />}
-          {title}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/favicon.svg" style={{ width: 18, height: 18, display: 'block', flexShrink: 0 }} alt="" />
+          <button
+            onClick={back ? (onBack ?? (() => navigate(-1))) : undefined}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
+              color: INK, background: 'none', border: 'none',
+              cursor: back ? 'pointer' : 'default', padding: 0,
+            }}
+          >
+            {back && <Icon name="back" size={16} stroke={1.6} />}
+            {title}
+          </button>
+        </div>
         {meta && !right && (
           <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
         )}
