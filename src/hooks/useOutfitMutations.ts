@@ -62,7 +62,8 @@ export function useOutfitMutations() {
     itemIds: string[],
     imageFile?: File,
   ): Promise<void> => {
-    const patch: Record<string, unknown> = {
+    type Patch = { date_worn: string; occasion: string | null; rating: number | null; notes: string | null; image_url?: string }
+    const patch: Patch = {
       date_worn: data.date_worn,
       occasion: data.occasion?.trim() || null,
       rating: data.rating,
@@ -70,7 +71,7 @@ export function useOutfitMutations() {
     }
     if (imageFile) patch.image_url = await uploadOutfitPhoto(imageFile)
 
-    const { error } = await supabase.from('outfits').update(patch).eq('id', id)
+    const { error } = await supabase.from('outfits').update(patch as never).eq('id', id)
     if (error) throw error
 
     const { error: delErr } = await supabase.from('outfit_items').delete().eq('outfit_id', id)
