@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { compressImage } from '../lib/imageUtils'
 import { useItemMutations } from '../hooks/useItemMutations'
@@ -74,6 +74,8 @@ export default function BatchUploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [stage, setStage] = useState<Stage>('pick')
+
+  useEffect(() => { fileInputRef.current?.click() }, [])
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [current, setCurrent] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -180,49 +182,34 @@ export default function BatchUploadPage() {
     setStage('done')
   }
 
-  // ── Pick ─────────────────────────────────────────────────────────────────────
+  // ── Pick — just the hidden input; dialog opens automatically on mount ────────
+  // The input is always rendered so useEffect can click it immediately.
+  const fileInput = (
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/*"
+      multiple
+      style={{ display: 'none' }}
+      onChange={handleFiles}
+    />
+  )
+
   if (stage === 'pick') {
     return (
-      <div style={{ paddingBottom: 24 }}>
-        <div style={{ padding: '16px 20px 0' }}>
-          <button
-            onClick={() => navigate('/wardrobe')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: UI, fontSize: 13, fontWeight: 600,
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
-            }}
-          >
-            <Icon name="back" size={16} stroke={1.6} /> Closet
-          </button>
-          <div style={{ borderTop: RULE, marginTop: 12 }} />
-        </div>
-
-        <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-          <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
-            // batch upload · ai-powered
-          </div>
-          <div style={{ fontFamily: UI, fontSize: 26, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05, marginBottom: 8 }}>
-            Add multiple<br />items at once.
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginBottom: 6 }}>
-            Claude reads each photo and fills in<br />name, category, color, warmth, formality.
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.35)', marginBottom: 28 }}>
-            You review and correct — then save all.
-          </div>
-          <UButton icon="spark" onClick={() => fileInputRef.current?.click()}>
-            Choose photos
-          </UButton>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            style={{ display: 'none' }}
-            onChange={handleFiles}
-          />
-        </div>
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        minHeight: '100svh', gap: 12,
+      }}>
+        {fileInput}
+        {/* Fallback if browser blocks auto-open */}
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>opening file picker…</div>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          style={{ fontFamily: MONO, fontSize: 10, color: INK, background: 'none', border: `1px solid ${INK}`, padding: '6px 14px', cursor: 'pointer' }}
+        >
+          tap here if nothing opened
+        </button>
       </div>
     )
   }
