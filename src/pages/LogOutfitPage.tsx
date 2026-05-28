@@ -6,9 +6,10 @@ import { AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, RULE
 import type { Category } from '../types/database'
 
 const OCCASION_PRESETS = ['casual', 'work', 'dinner', 'gallery', 'weekend', 'errands']
-const SLOT_CATS: { key: Category | 'outerwear'; label: string }[] = [
+const SLOT_CATS: { key: Category; label: string }[] = [
   { key: 'outerwear', label: 'outerwear' },
   { key: 'top',       label: 'top' },
+  { key: 'dress',     label: 'dress' },
   { key: 'bottom',    label: 'bottom' },
   { key: 'shoes',     label: 'shoes' },
   { key: 'accessory', label: 'accessory' },
@@ -89,7 +90,7 @@ export default function LogOutfitPage() {
           Log today's outfit
         </div>
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
-          {filledCount} of {SLOT_CATS.length} slots filled
+          {filledCount} of {SLOT_CATS.length} categories
         </div>
       </div>
 
@@ -123,7 +124,7 @@ export default function LogOutfitPage() {
       {/* Selected items strip */}
       <div style={{ padding: '14px 20px 0' }}>
         <SectionLabel right={`${filledCount} / ${SLOT_CATS.length}`}>pieces</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
           {SLOT_CATS.map((slot) => {
             const slotItems = selectedItems.filter(i => i.category === slot.key)
             const filled = slotItems.length > 0

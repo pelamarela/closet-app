@@ -35,9 +35,9 @@ export function useOutfitMutations() {
       .insert({
         user_id: user!.id,
         date_worn: data.date_worn,
-        occasion: data.occasion.trim() || null,
+        occasion: data.occasion?.trim() || null,
         rating: data.rating,
-        notes: data.notes.trim() || null,
+        notes: data.notes?.trim() || null,
         image_url,
         weather: null,
       })
