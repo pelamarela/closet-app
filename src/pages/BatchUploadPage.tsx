@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { compressImage } from '../lib/imageUtils'
 import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
+import { useItems } from '../hooks/useItems'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import type { Category } from '../types/database'
@@ -28,6 +29,7 @@ interface Draft {
   material: string
   pattern: string
   subcategory: string
+  isDuplicate?: boolean
 }
 
 type Stage = 'pick' | 'analyzing' | 'fill' | 'saving' | 'done'
@@ -72,6 +74,7 @@ function toCategory(raw: string | undefined): Category {
 export default function BatchUploadPage() {
   const navigate = useNavigate()
   const { addItem } = useItemMutations()
+  const { items: existingItems } = useItems()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [stage, setStage] = useState<Stage>('pick')
@@ -87,16 +90,22 @@ export default function BatchUploadPage() {
   const [savedCount, setSavedCount] = useState(0)
   const [analyzeProgress, setAnalyzeProgress] = useState({ done: 0, total: 0 })
 
-  // Extract the meaningful segment from filenames like "shop-block_0000s_0004_adidas-sl72-red.png"
+  // Extract meaningful name from filenames like "shop-block_0000s_0004_adidas-sl72-red (2).png"
   const parseName = (file: File): string => {
     const base = file.name.replace(/\.[^.]+$/, '')
     const segments = base.split('_')
     const meaningful = segments[segments.length - 1]
     return meaningful
+      .replace(/\s*\(\d+\)\s*$/, '')  // strip " (2)", " (3)" etc
+      .replace(/\s+\d+$/, '')            // strip trailing " 2", " 3" etc
       .replace(/-/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase())
       .trim()
   }
+
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const checkDuplicate = (name: string) =>
+    existingItems.some(item => normalize(item.name) === normalize(name))
 
   const COLORS = new Set(['red','blue','black','white','green','brown','grey','gray','yellow','pink','purple','orange','beige','navy','cream','nude','camel','tan','ivory','khaki','olive','burgundy'])
 
@@ -114,6 +123,7 @@ export default function BatchUploadPage() {
         file,
         preview: URL.createObjectURL(file),
         name,
+        isDuplicate: checkDuplicate(name),
         category: 'top' as Category,
         warmth: 3,
         formality: 3,
@@ -151,6 +161,7 @@ export default function BatchUploadPage() {
           // Only override brand/color from AI if filename didn't provide them
           brand:       base.brand || (result.brand ?? ''),
           color:       base.color || (result.color ?? ''),
+          isDuplicate: checkDuplicate(result.name ?? base.name),
         }
         done++
         setAnalyzeProgress({ done, total: files.length })
@@ -158,8 +169,12 @@ export default function BatchUploadPage() {
       setDrafts([...enriched])
     }
 
+    // Count duplicates after analysis
+    const dupeCount = enriched.filter(d => d.isDuplicate).length
+    if (dupeCount > 0) setError(`${dupeCount} item${dupeCount > 1 ? 's' : ''} may already be in your closet — marked in red`)
     setStage('fill')
   }, [])
+
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
@@ -349,8 +364,13 @@ export default function BatchUploadPage() {
 
         {/* Name */}
         <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-            name <span style={{ color: '#9C5544' }}>*</span>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>name <span style={{ color: '#9C5544' }}>*</span></span>
+            {draft.isDuplicate && (
+              <span style={{ background: '#9C5544', color: '#fff', fontFamily: MONO, fontSize: 8, padding: '2px 6px', letterSpacing: '0.06em' }}>
+                already in closet
+              </span>
+            )}
           </div>
           <input
             type="text"
@@ -437,6 +457,11 @@ export default function BatchUploadPage() {
         ) : (
           <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1 }}>
             Skip
+          </UButton>
+        )}
+        {draft.isDuplicate && current < drafts.length - 1 && (
+          <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1, color: '#9C5544' }}>
+            Skip duplicate
           </UButton>
         )}
         {current < drafts.length - 1 ? (
