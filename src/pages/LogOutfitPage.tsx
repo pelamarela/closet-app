@@ -75,7 +75,7 @@ export default function LogOutfitPage() {
   const filledCount = selectedIds.size
 
   return (
-    <div style={{ paddingBottom: 200 }}>
+    <div style={{ paddingBottom: 320 }}>
       <AppBar
         title="Cancel"
         back
@@ -219,70 +219,66 @@ export default function LogOutfitPage() {
       {/* Photo */}
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
 
-      {/* Item picker drawer */}
+      {/* Picker + save — single fixed panel above nav */}
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#fff', borderTop: RULE, borderBottom: RULE,
-        padding: '12px 20px 12px', zIndex: 10,
+        width: '100%', maxWidth: 430, zIndex: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            // pick from closet
+        {/* Item picker */}
+        <div style={{ background: '#fff', borderTop: RULE, padding: '12px 20px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              // pick from closet
+            </div>
+            <div style={{ flex: 1, borderTop: RULE_DASHED }} />
           </div>
-          <div style={{ flex: 1, borderTop: RULE_DASHED }} />
-        </div>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {PICKER_CATS.map(c => (
-            <button key={c.value} onClick={() => setPickerCat(c.value)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
-              <MonoTag filled={pickerCat === c.value}>{c.label}</MonoTag>
-            </button>
-          ))}
-        </div>
-        {itemsLoading ? (
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 5, overflow: 'hidden', maxHeight: 70 }}>
-            {pickerItems.slice(0, 8).map(item => (
-              <button
-                key={item.id}
-                onClick={() => toggleItem(item.id)}
-                style={{
-                  aspectRatio: '3/4', border: selectedIds.has(item.id) ? `1.5px solid ${INK}` : RULE,
-                  padding: 0, background: 'none', cursor: 'pointer', position: 'relative', overflow: 'hidden',
-                  borderRadius: 2,
-                }}
-              >
-                {item.signedImageUrl ? (
-                  <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 5px, #DCD9D3 5px 10px)' }} />
-                )}
-                {selectedIds.has(item.id) && (
-                  <div style={{
-                    position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.3)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Icon name="check" size={12} stroke={2} />
-                  </div>
-                )}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {PICKER_CATS.map(c => (
+              <button key={c.value} onClick={() => setPickerCat(c.value)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
+                <MonoTag filled={pickerCat === c.value}>{c.label}</MonoTag>
               </button>
             ))}
           </div>
-        )}
-      </div>
+          {itemsLoading ? (
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 5, overflow: 'hidden', maxHeight: 70 }}>
+              {pickerItems.slice(0, 8).map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => toggleItem(item.id)}
+                  style={{
+                    aspectRatio: '3/4', border: selectedIds.has(item.id) ? `1.5px solid ${INK}` : RULE,
+                    padding: 0, background: 'none', cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                    borderRadius: 2,
+                  }}
+                >
+                  {item.signedImageUrl ? (
+                    <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 5px, #DCD9D3 5px 10px)' }} />
+                  )}
+                  {selectedIds.has(item.id) && (
+                    <div style={{
+                      position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Icon name="check" size={12} stroke={2} />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Bottom actions */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px 28px', zIndex: 20,
-      }}>
-        {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
-        <UButton full icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave}>
-          {saving ? 'Saving…' : 'Log this outfit'}
-        </UButton>
+        {/* Save button */}
+        <div style={{ background: '#F7F6F5', borderTop: RULE, padding: '12px 20px 12px' }}>
+          {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
+          <UButton full icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave}>
+            {saving ? 'Saving…' : 'Log this outfit'}
+          </UButton>
+        </div>
       </div>
     </div>
   )
