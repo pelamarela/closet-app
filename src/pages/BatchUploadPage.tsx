@@ -182,10 +182,12 @@ export default function BatchUploadPage() {
   const handleSaveAll = async () => {
     setStage('saving')
     setError(null)
-    let count = 0
+    let saved = 0
+    const failed: string[] = []
+
     for (const draft of drafts) {
       try {
-        const compressed = await compressImage(draft.file)
+        // Pass raw file — addItem → uploadImage handles compression internally
         await addItem(
           {
             name: draft.name.trim(), category: draft.category,
@@ -193,16 +195,20 @@ export default function BatchUploadPage() {
             subcategory: draft.subcategory, color: draft.color,
             pattern: draft.pattern, material: draft.material, brand: draft.brand,
           },
-          compressed,
+          draft.file,
         )
-        count++
-        setSavedCount(count)
+        saved++
+        setSavedCount(saved)
       } catch (err) {
-        setError(`Failed on "${draft.name}": ${err instanceof Error ? err.message : 'unknown error'}`)
-        setStage('fill')
-        return
+        failed.push(draft.name)
+        setSavedCount(s => s) // trigger re-render for progress
       }
     }
+
+    if (failed.length > 0) {
+      setError(`${failed.length} item${failed.length > 1 ? 's' : ''} failed to save: ${failed.join(', ')}`)
+    }
+    setSavedCount(saved)
     setStage('done')
   }
 
@@ -268,9 +274,14 @@ export default function BatchUploadPage() {
         <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', marginBottom: 8 }}>
           All done.
         </div>
-        <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', marginBottom: 28 }}>
-          {savedCount} items added to your closet.
+        <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', marginBottom: error ? 12 : 28 }}>
+          {savedCount} item{savedCount !== 1 ? 's' : ''} added to your closet.
         </div>
+        {error && (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 20, maxWidth: 320 }}>
+            {error}
+          </div>
+        )}
         <UButton onClick={() => navigate('/wardrobe')}>View wardrobe</UButton>
       </div>
     )
