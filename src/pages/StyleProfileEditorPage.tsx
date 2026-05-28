@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useItems } from '../hooks/useItems'
+import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { AppBar, SectionLabel, UButton, MonoTag, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 
@@ -18,6 +20,9 @@ export default function StyleProfileEditorPage() {
   const [text, setText] = useState('')
   const [original, setOriginal] = useState('')
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const { items } = useItems()
+  const { outfits } = useOutfits()
 
   const isDirty = text !== original
 
@@ -28,6 +33,23 @@ export default function StyleProfileEditorPage() {
         if (data) { setText(data.description); setOriginal(data.description) }
       })
   }, [user])
+
+  const generateFromOutfits = async () => {
+    if (outfits.length < 5) { alert('Log at least 5 outfits first so Claude has enough to work with.'); return }
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/generate-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outfits: outfits.map(o => ({ date: o.date_worn, occasion: o.occasion, item_ids: o.item_ids })),
+          items: items.map(i => ({ id: i.id, name: i.name, category: i.category, color: i.color, brand: i.brand, subcategory: i.subcategory })),
+        }),
+      })
+      const data = await res.json()
+      if (data.profile) setText(data.profile)
+    } catch { /* silent */ } finally { setGenerating(false) }
+  }
 
   const save = async () => {
     if (!user) return
@@ -58,6 +80,22 @@ export default function StyleProfileEditorPage() {
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
           free text · fed verbatim into the suggestion prompt
         </div>
+      </div>
+
+      {/* Generate button */}
+      <div style={{ padding: '10px 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          onClick={generateFromOutfits}
+          disabled={generating}
+          style={{
+            fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em',
+            padding: '4px 10px', cursor: generating ? 'default' : 'pointer',
+            border: '1px solid rgba(0,0,0,0.15)', background: 'transparent', color: INK,
+            borderRadius: 2, opacity: generating ? 0.5 : 1,
+          }}
+        >
+          {generating ? '// generating…' : '✦ generate from my outfits'}
+        </button>
       </div>
 
       {/* Textarea */}

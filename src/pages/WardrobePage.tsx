@@ -150,20 +150,6 @@ export default function WardrobePage() {
         }
       />
 
-      {/* Search bar */}
-      <div style={{ padding: '14px 20px 0' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          border: RULE, borderRadius: 4, padding: '0 12px', height: 40, background: '#fff',
-        }}>
-          <Icon name="search" size={16} stroke={1.4} />
-          <div style={{ flex: 1, fontFamily: 'Geist, Inter, system-ui', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>
-            search items, brands, colors…
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.35)', padding: '2px 5px', border: RULE, borderRadius: 3 }}>⌘ K</div>
-        </div>
-      </div>
-
       {/* Filter chips */}
       <div style={{ display: 'flex', gap: 6, padding: '12px 20px 0', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {FILTERS.map(f => (

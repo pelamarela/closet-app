@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ).join('\n')
 
   const historyText = recent_outfits.length
-    ? recent_outfits.slice(0, 7).map(o =>
+    ? recent_outfits.slice(0, 20).map(o =>
         `${o.date}${o.occasion ? ` (${o.occasion})` : ''}: ${o.item_names.join(', ')}`
       ).join('\n')
     : 'None yet'
@@ -74,10 +74,11 @@ STYLE NOTES: ${style_profile || 'No style profile set'}
 AVAILABLE ITEMS:
 ${itemList}
 
-RECENT OUTFIT HISTORY (avoid repeating recent combinations):
+OUTFIT HISTORY (use to understand her style patterns and avoid recent repeats):
 ${historyText}
 
 Rules:
+- Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
 - Valid outfit structures: (top + bottom + shoes) OR (one-piece/dress + shoes)
