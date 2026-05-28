@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BLUSH, CREAM } from '../components/ui'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, CREAM } from '../components/ui'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat']
 
