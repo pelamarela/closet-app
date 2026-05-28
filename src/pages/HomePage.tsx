@@ -40,7 +40,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ paddingBottom: 24 }}>
+    <div style={{ paddingBottom: 160 }}>
       <TopBar
         title={<>
           closet
@@ -163,6 +163,15 @@ export default function HomePage() {
           <UButton icon="plus" onClick={() => navigate('/wardrobe/new')}>Add your first item</UButton>
         </div>
       )}
+
+      <div style={{
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px', zIndex: 25,
+      }}>
+        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+      </div>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
-import { TopBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, CREAM } from '../components/ui'
+import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, CREAM } from '../components/ui'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
@@ -96,7 +96,7 @@ export default function OutfitsPage() {
   }
 
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div style={{ paddingBottom: 160 }}>
       <TopBar title="Calendar" />
 
       {/* Month nav */}
@@ -288,6 +288,15 @@ export default function OutfitsPage() {
             })}
           </div>
         )}
+      </div>
+
+      <div style={{
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px', zIndex: 25,
+      }}>
+        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
       </div>
     </div>
   )

@@ -3,11 +3,18 @@ import { Icon, MONO, INK } from './ui'
 
 const tabs = [
   {
+    id: 'home',
+    label: 'home',
+    to: '/',
+    icon: 'home',
+    active: (p: string) => p === '/',
+  },
+  {
     id: 'closet',
     label: 'closet',
     to: '/wardrobe',
     icon: 'hanger',
-    active: (p: string) => p === '/' || p.startsWith('/wardrobe'),
+    active: (p: string) => p.startsWith('/wardrobe'),
   },
   {
     id: 'calendar',
