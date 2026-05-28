@@ -46,6 +46,7 @@ export default function App() {
             <Route path="/outfits" element={<OutfitsPage />} />
             <Route path="/outfits/new" element={<LogOutfitPage />} />
             <Route path="/outfits/:id" element={<OutfitDetailPage />} />
+            <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
