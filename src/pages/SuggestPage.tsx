@@ -180,12 +180,11 @@ export default function SuggestPage() {
               if (!item) return null
               return (
                 <div key={i} style={{
-                  display: 'grid', gridTemplateColumns: '60px 1fr 56px',
+                  display: 'grid', gridTemplateColumns: '1fr 56px',
                   gap: 12, alignItems: 'center',
                   padding: '7px 0', borderBottom: RULE,
                   fontFamily: MONO, fontSize: 10,
                 }}>
-                  <span style={{ color: 'rgba(0,0,0,0.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{id.slice(0, 6)}</span>
                   <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</span>
                   <span style={{ color: 'rgba(0,0,0,0.5)', textAlign: 'right' }}>{item.category}</span>
                 </div>

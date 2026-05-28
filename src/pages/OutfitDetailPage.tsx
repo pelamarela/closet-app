@@ -190,7 +190,7 @@ export default function OutfitDetailPage() {
               <div>
                 <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-                  {item.id.slice(0, 6)} · {item.category}{item.color ? ` · ${item.color}` : ''}
+                  {item.category}{item.color ? ` · ${item.color}` : ''}
                 </div>
               </div>
               <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textAlign: 'right' }}>

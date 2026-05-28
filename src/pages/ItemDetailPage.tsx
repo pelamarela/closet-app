@@ -169,11 +169,6 @@ export default function ItemDetailPage() {
               padding: '3px 6px', borderRadius: 2, border: RULE, letterSpacing: '0.04em',
             }}>active</span>
           </div>
-          <div style={{
-            position: 'absolute', top: 10, right: 10,
-            fontFamily: MONO, fontSize: 9, color: '#fff',
-            background: 'rgba(0,0,0,0.5)', padding: '3px 6px',
-          }}>{item.id.slice(0, 6)}</div>
         </div>
       </div>
 
