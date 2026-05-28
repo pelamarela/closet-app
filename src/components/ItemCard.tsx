@@ -17,20 +17,21 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         border: 'none', padding: 0, cursor: 'pointer',
       }}
     >
+      {/* paddingBottom trick: more reliable than aspectRatio across browsers */}
       <div style={{
-        position: 'relative', width: '100%', aspectRatio: '3/4',
+        position: 'relative', width: '100%', paddingBottom: '133.33%',
         border: RULE, borderRadius: 3, overflow: 'hidden',
       }}>
         {item.signedImageUrl ? (
           <img
             src={item.signedImageUrl}
             alt={item.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             loading="lazy"
           />
         ) : (
           <div style={{
-            width: '100%', height: '100%',
+            position: 'absolute', inset: 0,
             background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)',
           }} />
         )}
