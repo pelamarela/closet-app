@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 import type { Outfit, Item } from '../types/database'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
@@ -143,10 +144,10 @@ export default function OutfitDetailPage() {
           ) : items.length > 0 ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+              gridTemplateColumns: items.length === 1 ? '1fr' : items.length <= 4 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
               gap: 3, width: '100%', height: '100%',
             }}>
-              {items.slice(0, 4).map(item => (
+              {items.map(item => (
                 <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', minHeight: 0 }}>
                   {item.signedImageUrl
                     ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -198,7 +199,7 @@ export default function OutfitDetailPage() {
               <div>
                 <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-                  {item.category}{item.color ? ` · ${item.color}` : ''}
+                  {catLabel(item.category)}{item.color ? ` · ${item.color}` : ''}
                 </div>
               </div>
               <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textAlign: 'right' }}>

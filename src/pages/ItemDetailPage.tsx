@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { AppBar, SectionLabel, Icon, MONO, UI, INK, RULE } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 import type { Item } from '../types/database'
 
 type ItemWithStats = Item & {
@@ -113,7 +114,7 @@ export default function ItemDetailPage() {
   }
 
   const attrs: [string, string | null | number][] = [
-    ['category',    item.category],
+    ['category',    catLabel(item.category)],
     ['subcategory', item.subcategory],
     ['color',       item.color],
     ['material',    item.material],
@@ -163,7 +164,7 @@ export default function ItemDetailPage() {
             <span style={{
               fontFamily: MONO, fontSize: 9.5, background: INK, color: '#fff',
               padding: '3px 6px', borderRadius: 2, letterSpacing: '0.04em',
-            }}>{item.category}</span>
+            }}>{catLabel(item.category)}</span>
             <span style={{
               fontFamily: MONO, fontSize: 9.5, background: '#fff', color: INK,
               padding: '3px 6px', borderRadius: 2, border: RULE, letterSpacing: '0.04em',

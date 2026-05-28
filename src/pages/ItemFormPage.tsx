@@ -76,7 +76,56 @@ export default function ItemFormPage() {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
   const [loadingItem, setLoadingItem] = useState(isEdit)
   const [saving, setSaving] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Same AI-fill logic as batch upload
+  const parseName = (file: File) => {
+    const base = file.name.replace(/\.[^.]+$/, '')
+    const seg = base.split('_').pop() ?? base
+    return seg.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim()
+  }
+  const COLORS = new Set(['red','blue','black','white','green','brown','grey','gray','yellow','pink','purple','orange','beige','navy','cream','nude','camel','tan','ivory','khaki','olive','burgundy'])
+  const parseColor = (name: string) => name.toLowerCase().split(' ').find(w => COLORS.has(w)) ?? ''
+  const VALID_CATS = new Set(['top','bottom','dress','outerwear','shoes','accessory'])
+  const toCategory = (raw: string): Category => VALID_CATS.has(raw) ? raw as Category : 'top'
+
+  const analyzePhoto = async (file: File) => {
+    setAnalyzing(true)
+    try {
+      const compressed = await import('../lib/imageUtils').then(m => m.compressImage(file))
+      const reader = new FileReader()
+      const { data, mediaType } = await new Promise<{ data: string; mediaType: string }>((resolve, reject) => {
+        reader.onload = () => {
+          const r = reader.result as string
+          resolve({ data: r.split(',')[1], mediaType: r.split(';')[0].slice(5) })
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(compressed)
+      })
+      const res = await fetch('/api/analyze-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: data, media_type: mediaType }),
+      })
+      if (!res.ok) return
+      const ai = await res.json()
+      const name = parseName(file)
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || name,
+        category: toCategory(ai.category),
+        color: prev.color || parseColor(name) || ai.color || '',
+        brand: prev.brand || parseName(file).split(' ')[0] || ai.brand || '',
+        subcategory: ai.subcategory || prev.subcategory,
+        material: ai.material || prev.material,
+        warmth: typeof ai.warmth === 'number' ? ai.warmth : prev.warmth,
+        formality: typeof ai.formality === 'number' ? ai.formality : prev.formality,
+      }))
+    } catch { /* silent */ } finally {
+      setAnalyzing(false)
+    }
+  }
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -106,14 +155,6 @@ export default function ItemFormPage() {
 
   const set = (k: keyof ItemFormData) => (v: string) =>
     setForm(f => ({ ...f, [k]: v }) as ItemFormData)
-
-  const nameFromFile = (file: File) =>
-    file.name
-      .replace(/\.[^.]+$/, '')
-      .replace(/[-_.]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .replace(/\b\w/g, c => c.toUpperCase())
 
   const imagePreview = imageFile ? URL.createObjectURL(imageFile) : existingImageUrl
 
@@ -230,7 +271,7 @@ export default function ItemFormPage() {
                     padding: '6px 12px',
                     fontFamily: MONO, fontSize: 9, color: '#fff',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
-                  }}>change photo</div>
+                  }}>{analyzing ? 'analyzing…' : 'change photo'}</div>
                 </div>
               </>
             ) : (
@@ -245,6 +286,7 @@ export default function ItemFormPage() {
                 </div>
                 <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
+              {analyzing && <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>// analyzing with claude…</div>}
               </>
             )}
           </button>
@@ -256,9 +298,7 @@ export default function ItemFormPage() {
             onChange={e => {
               const file = e.target.files?.[0] ?? null
               setImageFile(file)
-              if (file && !form.name.trim()) {
-                setForm(f => ({ ...f, name: nameFromFile(file) }))
-              }
+              if (file) analyzePhoto(file)
             }}
           />
         </div>

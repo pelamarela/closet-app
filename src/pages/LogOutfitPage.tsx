@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
+import type { Category } from '../types/database'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { supabase } from '../lib/supabase'
 import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 
 const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
 
@@ -23,6 +25,7 @@ export default function LogOutfitPage() {
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
+  const [filterCat, setFilterCat] = useState<string>('all')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -150,13 +153,27 @@ export default function LogOutfitPage() {
       {/* Items grid */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel right={selectedCount > 0 ? `${selectedCount} selected` : undefined}>items</SectionLabel>
+        {/* Category filter chips */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {(['all', 'top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'] as const).map(cat => (
+            <button key={cat} onClick={() => setFilterCat(cat)} style={{
+              fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
+              border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
+              background: filterCat === cat ? INK : 'transparent',
+              color: filterCat === cat ? '#fff' : INK,
+              borderRadius: 2, cursor: 'pointer',
+            }}>
+              {cat === 'all' ? 'all' : catLabel(cat)}
+            </button>
+          ))}
+        </div>
         {itemsLoading ? (
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
         ) : items.length === 0 ? (
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
-            {items.map(item => (
+            {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
               <button
                 key={item.id}
                 onClick={() => toggleItem(item.id)}
@@ -176,7 +193,7 @@ export default function LogOutfitPage() {
                     position: 'absolute', top: 4, left: 4,
                     fontFamily: MONO, fontSize: 7.5,
                     background: 'rgba(255,255,255,0.9)', padding: '1px 4px',
-                  }}>{item.category}</div>
+                  }}>{catLabel(item.category)}</div>
                   {selectedIds.has(item.id) && (
                     <div style={{
                       position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.38)',
