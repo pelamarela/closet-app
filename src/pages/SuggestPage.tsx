@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { TopBar, AppBar, SectionLabel, MonoTag, UButton, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 
 const OCCASION_PRESETS = ['studio', 'dinner', 'gallery', 'weekend', 'client', 'errands']
 type Suggestion = { item_ids: string[]; reasoning: string }
