@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
-import { AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM } from '../components/ui'
+import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM } from '../components/ui'
 import type { Category } from '../types/database'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
@@ -40,7 +40,7 @@ export default function WardrobePage() {
   if (items.length === 0) {
     return (
       <div style={{ paddingBottom: 40 }}>
-        <AppBar
+        <TopBar
           title={<><Icon name="hanger" size={16} stroke={1.6} /> Closet</>}
           meta="0 items"
         />
@@ -115,8 +115,8 @@ export default function WardrobePage() {
   }
 
   return (
-    <div style={{ paddingBottom: 24 }}>
-      <AppBar
+    <div style={{ paddingBottom: 100 }}>
+      <TopBar
         title={<><Icon name="hanger" size={16} stroke={1.6} /> Closet</>}
         meta={`${items.length} items`}
       />
@@ -163,53 +163,82 @@ export default function WardrobePage() {
         </div>
       )}
 
-      {/* FAB */}
+      {/* Add item dropdown */}
+      {fabOpen && (
+        <>
+          <div onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 24 }} />
+          <div style={{
+            position: 'fixed', bottom: 158, left: 20,
+            width: 240, background: '#fff', border: RULE, borderRadius: 4,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', zIndex: 26,
+          }}>
+            <div style={{
+              padding: '8px 12px', borderBottom: RULE,
+              fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.55)',
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span>// add item</span>
+              <span>▴</span>
+            </div>
+            {[
+              { icon: 'plus', label: 'Single item', sub: 'form · one piece at a time', path: '/wardrobe/new' },
+              { icon: 'grid', label: 'Multiple at once', sub: 'batch upload · 2–20 photos', path: '/wardrobe/batch' },
+            ].map(row => (
+              <button
+                key={row.path}
+                onClick={() => { setFabOpen(false); navigate(row.path) }}
+                style={{
+                  width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer',
+                  display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12,
+                  padding: '12px 12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none',
+                }}
+              >
+                <div style={{ width: 34, height: 34, border: RULE, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name={row.icon} size={16} stroke={1.6} />
+                </div>
+                <div>
+                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{row.label}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{row.sub}</div>
+                </div>
+              </button>
+            ))}
+            <div style={{ padding: '8px 12px', fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              tap outside to dismiss
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Fixed action bar above nav */}
       <div style={{
-        position: 'fixed', bottom: 100, right: 16,
-        display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8,
-        zIndex: 30,
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px',
+        display: 'flex', gap: 8,
+        zIndex: 25,
       }}>
-        {fabOpen && (
-          <>
-            <button
-              onClick={() => { setFabOpen(false); navigate('/wardrobe/batch') }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                background: '#fff', color: INK, border: RULE, borderRadius: 4,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-                padding: '0 16px', height: 40,
-                fontFamily: MONO, fontSize: 10, cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              <Icon name="grid" size={14} stroke={1.6} />
-              Add multiple
-            </button>
-            <button
-              onClick={() => { setFabOpen(false); navigate('/wardrobe/new') }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                background: '#fff', color: INK, border: RULE, borderRadius: 4,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-                padding: '0 16px', height: 40,
-                fontFamily: MONO, fontSize: 10, cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              <Icon name="plus" size={14} stroke={2} />
-              Add one
-            </button>
-          </>
-        )}
         <button
           onClick={() => setFabOpen(o => !o)}
           style={{
-            width: 52, height: 52, background: INK, color: '#fff',
-            border: 'none', borderRadius: 4,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+            flex: 1.25, height: 48, padding: '0 16px',
+            background: INK, color: '#fff', border: 'none',
+            borderRadius: 4, cursor: 'pointer',
+            fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.005em',
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <Icon name={fabOpen ? 'x' : 'plus'} size={20} stroke={2} />
+          <Icon name="plus" size={15} stroke={2} />
+          Add item
+          <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, paddingLeft: 4, opacity: 0.7 }}>
+            {fabOpen ? '▴' : '▾'}
+          </span>
         </button>
+        <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
+          Log outfit
+        </UButton>
       </div>
     </div>
   )

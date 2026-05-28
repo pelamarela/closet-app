@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 
 const OCCASION_PRESETS = ['studio', 'dinner', 'gallery', 'weekend', 'client', 'errands']
 type Suggestion = { item_ids: string[]; reasoning: string }
@@ -215,14 +215,9 @@ export default function SuggestPage() {
   // ── Input view ───────────────────────────────────────────────────────────────
   return (
     <div style={{ paddingBottom: 100 }}>
-      <AppBar
+      <TopBar
         title={<><Icon name="spark" size={16} stroke={1.6} /> Suggest</>}
         meta="hybrid · code + claude"
-        right={
-          <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 4 }}>
-            <Icon name="user" size={17} stroke={1.4} />
-          </button>
-        }
       />
 
       <div style={{ padding: '16px 20px 0' }}>

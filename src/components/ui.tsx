@@ -44,6 +44,39 @@ export function Icon({ name, size = 20, stroke = 1.5 }: {
   }
 }
 
+export function TopBar({ title, meta }: {
+  title: React.ReactNode
+  meta?: React.ReactNode
+}) {
+  const navigate = useNavigate()
+  return (
+    <div>
+      <div style={{
+        padding: '4px 20px 0',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
+          color: INK, minWidth: 0,
+        }}>{title}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+          {meta && (
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
+          )}
+          <button
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
+          >
+            <Icon name="user" size={18} stroke={1.5} />
+          </button>
+        </div>
+      </div>
+      <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
+    </div>
+  )
+}
+
 export function AppBar({ title, back = false, onBack, right, meta }: {
   title: React.ReactNode
   back?: boolean

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BLUSH, CREAM } from '../components/ui'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BLUSH, CREAM } from '../components/ui'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat']
 
@@ -39,31 +39,16 @@ export default function HomePage() {
 
   return (
     <div style={{ paddingBottom: 24 }}>
-      {/* Header */}
-      <div style={{
-        padding: '4px 20px 0',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <button
-          onClick={() => navigate('/wardrobe')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
-            color: INK, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          }}
-        >
-          <div style={{
-            width: 18, height: 18, background: BLUSH,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
+      <TopBar
+        title={<>
+          <div style={{ width: 18, height: 18, background: BLUSH, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div style={{ width: 6, height: 6, background: INK }} />
           </div>
           closet
           <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
-        </button>
-        <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{dateLabel}</div>
-      </div>
-      <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
+        </>}
+        meta={dateLabel}
+      />
 
       {/* Today hero */}
       <div style={{ padding: '24px 20px 0' }}>

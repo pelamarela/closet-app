@@ -10,25 +10,18 @@ const tabs = [
     active: (p: string) => p === '/' || p.startsWith('/wardrobe'),
   },
   {
-    id: 'log',
-    label: 'log',
-    to: '/outfits/new',
-    icon: 'plus',
-    active: (p: string) => p === '/outfits/new',
-  },
-  {
     id: 'calendar',
     label: 'calendar',
     to: '/outfits',
     icon: 'calendar',
-    active: (p: string) => p.startsWith('/outfits') && p !== '/outfits/new',
+    active: (p: string) => p.startsWith('/outfits'),
   },
   {
     id: 'suggest',
     label: 'suggest',
     to: '/suggest',
     icon: 'spark',
-    active: (p: string) => p.startsWith('/suggest') || p.startsWith('/settings'),
+    active: (p: string) => p.startsWith('/suggest'),
   },
 ]
 
