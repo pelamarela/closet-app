@@ -168,9 +168,12 @@ export default function WardrobePage() {
         <>
           <div onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 24 }} />
           <div style={{
-            position: 'fixed', bottom: 158, left: 20,
+            position: 'fixed', bottom: 158, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430, zIndex: 26, paddingLeft: 20, pointerEvents: 'none',
+          }}>
+          <div style={{
             width: 240, background: '#fff', border: RULE, borderRadius: 4,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', zIndex: 26,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', pointerEvents: 'auto',
           }}>
             <div style={{
               padding: '8px 12px', borderBottom: RULE,
@@ -206,6 +209,7 @@ export default function WardrobePage() {
             <div style={{ padding: '8px 12px', fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               tap outside to dismiss
             </div>
+          </div>
           </div>
         </>
       )}
