@@ -1,4 +1,4 @@
-import { Icon, MONO, UI, INK, RULE } from './ui'
+import { Icon, MONO, INK, RULE } from './ui'
 import type { ItemWithSignedUrl } from '../hooks/useItems'
 
 const CAT: Record<string, string> = {
@@ -70,13 +70,6 @@ export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
         )}
       </div>
 
-      <div style={{ padding: '6px 2px 0' }}>
-        <div style={{
-          fontFamily: UI, fontSize: 11, fontWeight: 600,
-          letterSpacing: '-0.005em', color: INK,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>{item.name}</div>
-      </div>
     </button>
   )
 }
