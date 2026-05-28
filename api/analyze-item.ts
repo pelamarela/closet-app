@@ -33,9 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             text: `Analyze this clothing item photo. Return ONLY a JSON object — no markdown, no explanation — with exactly these fields:
 {
   "name": "descriptive name, e.g. Black Linen Blazer or Adidas Samba White",
-  "category": "top | bottom | one-piece | outerwear | shoes | accessory",
+  "category": "top | bottom | dress | outerwear | shoes | accessory",
   "color": "primary color in 1-2 words, lowercase",
-  "subcategory": "specific type within category, e.g. blazer / trench / midi skirt / sneaker / tote / dress / jumpsuit / co-ord",
+  "subcategory": "specific type e.g. blazer/midi skirt/sneaker/tote/jumpsuit/co-ord (for dress: specify dress/jumpsuit/co-ord)",
   "warmth": 1-5,
   "formality": 1-5,
   "brand": "brand name if visible on item, else empty string",
@@ -43,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 Warmth: 1=very light/summer, 3=mid-season, 5=very heavy/winter.
 Formality: 1=gym/casual, 3=smart casual, 5=black tie.
-Use "one-piece" for dresses, jumpsuits, co-ords, or any photo showing a full-body or multi-piece coordinated outfit as one item.
+Use "dress" for dresses, jumpsuits, co-ords, and matching sets.
 Use "outerwear" for jackets and coats.`,
           },
         ],

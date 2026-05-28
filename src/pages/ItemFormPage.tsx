@@ -12,7 +12,7 @@ import type { Category } from '../types/database'
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: 'top' },
   { value: 'bottom', label: 'btm' },
-  { value: 'one-piece', label: '1pc' },
+  { value: 'dress', label: '1pc' },
   { value: 'outerwear', label: 'otw' },
   { value: 'shoes', label: 'shoe' },
   { value: 'accessory',  label: 'acc' },

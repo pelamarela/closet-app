@@ -11,7 +11,7 @@ const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all',        label: 'all' },
   { value: 'top',        label: 'top' },
   { value: 'bottom',     label: 'btm' },
-  { value: 'one-piece',  label: '1pc' },
+  { value: 'dress',      label: '1pc' },
   { value: 'outerwear',  label: 'otw' },
   { value: 'shoes',      label: 'shoe' },
   { value: 'accessory',  label: 'acc' },

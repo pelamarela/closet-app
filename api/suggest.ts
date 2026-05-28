@@ -20,7 +20,7 @@ function formalityRange(occasion: string): [number, number] | null {
 }
 
 // one-piece covers: one-piece (new), dress (legacy), set (legacy)
-const isOnePiece = (cat: string) => ['one-piece', 'dress', 'set'].includes(cat)
+const isOnePiece = (cat: string) => ['dress', 'set'].includes(cat)
 
 type Item = {
   id: string; name: string; category: string; subcategory?: string | null

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
-import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, CREAM } from '../components/ui'
+import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED } from '../components/ui'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
@@ -31,11 +31,27 @@ function topOccasion(outfits: OutfitWithItems[]): string {
   return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
 }
 
-function OutfitThumb({ small }: { outfit?: OutfitWithItems; small?: boolean }) {
+// Deterministic palette from outfit id — gives consistent variety across the grid
+const PALETTES = [
+  ['#E8D4C0','#D4BEA8'], // cream (default)
+  ['#1A1A1A','#2C2C2C'], // black
+  ['#D4A898','#C49080'], // blush
+  ['#C8C4BC','#B4B0A8'], // stone
+  ['#C4B49C','#B0A088'], // tan
+  ['#B8C4C0','#A4B0AC'], // sage
+]
+function outfitPalette(id: string): string[] {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return PALETTES[hash % PALETTES.length]
+}
+
+function OutfitThumb({ outfit, small }: { outfit?: OutfitWithItems; small?: boolean }) {
+  const [a, b] = outfit ? outfitPalette(outfit.id) : PALETTES[0]
+  const sz = small ? 8 : 10
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: `repeating-linear-gradient(135deg, ${CREAM} 0 ${small ? 8 : 10}px, #E8D3BD ${small ? 8 : 10}px ${small ? 16 : 20}px)`,
+      background: `repeating-linear-gradient(135deg, ${a} 0 ${sz}px, ${b} ${sz}px ${sz * 2}px)`,
     }} />
   )
 }
