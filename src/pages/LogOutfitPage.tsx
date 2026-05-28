@@ -123,7 +123,7 @@ export default function LogOutfitPage() {
             no items in wardrobe yet
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {items.map(item => (
               <button
                 key={item.id}
