@@ -33,16 +33,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             text: `Analyze this clothing item photo. Return ONLY a JSON object — no markdown, no explanation — with exactly these fields:
 {
   "name": "descriptive name, e.g. Black Linen Blazer or Adidas Samba White",
-  "category": "top | bottom | dress | outerwear | shoes | accessory",
+  "category": "top | bottom | dress | outerwear | shoes | accessory | set",
   "color": "primary color in 1-2 words, lowercase",
-  "subcategory": "specific type, e.g. blazer / midi skirt / sneaker / tote bag",
+  "subcategory": "specific type, e.g. blazer / midi skirt / sneaker / tote bag / co-ord",
   "warmth": 1-5,
   "formality": 1-5,
   "brand": "brand name if visible on item, else empty string",
   "material": "e.g. cotton, wool, leather — if determinable, else empty string"
 }
 Warmth: 1=very light/summer, 3=mid-season, 5=very heavy/winter.
-Formality: 1=gym/casual, 3=smart casual, 5=black tie.`,
+Formality: 1=gym/casual, 3=smart casual, 5=black tie.
+Use "set" for co-ords, matching sets, or any photo showing multiple coordinated pieces photographed together as one item.`,
           },
         ],
       }],

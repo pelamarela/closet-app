@@ -13,6 +13,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'outerwear', label: 'coat' },
   { value: 'shoes',     label: 'shoe' },
   { value: 'accessory', label: 'acc' },
+  { value: 'set',       label: 'set' },
 ]
 
 interface Draft {
@@ -61,7 +62,7 @@ async function analyzeImage(file: File): Promise<Partial<Draft>> {
   }
 }
 
-const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'])
+const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory', 'set'])
 
 function toCategory(raw: string | undefined): Category {
   if (raw && VALID_CATEGORIES.has(raw as Category)) return raw as Category

@@ -16,6 +16,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'outerwear', label: 'coat' },
   { value: 'shoes', label: 'shoe' },
   { value: 'accessory', label: 'acc' },
+  { value: 'set',       label: 'set' },
 ]
 
 const EMPTY: ItemFormData = {

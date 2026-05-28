@@ -1,4 +1,4 @@
-export type Category = 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory'
+export type Category = 'top' | 'bottom' | 'dress' | 'outerwear' | 'shoes' | 'accessory' | 'set'
 export type ItemStatus = 'active' | 'archived'
 
 export type Item = {
