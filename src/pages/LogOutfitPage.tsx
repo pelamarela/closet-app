@@ -38,13 +38,14 @@ export default function LogOutfitPage() {
         .select('*, outfit_items(item_id)')
         .eq('id', editId!)
         .single()
-      if (!data) { setLoadingEdit(false); return }
-      setDate(data.date_worn)
-      setOccasion(data.occasion ?? '')
-      setRating(data.rating ?? null)
-      setNotes(data.notes ?? '')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ids = ((data as any).outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
+      const d = data as any
+      if (!d) { setLoadingEdit(false); return }
+      setDate(d.date_worn)
+      setOccasion(d.occasion ?? '')
+      setRating(d.rating ?? null)
+      setNotes(d.notes ?? '')
+      const ids = (d.outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
       setSelectedIds(new Set(ids))
       setLoadingEdit(false)
     }
