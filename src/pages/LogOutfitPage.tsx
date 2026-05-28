@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import type { Category } from '../types/database'
@@ -26,6 +27,7 @@ export default function LogOutfitPage() {
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
   const [filterCat, setFilterCat] = useState<string>('all')
+  const { isDesktop } = useBreakpoint()
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -84,7 +86,7 @@ export default function LogOutfitPage() {
   )
 
   return (
-    <div style={{ paddingBottom: 180 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 180 }}>
       <AppBar
         title={isEdit ? 'Edit outfit' : 'Log an outfit'}
         back
@@ -172,7 +174,7 @@ export default function LogOutfitPage() {
         ) : items.length === 0 ? (
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
               <button
                 key={item.id}
@@ -270,7 +272,9 @@ export default function LogOutfitPage() {
       </div>
 
       {/* Bottom bar */}
-      <div style={{
+      <div style={isDesktop ? {
+        padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 8,
+      } : {
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430,
         background: '#F7F6F5', borderTop: RULE,

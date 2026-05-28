@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
@@ -27,6 +28,7 @@ export default function WardrobePage() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const batchInputRef = useRef<HTMLInputElement>(null)
+  const { isDesktop } = useBreakpoint()
   const { deleteItems } = useItemMutations()
 
   const toggleSelect = useCallback((id: string) => {
@@ -140,7 +142,7 @@ export default function WardrobePage() {
   }
 
   return (
-    <div style={{ paddingBottom: 100 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
       <TopBar
         title="Closet"
         meta={
@@ -167,7 +169,7 @@ export default function WardrobePage() {
           no {FILTERS.find(f => f.value === filter)?.label} yet
         </div>
       ) : (
-        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
+        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(160px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
           {filtered.map(item => (
             <ItemCard
               key={item.id}
@@ -201,7 +203,7 @@ export default function WardrobePage() {
           <div onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 24 }} />
           <div style={{
             position: 'fixed', bottom: 158, left: '50%', transform: 'translateX(-50%)',
-            width: '100%', maxWidth: 430, zIndex: 26, paddingLeft: 20, pointerEvents: 'none',
+            width: '100%', maxWidth: 1200, zIndex: 26, paddingLeft: 20, pointerEvents: 'none',
           }}>
             <div style={{
               width: 240, background: '#fff', border: RULE, borderRadius: 4,
@@ -247,12 +249,14 @@ export default function WardrobePage() {
         </>
       )}
 
-      {/* Fixed action bar */}
+      {/* Fixed action bar — mobile only; desktop uses top nav */}
       <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
+        ...(isDesktop ? { padding: '16px 20px', display: 'flex', gap: 8 } : {
+          position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          background: '#F7F6F5', borderTop: RULE,
+          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
+        }),
       }}>
         {selectMode ? (
           confirmDelete ? (

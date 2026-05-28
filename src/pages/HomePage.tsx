@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
@@ -15,6 +16,7 @@ function todayStr() {
 export default function HomePage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
+  const { isDesktop } = useBreakpoint()
   const { items } = useItems()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
@@ -41,7 +43,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ paddingBottom: 160 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
       <TopBar
         title={<>
           closet
@@ -165,14 +167,16 @@ export default function HomePage() {
         </div>
       )}
 
-      <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', zIndex: 25,
-      }}>
-        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
-      </div>
+      {!isDesktop && (
+        <div style={{
+          position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          background: '#F7F6F5', borderTop: RULE,
+          padding: '12px 20px', zIndex: 25,
+        }}>
+          <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+        </div>
+      )}
     </div>
   )
 }

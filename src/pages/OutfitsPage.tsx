@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
@@ -46,6 +47,7 @@ function OutfitThumb({ outfit, small }: { outfit?: OutfitWithItems; small?: bool
 export default function OutfitsPage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
+  const { isDesktop } = useBreakpoint()
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
@@ -99,7 +101,7 @@ export default function OutfitsPage() {
   }
 
   return (
-    <div style={{ paddingBottom: 160 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
       <TopBar title="Calendar" />
 
       {/* Month nav */}
@@ -295,7 +297,7 @@ export default function OutfitsPage() {
 
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
+        width: '100%', maxWidth: 1200,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', zIndex: 25,
       }}>
