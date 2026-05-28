@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { MONO, UI, INK, BLUSH, CREAM, RULE, ACCENT } from '../components/ui'
 
 type Mode = 'signin' | 'signup'
 
 export default function LoginPage() {
+  const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,6 +23,8 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
         setLoading(false)
+      } else {
+        navigate('/')
       }
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
