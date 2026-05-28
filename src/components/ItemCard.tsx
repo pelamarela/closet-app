@@ -1,12 +1,13 @@
-import { MONO, UI, INK, RULE } from './ui'
+import { Icon, MONO, UI, INK, RULE } from './ui'
 import type { ItemWithSignedUrl } from '../hooks/useItems'
 
 interface ItemCardProps {
   item: ItemWithSignedUrl
   onClick: () => void
+  selected?: boolean
 }
 
-export default function ItemCard({ item, onClick }: ItemCardProps) {
+export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
   const shortId = item.id.slice(0, 6)
 
   return (
@@ -17,10 +18,10 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         border: 'none', padding: 0, cursor: 'pointer',
       }}
     >
-      {/* paddingBottom trick: more reliable than aspectRatio across browsers */}
       <div style={{
         position: 'relative', width: '100%', paddingBottom: '133.33%',
-        border: RULE, borderRadius: 3, overflow: 'hidden',
+        border: selected ? `2px solid ${INK}` : RULE,
+        borderRadius: 3, overflow: 'hidden',
       }}>
         {item.signedImageUrl ? (
           <img
@@ -52,6 +53,26 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           background: 'rgba(0,0,0,0.45)',
           padding: '2px 5px',
         }}>{shortId}</div>
+
+        {/* Selection overlay */}
+        {selected !== undefined && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: selected ? 'rgba(10,10,10,0.45)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.1s',
+          }}>
+            <div style={{
+              width: 22, height: 22, borderRadius: '50%',
+              border: `2px solid ${selected ? '#fff' : 'rgba(255,255,255,0.7)'}`,
+              background: selected ? INK : 'rgba(255,255,255,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff',
+            }}>
+              {selected && <Icon name="check" size={12} stroke={2.5} />}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '6px 2px 0' }}>

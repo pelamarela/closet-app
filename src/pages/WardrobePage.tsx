@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
-import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM } from '../components/ui'
+import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM, ACCENT } from '../components/ui'
 import { setBatchFiles } from '../lib/batchState'
+import { useItemMutations } from '../hooks/useItemMutations'
 import type { Category } from '../types/database'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
@@ -21,7 +22,29 @@ export default function WardrobePage() {
   const { items, loading, error } = useItems()
   const [filter, setFilter] = useState<'all' | Category>('all')
   const [fabOpen, setFabOpen] = useState(false)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const batchInputRef = useRef<HTMLInputElement>(null)
+  const { deleteItems } = useItemMutations()
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }, [])
+
+  const exitSelectMode = () => {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+    setConfirmDelete(false)
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    await deleteItems(Array.from(selectedIds))
+    setDeleting(false)
+    exitSelectMode()
+  }
 
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
   const countFor = (v: 'all' | Category) =>
@@ -120,7 +143,11 @@ export default function WardrobePage() {
     <div style={{ paddingBottom: 100 }}>
       <TopBar
         title="Closet"
-        meta={`${items.length} items`}
+        meta={
+          selectMode
+            ? <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', padding: 0 }}>cancel</button>
+            : <button onClick={() => { setSelectMode(true); setFabOpen(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', padding: 0 }}>{items.length} items · select</button>
+        }
       />
 
       {/* Search bar */}
@@ -156,7 +183,12 @@ export default function WardrobePage() {
       ) : (
         <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
           {filtered.map(item => (
-            <ItemCard key={item.id} item={item} onClick={() => navigate(`/wardrobe/${item.id}`)} />
+            <ItemCard
+              key={item.id}
+              item={item}
+              selected={selectMode ? selectedIds.has(item.id) : undefined}
+              onClick={() => selectMode ? toggleSelect(item.id) : navigate(`/wardrobe/${item.id}`)}
+            />
           ))}
         </div>
       )}
@@ -229,20 +261,50 @@ export default function WardrobePage() {
         </>
       )}
 
-      {/* Fixed action bar — unified UButton for both actions */}
+      {/* Fixed action bar */}
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
       }}>
-        <UButton icon="plus" onClick={() => setFabOpen(o => !o)} style={{ flex: 1.25, justifyContent: 'flex-start' }}>
-          Add item
-          <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, opacity: 0.7 }}>{fabOpen ? '▴' : '▾'}</span>
-        </UButton>
-        <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
-          Log outfit
-        </UButton>
+        {selectMode ? (
+          confirmDelete ? (
+            <>
+              <div style={{ flex: 1, fontFamily: MONO, fontSize: 10, color: ACCENT, display: 'flex', alignItems: 'center' }}>
+                delete {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}? can't undo.
+              </div>
+              <UButton variant="ghost" onClick={() => setConfirmDelete(false)} style={{ flex: 0.7 }}>Cancel</UButton>
+              <UButton variant="accent" icon="trash" disabled={deleting} onClick={handleDelete} style={{ flex: 1 }}>
+                {deleting ? 'Deleting…' : 'Confirm'}
+              </UButton>
+            </>
+          ) : (
+            <>
+              <UButton variant="ghost" onClick={() => setSelectedIds(new Set(filtered.map(i => i.id)))} style={{ flex: 1 }}>
+                Select all
+              </UButton>
+              <UButton
+                variant="accent" icon="trash"
+                disabled={selectedIds.size === 0}
+                onClick={() => setConfirmDelete(true)}
+                style={{ flex: 1.4 }}
+              >
+                Delete {selectedIds.size > 0 ? selectedIds.size : ''}
+              </UButton>
+            </>
+          )
+        ) : (
+          <>
+            <UButton icon="plus" onClick={() => setFabOpen(o => !o)} style={{ flex: 1.25, justifyContent: 'flex-start' }}>
+              Add item
+              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, opacity: 0.7 }}>{fabOpen ? '▴' : '▾'}</span>
+            </UButton>
+            <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
+              Log outfit
+            </UButton>
+          </>
+        )}
       </div>
     </div>
   )
