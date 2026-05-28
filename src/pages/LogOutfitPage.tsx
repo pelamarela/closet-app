@@ -14,11 +14,11 @@ export default function LogOutfitPage() {
   const location = useLocation()
   const { id: editId } = useParams<{ id?: string }>()
   const isEdit = !!editId
-  const navState = location.state as { preselectedIds?: string[]; occasion?: string } | null
+  const navState = location.state as { preselectedIds?: string[]; occasion?: string; date?: string } | null
   const { items, loading: itemsLoading } = useItems()
   const { logOutfit, updateOutfit } = useOutfitMutations()
 
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useState(navState?.date ?? today())
   const [occasion, setOccasion] = useState(navState?.occasion ?? '')
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')

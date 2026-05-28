@@ -312,7 +312,7 @@ export default function OutfitsPage() {
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', zIndex: 25,
       }}>
-        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+        <UButton full icon="hanger" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>Log outfit</UButton>
       </div>
     </div>
   )
