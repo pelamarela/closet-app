@@ -1,6 +1,12 @@
 import { Icon, MONO, UI, INK, RULE } from './ui'
 import type { ItemWithSignedUrl } from '../hooks/useItems'
 
+const CAT: Record<string, string> = {
+  'top': 'top', 'bottom': 'btm', 'one-piece': '1pc',
+  'outerwear': 'otw', 'shoes': 'shoe', 'accessory': 'acc',
+  'dress': '1pc', 'set': '1pc', // legacy db values
+}
+
 interface ItemCardProps {
   item: ItemWithSignedUrl
   onClick: () => void
@@ -41,7 +47,7 @@ export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
           fontFamily: MONO, fontSize: 8.5,
           background: '#fff', color: INK,
           padding: '2px 5px', letterSpacing: '0.04em',
-        }}>{item.category}</div>
+        }}>{CAT[item.category] ?? item.category}</div>
 
         {/* Selection overlay */}
         {selected !== undefined && (
