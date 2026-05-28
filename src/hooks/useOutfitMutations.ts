@@ -56,10 +56,38 @@ export function useOutfitMutations() {
     return outfit.id
   }
 
+  const updateOutfit = async (
+    id: string,
+    data: OutfitFormData,
+    itemIds: string[],
+    imageFile?: File,
+  ): Promise<void> => {
+    const patch: Record<string, unknown> = {
+      date_worn: data.date_worn,
+      occasion: data.occasion?.trim() || null,
+      rating: data.rating,
+      notes: data.notes?.trim() || null,
+    }
+    if (imageFile) patch.image_url = await uploadOutfitPhoto(imageFile)
+
+    const { error } = await supabase.from('outfits').update(patch).eq('id', id)
+    if (error) throw error
+
+    const { error: delErr } = await supabase.from('outfit_items').delete().eq('outfit_id', id)
+    if (delErr) throw delErr
+
+    if (itemIds.length > 0) {
+      const { error: joinErr } = await supabase
+        .from('outfit_items')
+        .insert(itemIds.map(item_id => ({ outfit_id: id, item_id })))
+      if (joinErr) throw joinErr
+    }
+  }
+
   const deleteOutfit = async (id: string): Promise<void> => {
     const { error } = await supabase.from('outfits').delete().eq('id', id)
     if (error) throw error
   }
 
-  return { logOutfit, deleteOutfit }
+  return { logOutfit, updateOutfit, deleteOutfit }
 }
