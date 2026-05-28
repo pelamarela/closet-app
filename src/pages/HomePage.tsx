@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
+import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BLUSH, CREAM } from '../components/ui'
 
@@ -13,6 +14,7 @@ function todayStr() {
 export default function HomePage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
+  const { items } = useItems()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
   const today = todayStr()
@@ -153,7 +155,7 @@ export default function HomePage() {
       )}
 
       {/* Empty state CTA */}
-      {!loading && outfits.length === 0 && (
+      {!loading && items.length === 0 && (
         <div style={{ padding: '32px 20px 0', textAlign: 'center' }}>
           <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
             // start here
