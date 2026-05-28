@@ -76,13 +76,6 @@ export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
           letterSpacing: '-0.005em', color: INK,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{item.name}</div>
-        <div style={{
-          fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-          marginTop: 2, display: 'flex', gap: 6,
-        }}>
-          <span>w{item.warmth}</span>
-          <span>f{item.formality}</span>
-        </div>
       </div>
     </button>
   )
