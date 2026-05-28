@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
+import { supabase } from '../lib/supabase'
 import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
 
 const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
@@ -11,9 +12,11 @@ function today() { return new Date().toISOString().slice(0, 10) }
 export default function LogOutfitPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { id: editId } = useParams<{ id?: string }>()
+  const isEdit = !!editId
   const navState = location.state as { preselectedIds?: string[]; occasion?: string } | null
   const { items, loading: itemsLoading } = useItems()
-  const { logOutfit } = useOutfitMutations()
+  const { logOutfit, updateOutfit } = useOutfitMutations()
 
   const [date, setDate] = useState(today())
   const [occasion, setOccasion] = useState(navState?.occasion ?? '')
@@ -23,7 +26,30 @@ export default function LogOutfitPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(isEdit)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Load existing outfit when editing
+  useEffect(() => {
+    if (!isEdit || !editId) return
+    async function load() {
+      const { data } = await supabase
+        .from('outfits')
+        .select('*, outfit_items(item_id)')
+        .eq('id', editId!)
+        .single()
+      if (!data) { setLoadingEdit(false); return }
+      setDate(data.date_worn)
+      setOccasion(data.occasion ?? '')
+      setRating(data.rating ?? null)
+      setNotes(data.notes ?? '')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ids = ((data as any).outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
+      setSelectedIds(new Set(ids))
+      setLoadingEdit(false)
+    }
+    load()
+  }, [editId, isEdit])
 
   const toggleItem = (id: string) =>
     setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -32,12 +58,13 @@ export default function LogOutfitPage() {
     if (selectedIds.size === 0) { setError('Select at least one item.'); return }
     setSaving(true); setError(null)
     try {
-      const id = await logOutfit(
-        { date_worn: date, occasion, rating, notes },
-        Array.from(selectedIds),
-        imageFile ?? undefined,
-      )
-      navigate(`/outfits/${id}`)
+      if (isEdit && editId) {
+        await updateOutfit(editId, { date_worn: date, occasion, rating, notes }, Array.from(selectedIds), imageFile ?? undefined)
+        navigate(`/outfits/${editId}`)
+      } else {
+        const id = await logOutfit({ date_worn: date, occasion, rating, notes }, Array.from(selectedIds), imageFile ?? undefined)
+        navigate(`/outfits/${id}`)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setSaving(false)
@@ -46,10 +73,16 @@ export default function LogOutfitPage() {
 
   const selectedCount = selectedIds.size
 
+  if (loadingEdit) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+      <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
+    </div>
+  )
+
   return (
     <div style={{ paddingBottom: 180 }}>
       <AppBar
-        title="Log an outfit"
+        title={isEdit ? 'Edit outfit' : 'Log an outfit'}
         back
         onBack={() => navigate(-1)}
         right={
@@ -61,7 +94,7 @@ export default function LogOutfitPage() {
 
       <div style={{ padding: '12px 20px 0' }}>
         <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em' }}>
-          pick items · add context · save
+          {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
         </div>
       </div>
 
@@ -119,9 +152,7 @@ export default function LogOutfitPage() {
         {itemsLoading ? (
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
         ) : items.length === 0 ? (
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
-            no items in wardrobe yet
-          </div>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {items.map(item => (
@@ -148,8 +179,7 @@ export default function LogOutfitPage() {
                   {selectedIds.has(item.id) && (
                     <div style={{
                       position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.38)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
                     }}>
                       <Icon name="check" size={22} stroke={2.5} />
                     </div>
@@ -194,8 +224,7 @@ export default function LogOutfitPage() {
             fontFamily: UI, fontSize: 13,
             color: notes ? INK : 'rgba(0,0,0,0.35)',
             background: 'none', border: 'none', outline: 'none',
-            borderBottom: RULE, padding: '6px 0',
-            resize: 'none',
+            borderBottom: RULE, padding: '6px 0', resize: 'none',
           }}
         />
       </div>
@@ -208,22 +237,16 @@ export default function LogOutfitPage() {
           onClick={() => fileInputRef.current?.click()}
           style={{
             width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)',
-            background: 'none', cursor: 'pointer',
-            padding: '32px 0',
+            background: 'none', cursor: 'pointer', padding: '32px 0',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
             fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)',
             textTransform: 'uppercase', letterSpacing: '0.06em',
           }}
         >
           {imageFile ? (
-            <span style={{ color: INK, textTransform: 'none', letterSpacing: 0 }}>
-              {imageFile.name} ✓
-            </span>
+            <span style={{ color: INK, textTransform: 'none', letterSpacing: 0 }}>{imageFile.name} ✓</span>
           ) : (
-            <>
-              <Icon name="camera" size={18} stroke={1.4} />
-              tap to add photo
-            </>
+            <><Icon name="camera" size={18} stroke={1.4} />tap to add photo</>
           )}
         </button>
       </div>
@@ -239,7 +262,7 @@ export default function LogOutfitPage() {
         <div style={{ display: 'flex', gap: 8 }}>
           <UButton variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1 }}>Cancel</UButton>
           <UButton icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave} style={{ flex: 2 }}>
-            {saving ? 'Saving…' : 'Save outfit'}
+            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save outfit'}
           </UButton>
         </div>
       </div>
