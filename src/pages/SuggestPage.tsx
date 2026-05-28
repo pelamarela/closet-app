@@ -216,7 +216,7 @@ export default function SuggestPage() {
   return (
     <div style={{ paddingBottom: 100 }}>
       <TopBar
-        title={<><Icon name="spark" size={16} stroke={1.6} /> Suggest</>}
+        title="Suggest"
         meta="hybrid · code + claude"
       />
 

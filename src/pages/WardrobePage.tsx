@@ -43,7 +43,7 @@ export default function WardrobePage() {
     return (
       <div style={{ paddingBottom: 40 }}>
         <TopBar
-          title={<><Icon name="hanger" size={16} stroke={1.6} /> Closet</>}
+          title="Closet"
           meta="0 items"
         />
 
@@ -119,7 +119,7 @@ export default function WardrobePage() {
   return (
     <div style={{ paddingBottom: 100 }}>
       <TopBar
-        title={<><Icon name="hanger" size={16} stroke={1.6} /> Closet</>}
+        title="Closet"
         meta={`${items.length} items`}
       />
 
