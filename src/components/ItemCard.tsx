@@ -8,8 +8,6 @@ interface ItemCardProps {
 }
 
 export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
-  const shortId = item.id.slice(0, 6)
-
   return (
     <button
       onClick={onClick}
@@ -44,15 +42,6 @@ export default function ItemCard({ item, onClick, selected }: ItemCardProps) {
           background: '#fff', color: INK,
           padding: '2px 5px', letterSpacing: '0.04em',
         }}>{item.category}</div>
-
-        {/* ID badge top-right */}
-        <div style={{
-          position: 'absolute', top: 6, right: 6,
-          fontFamily: MONO, fontSize: 8.5,
-          color: 'rgba(255,255,255,0.9)',
-          background: 'rgba(0,0,0,0.45)',
-          padding: '2px 5px',
-        }}>{shortId}</div>
 
         {/* Selection overlay */}
         {selected !== undefined && (
