@@ -1,19 +1,19 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
 import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM } from '../components/ui'
+import { setBatchFiles } from '../lib/batchState'
 import type { Category } from '../types/database'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
-  { value: 'all',       label: 'all' },
-  { value: 'top',       label: 'top' },
-  { value: 'bottom',    label: 'btm' },
-  { value: 'dress',     label: 'dress' },
-  { value: 'outerwear', label: 'coat' },
-  { value: 'shoes',     label: 'shoe' },
-  { value: 'accessory', label: 'acc' },
-  { value: 'set',       label: 'set' },
+  { value: 'all',        label: 'all' },
+  { value: 'top',        label: 'top' },
+  { value: 'bottom',     label: 'btm' },
+  { value: 'one-piece',  label: '1pc' },
+  { value: 'outerwear',  label: 'otw' },
+  { value: 'shoes',      label: 'shoe' },
+  { value: 'accessory',  label: 'acc' },
 ]
 
 export default function WardrobePage() {
@@ -21,6 +21,7 @@ export default function WardrobePage() {
   const { items, loading, error } = useItems()
   const [filter, setFilter] = useState<'all' | Category>('all')
   const [fabOpen, setFabOpen] = useState(false)
+  const batchInputRef = useRef<HTMLInputElement>(null)
 
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
   const countFor = (v: 'all' | Category) =>
@@ -147,22 +148,34 @@ export default function WardrobePage() {
         ))}
       </div>
 
-      {/* Grid */}
+      {/* Grid — alignItems:start prevents unequal row stretching */}
       {filtered.length === 0 ? (
         <div style={{ padding: '48px 20px', textAlign: 'center', fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
           no {FILTERS.find(f => f.value === filter)?.label} yet
         </div>
       ) : (
-        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, alignItems: 'start' }}>
           {filtered.map(item => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onClick={() => navigate(`/wardrobe/${item.id}`)}
-            />
+            <ItemCard key={item.id} item={item} onClick={() => navigate(`/wardrobe/${item.id}`)} />
           ))}
         </div>
       )}
+
+      {/* Hidden file input for batch upload — triggered directly from user gesture */}
+      <input
+        ref={batchInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        style={{ display: 'none' }}
+        onChange={e => {
+          const files = Array.from(e.target.files ?? [])
+          if (!files.length) return
+          setBatchFiles(files)
+          setFabOpen(false)
+          navigate('/wardrobe/batch')
+        }}
+      />
 
       {/* Add item dropdown */}
       {fabOpen && (
@@ -172,75 +185,61 @@ export default function WardrobePage() {
             position: 'fixed', bottom: 158, left: '50%', transform: 'translateX(-50%)',
             width: '100%', maxWidth: 430, zIndex: 26, paddingLeft: 20, pointerEvents: 'none',
           }}>
-          <div style={{
-            width: 240, background: '#fff', border: RULE, borderRadius: 4,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', pointerEvents: 'auto',
-          }}>
             <div style={{
-              padding: '8px 12px', borderBottom: RULE,
-              fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.55)',
-              textTransform: 'uppercase', letterSpacing: '0.08em',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              width: 240, background: '#fff', border: RULE, borderRadius: 4,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', pointerEvents: 'auto',
             }}>
-              <span>// add item</span>
-              <span>▴</span>
-            </div>
-            {[
-              { icon: 'plus', label: 'Single item', sub: 'form · one piece at a time', path: '/wardrobe/new' },
-              { icon: 'grid', label: 'Multiple at once', sub: 'batch upload · 2–20 photos', path: '/wardrobe/batch' },
-            ].map(row => (
+              <div style={{
+                padding: '8px 12px', borderBottom: RULE,
+                fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.55)',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span>// add item</span><span>▴</span>
+              </div>
               <button
-                key={row.path}
-                onClick={() => { setFabOpen(false); navigate(row.path) }}
-                style={{
-                  width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer',
-                  display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12,
-                  padding: '12px 12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none',
-                }}
+                onClick={() => { setFabOpen(false); navigate('/wardrobe/new') }}
+                style={{ width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer', display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12, padding: '12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}
               >
                 <div style={{ width: 34, height: 34, border: RULE, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name={row.icon} size={16} stroke={1.6} />
+                  <Icon name="plus" size={16} stroke={1.6} />
                 </div>
                 <div>
-                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{row.label}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{row.sub}</div>
+                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>Single item</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>form · one piece at a time</div>
                 </div>
               </button>
-            ))}
-            <div style={{ padding: '8px 12px', fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              tap outside to dismiss
+              <button
+                onClick={() => { batchInputRef.current?.click() }}
+                style={{ width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer', display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12, padding: '12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}
+              >
+                <div style={{ width: 34, height: 34, border: RULE, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="grid" size={16} stroke={1.6} />
+                </div>
+                <div>
+                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>Multiple at once</div>
+                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>batch upload · ai-powered</div>
+                </div>
+              </button>
+              <div style={{ padding: '8px 12px', fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                tap outside to dismiss
+              </div>
             </div>
-          </div>
           </div>
         </>
       )}
 
-      {/* Fixed action bar above nav */}
+      {/* Fixed action bar — unified UButton for both actions */}
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430,
         background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px',
-        display: 'flex', gap: 8,
-        zIndex: 25,
+        padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
       }}>
-        <button
-          onClick={() => setFabOpen(o => !o)}
-          style={{
-            flex: 1.25, height: 48, padding: '0 16px',
-            background: INK, color: '#fff', border: 'none',
-            borderRadius: 4, cursor: 'pointer',
-            fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.005em',
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <Icon name="plus" size={15} stroke={2} />
+        <UButton icon="plus" onClick={() => setFabOpen(o => !o)} style={{ flex: 1.25, justifyContent: 'flex-start' }}>
           Add item
-          <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, paddingLeft: 4, opacity: 0.7 }}>
-            {fabOpen ? '▴' : '▾'}
-          </span>
-        </button>
+          <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, opacity: 0.7 }}>{fabOpen ? '▴' : '▾'}</span>
+        </UButton>
         <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
           Log outfit
         </UButton>

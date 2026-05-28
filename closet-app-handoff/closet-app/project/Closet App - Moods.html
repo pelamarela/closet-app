@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Closet App — Mood Exploration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { font-family: 'Inter Tight', system-ui, sans-serif; color: #0a0a0a; }
+    * { box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="screens-editorial.jsx"></script>
+  <script type="text/babel" src="screens-soft.jsx"></script>
+  <script type="text/babel" src="screens-utility.jsx"></script>
+
+  <script type="text/babel">
+    const { useEffect } = React;
+
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="brief"
+            title="Closet App — three moods, three screens each"
+            subtitle="Mobile-first, 390×844. Same palette and content, three different visual systems. Drag artboards to reorder · click the expand icon to view fullscreen.">
+          </DCSection>
+
+          <DCSection
+            id="editorial"
+            title="A · Editorial"
+            subtitle="Instrument Serif display + Inter Tight body. Hairline rules, lots of whitespace, italic accents — a magazine table of contents.">
+            <DCArtboard id="a-home"    label="Home" width={SCREEN_W} height={SCREEN_H}>
+              <EditorialHome />
+            </DCArtboard>
+            <DCArtboard id="a-closet"  label="Wardrobe" width={SCREEN_W} height={SCREEN_H}>
+              <EditorialWardrobe />
+            </DCArtboard>
+            <DCArtboard id="a-outfit"  label="Outfit detail" width={SCREEN_W} height={SCREEN_H}>
+              <EditorialOutfit />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="soft"
+            title="B · Soft domestic"
+            subtitle="Plus Jakarta Sans throughout. Cream-dominant ground, floating pill tab bar, rounded cards — at-home, friendly, warm.">
+            <DCArtboard id="b-home"    label="Home" width={SCREEN_W} height={SCREEN_H}>
+              <SoftHome />
+            </DCArtboard>
+            <DCArtboard id="b-closet"  label="Wardrobe" width={SCREEN_W} height={SCREEN_H}>
+              <SoftWardrobe />
+            </DCArtboard>
+            <DCArtboard id="b-outfit"  label="Outfit detail" width={SCREEN_W} height={SCREEN_H}>
+              <SoftOutfit />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="utility"
+            title="C · Utility"
+            subtitle="Geist + JetBrains Mono. Sharp 2-4px radii, hairline dividers, mono for everything quantitative — peach used only as a single accent dot.">
+            <DCArtboard id="c-home"    label="Home" width={SCREEN_W} height={SCREEN_H}>
+              <UtilityHome />
+            </DCArtboard>
+            <DCArtboard id="c-closet"  label="Wardrobe" width={SCREEN_W} height={SCREEN_H}>
+              <UtilityWardrobe />
+            </DCArtboard>
+            <DCArtboard id="c-outfit"  label="Outfit detail" width={SCREEN_W} height={SCREEN_H}>
+              <UtilityOutfit />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

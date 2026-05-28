@@ -1,19 +1,19 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { compressImage } from '../lib/imageUtils'
+import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: 'top',       label: 'top' },
-  { value: 'bottom',    label: 'btm' },
-  { value: 'dress',     label: 'dress' },
-  { value: 'outerwear', label: 'coat' },
-  { value: 'shoes',     label: 'shoe' },
-  { value: 'accessory', label: 'acc' },
-  { value: 'set',       label: 'set' },
+  { value: 'top',        label: 'top' },
+  { value: 'bottom',     label: 'btm' },
+  { value: 'one-piece',  label: '1pc' },
+  { value: 'outerwear',  label: 'otw' },
+  { value: 'shoes',      label: 'shoe' },
+  { value: 'accessory',  label: 'acc' },
 ]
 
 interface Draft {
@@ -62,7 +62,7 @@ async function analyzeImage(file: File): Promise<Partial<Draft>> {
   }
 }
 
-const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory', 'set'])
+const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 
 function toCategory(raw: string | undefined): Category {
   if (raw && VALID_CATEGORIES.has(raw as Category)) return raw as Category
@@ -76,45 +76,60 @@ export default function BatchUploadPage() {
 
   const [stage, setStage] = useState<Stage>('pick')
 
-  useEffect(() => { fileInputRef.current?.click() }, [])
+  // Consume files passed from WardrobePage via batchState
+  useEffect(() => {
+    const files = takeBatchFiles()
+    if (files.length) processFiles(files)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [current, setCurrent] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [savedCount, setSavedCount] = useState(0)
   const [analyzeProgress, setAnalyzeProgress] = useState({ done: 0, total: 0 })
 
-  const nameFromFile = (file: File) =>
-    file.name
-      .replace(/\.[^.]+$/, '')
-      .replace(/[-_.]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
+  // Extract the meaningful segment from filenames like "shop-block_0000s_0004_adidas-sl72-red.png"
+  const parseName = (file: File): string => {
+    const base = file.name.replace(/\.[^.]+$/, '')
+    const segments = base.split('_')
+    const meaningful = segments[segments.length - 1]
+    return meaningful
+      .replace(/-/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase())
+      .trim()
+  }
 
-  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (!files.length) return
+  const COLORS = new Set(['red','blue','black','white','green','brown','grey','gray','yellow','pink','purple','orange','beige','navy','cream','nude','camel','tan','ivory','khaki','olive','burgundy'])
 
-    // Build initial drafts from file names
-    const initial: Draft[] = files.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      name: nameFromFile(file),
-      category: 'top',
-      warmth: 3,
-      formality: 3,
-      color: '',
-      brand: '',
-      material: '',
-      pattern: '',
-      subcategory: '',
-    }))
+  const parseColor = (name: string): string => {
+    const words = name.toLowerCase().split(' ')
+    return words.find(w => COLORS.has(w)) ?? ''
+  }
+
+  const parseBrand = (name: string): string => name.split(' ')[0] ?? ''
+
+  const processFiles = useCallback(async (files: File[]) => {
+    const initial: Draft[] = files.map(file => {
+      const name = parseName(file)
+      return {
+        file,
+        preview: URL.createObjectURL(file),
+        name,
+        category: 'top' as Category,
+        warmth: 3,
+        formality: 3,
+        color: parseColor(name),
+        brand: parseBrand(name),
+        material: '',
+        pattern: '',
+        subcategory: '',
+      }
+    })
     setDrafts(initial)
     setCurrent(0)
     setAnalyzeProgress({ done: 0, total: files.length })
     setStage('analyzing')
 
-    // Analyze all images in parallel (max 5 concurrent)
+    // Analyze all images in parallel (max 5 concurrent), AI fills category/warmth/formality
     const CONCURRENCY = 5
     const enriched = [...initial]
     let done = 0
@@ -124,16 +139,18 @@ export default function BatchUploadPage() {
       const results = await Promise.all(batch.map(analyzeImage))
       results.forEach((result, j) => {
         const idx = i + j
+        const base = enriched[idx]
         enriched[idx] = {
-          ...enriched[idx],
-          name: result.name ?? enriched[idx].name,
-          category: toCategory(result.category as string),
-          color: result.color ?? '',
-          subcategory: result.subcategory ?? '',
-          warmth: typeof result.warmth === 'number' ? result.warmth : 3,
-          formality: typeof result.formality === 'number' ? result.formality : 3,
-          brand: result.brand ?? '',
-          material: result.material ?? '',
+          ...base,
+          // Filename takes priority for name/brand/color; AI fills the rest
+          category:    toCategory(result.category as string),
+          warmth:      typeof result.warmth === 'number' ? result.warmth : base.warmth,
+          formality:   typeof result.formality === 'number' ? result.formality : base.formality,
+          subcategory: result.subcategory ?? base.subcategory,
+          material:    result.material ?? base.material,
+          // Only override brand/color from AI if filename didn't provide them
+          brand:       base.brand || (result.brand ?? ''),
+          color:       base.color || (result.color ?? ''),
         }
         done++
         setAnalyzeProgress({ done, total: files.length })
@@ -142,6 +159,12 @@ export default function BatchUploadPage() {
     }
 
     setStage('fill')
+  }, [])
+
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    await processFiles(files)
   }
 
   const handleSkip = () => {
@@ -203,14 +226,7 @@ export default function BatchUploadPage() {
         minHeight: '100svh', gap: 12,
       }}>
         {fileInput}
-        {/* Fallback if browser blocks auto-open */}
-        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>opening file picker…</div>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          style={{ fontFamily: MONO, fontSize: 10, color: INK, background: 'none', border: `1px solid ${INK}`, padding: '6px 14px', cursor: 'pointer' }}
-        >
-          tap here if nothing opened
-        </button>
+        <UButton icon="spark" onClick={() => fileInputRef.current?.click()}>Choose photos</UButton>
       </div>
     )
   }

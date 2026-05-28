@@ -12,11 +12,10 @@ import type { Category } from '../types/database'
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: 'top' },
   { value: 'bottom', label: 'btm' },
-  { value: 'dress', label: 'dress' },
-  { value: 'outerwear', label: 'coat' },
+  { value: 'one-piece', label: '1pc' },
+  { value: 'outerwear', label: 'otw' },
   { value: 'shoes', label: 'shoe' },
-  { value: 'accessory', label: 'acc' },
-  { value: 'set',       label: 'set' },
+  { value: 'accessory',  label: 'acc' },
 ]
 
 const EMPTY: ItemFormData = {

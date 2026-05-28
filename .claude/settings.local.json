@@ -20,7 +20,16 @@
       "Bash(gunzip -c \"/Users/spelaanzeljcgacnik/.claude-personal/projects/-Users-spelaanzeljcgacnik-Downloads-claude-hub-closet-app/3599aa8e-8923-4ac6-90c1-a3096fd58cf6/tool-results/webfetch-1779915300582-sincmh.bin\")",
       "Read(//tmp/**)",
       "Bash(mkdir -p /tmp/closet-design)",
-      "Bash(tar -xf \"/Users/spelaanzeljcgacnik/.claude-personal/projects/-Users-spelaanzeljcgacnik-Downloads-claude-hub-closet-app/3599aa8e-8923-4ac6-90c1-a3096fd58cf6/tool-results/webfetch-1779915300582-sincmh.bin\" -C /tmp/closet-design)"
+      "Bash(tar -xf \"/Users/spelaanzeljcgacnik/.claude-personal/projects/-Users-spelaanzeljcgacnik-Downloads-claude-hub-closet-app/3599aa8e-8923-4ac6-90c1-a3096fd58cf6/tool-results/webfetch-1779915300582-sincmh.bin\" -C /tmp/closet-design)",
+      "Bash(unzip -o closet-app-handoff.zip -d closet-app-handoff)",
+      "Bash(unzip -o \"/Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/closet-app-handoff.zip\" -d \"/Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/closet-app-handoff/\")",
+      "Bash(npm list *)",
+      "Bash(git ls-remote *)",
+      "Bash(identify /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/closet-app-handoff/closet-app/project/uploads/logo-2023-margins-FINAL.png)",
+      "Bash(xargs ls -la)",
+      "Bash(gh run *)",
+      "Bash(gh deployment *)",
+      "Bash(vercel *)"
     ]
   }
 }

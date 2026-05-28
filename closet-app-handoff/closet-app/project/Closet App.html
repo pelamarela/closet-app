@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Closet App — Utility direction</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; color: #0a0a0a; }
+    * { box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="utility-system.jsx"></script>
+  <script type="text/babel" src="screens-utility.jsx"></script>
+  <script type="text/babel" src="screens-utility-items.jsx"></script>
+  <script type="text/babel" src="screens-utility-outfits.jsx"></script>
+  <script type="text/babel" src="screens-utility-account.jsx"></script>
+  <script type="text/babel" src="screens-utility-extras.jsx"></script>
+  <script type="text/babel" src="screens-brand.jsx"></script>
+
+  <script type="text/babel">
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection
+            id="brief"
+            title="Closet App — Utility direction"
+            subtitle="Mobile-first, 390×844. Geist + JetBrains Mono. Sharp 2–4px radii, hairline dividers, mono for everything quantitative; peach used only as a single accent dot. Phase 1 + Phase 2 + Phase 3 covered end-to-end across 18 screens.">
+          </DCSection>
+
+          <DCSection
+            id="brand"
+            title="00 · Brand mark"
+            subtitle="The umbrella logo dropped onto the system. Same three colours as the existing tokens, so no recolouring is needed — only sizing rules and a couple of featured placements.">
+            <DCArtboard id="brand-scales"  label="Mark · at scale"          width={620} height={460}>
+              <BrandMarkScales />
+            </DCArtboard>
+            <DCArtboard id="brand-palette" label="Palette · alignment"       width={620} height={460}>
+              <BrandPaletteFit />
+            </DCArtboard>
+            <DCArtboard id="brand-header"  label="Header · before / after"  width={620} height={460}>
+              <BrandHeaderCompare />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="entry"
+            title="01 · Entry & home"
+            subtitle="The screens that frame the app — sign-in, magic-link confirmation, the first-run empty state, and the daily landing.">
+            <DCArtboard id="login"   label="Login · magic link"   width={SCREEN_W} height={SCREEN_H}>
+              <UtilityLogin />
+            </DCArtboard>
+            <DCArtboard id="check"   label="Check email"          width={SCREEN_W} height={SCREEN_H}>
+              <UtilityCheckEmail />
+            </DCArtboard>
+            <DCArtboard id="empty"   label="Empty closet · first run" width={SCREEN_W} height={SCREEN_H}>
+              <UtilityEmptyCloset />
+            </DCArtboard>
+            <DCArtboard id="home"    label="Home · today"         width={SCREEN_W} height={SCREEN_H}>
+              <UtilityHome />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="closet"
+            title="02 · Closet (Phase 1)"
+            subtitle="Catalogue 150–400 items. Grid → search → detail → add (form) → photo review. Photos compressed client-side, attributes are mostly mono key/value.">
+            <DCArtboard id="wardrobe"   label="Wardrobe · 3-col grid"  width={SCREEN_W} height={SCREEN_H}>
+              <UtilityWardrobe />
+            </DCArtboard>
+            <DCArtboard id="add-menu"   label="Add item · menu open"   width={SCREEN_W} height={SCREEN_H}>
+              <UtilityWardrobeAddMenu />
+            </DCArtboard>
+            <DCArtboard id="search"     label="Search overlay"          width={SCREEN_W} height={SCREEN_H}>
+              <UtilitySearchOverlay />
+            </DCArtboard>
+            <DCArtboard id="item"       label="Item detail · stats"    width={SCREEN_W} height={SCREEN_H}>
+              <UtilityItemDetail />
+            </DCArtboard>
+            <DCArtboard id="add-item"   label="Add item · form"        width={SCREEN_W} height={SCREEN_H}>
+              <UtilityAddItem />
+            </DCArtboard>
+            <DCArtboard id="photo"      label="Photo review"            width={SCREEN_W} height={SCREEN_H}>
+              <UtilityPhotoReview />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="outfits"
+            title="03 · Outfits (Phase 2)"
+            subtitle="Log what you wore, browse the library two ways. Calendar month grid uses the actual outfit thumbnail as the day cell; list is dense and mono-sorted; grid is a quick visual recall.">
+            <DCArtboard id="log"           label="Log outfit · pick"        width={SCREEN_W} height={SCREEN_H}>
+              <UtilityLogOutfit />
+            </DCArtboard>
+            <DCArtboard id="calendar"      label="Calendar · April"         width={SCREEN_W} height={SCREEN_H}>
+              <UtilityCalendar />
+            </DCArtboard>
+            <DCArtboard id="library"       label="Library · list view"      width={SCREEN_W} height={SCREEN_H}>
+              <UtilityLibrary />
+            </DCArtboard>
+            <DCArtboard id="library-grid"  label="Library · grid view"      width={SCREEN_W} height={SCREEN_H}>
+              <UtilityLibraryGrid />
+            </DCArtboard>
+            <DCArtboard id="outfit"        label="Outfit detail"            width={SCREEN_W} height={SCREEN_H}>
+              <UtilityOutfit />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="suggest"
+            title="04 · Suggest (Phase 3)"
+            subtitle="Hybrid engine: pre-filter the closet by warmth + formality in code, send the filtered set + style profile + weather to Claude, return 1–3 outfits with a brief reasoning paragraph.">
+            <DCArtboard id="suggest-in"   label="Brief · occasion + weather" width={SCREEN_W} height={SCREEN_H}>
+              <UtilitySuggestInput />
+            </DCArtboard>
+            <DCArtboard id="suggest-out"  label="Suggestion · reasoning"   width={SCREEN_W} height={SCREEN_H}>
+              <UtilitySuggestResult />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection
+            id="account"
+            title="05 · Account"
+            subtitle="The owner block, the free-text style profile that feeds the suggestion prompt, and storage against the free-tier limits.">
+            <DCArtboard id="settings"   label="Settings & profile summary" width={SCREEN_W} height={SCREEN_H}>
+              <UtilitySettings />
+            </DCArtboard>
+            <DCArtboard id="profile"    label="Style profile editor"      width={SCREEN_W} height={SCREEN_H}>
+              <UtilityStyleProfileEditor />
+            </DCArtboard>
+          </DCSection>
+
+
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
