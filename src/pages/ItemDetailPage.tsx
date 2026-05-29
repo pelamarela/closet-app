@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import { useItemMutations } from '../hooks/useItemMutations'
 import { AppBar, SectionLabel, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import type { Item } from '../types/database'
 
@@ -26,6 +27,7 @@ export default function ItemDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
+  const { archiveItem } = useItemMutations()
   const [item, setItem] = useState<ItemWithStats | null>(null)
   const [pairings, setPairings] = useState<PairedItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,7 +129,7 @@ export default function ItemDetailPage() {
   return (
     <div style={{ paddingBottom: 40 }}>
       <AppBar
-        title={<><Icon name="hanger" size={16} stroke={1.6} /> Closet</>}
+        title="Closet"
         back
         onBack={() => navigate('/wardrobe')}
         right={
@@ -139,10 +141,10 @@ export default function ItemDetailPage() {
               <Icon name="edit" size={17} stroke={1.4} />
             </button>
             <button
-              onClick={() => navigate(`/wardrobe/${id}/edit`)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 4 }}
+              onClick={async () => { await archiveItem(id!); navigate('/wardrobe') }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.45)', padding: 4 }}
             >
-              <Icon name="more" size={18} stroke={1.4} />
+              <Icon name="archive" size={17} stroke={1.4} />
             </button>
           </div>
         }

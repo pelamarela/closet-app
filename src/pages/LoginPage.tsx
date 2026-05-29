@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { MONO, UI, INK, BLUSH, CREAM, RULE, ACCENT } from '../components/ui'
+import { MONO, UI, INK, CREAM, RULE, ACCENT } from '../components/ui'
 
 type Mode = 'signin' | 'signup'
 
@@ -43,13 +43,10 @@ export default function LoginPage() {
       {/* Brand header */}
       <div style={{ padding: '4px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', color: INK }}>
-          <div style={{ width: 18, height: 18, background: BLUSH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 6, height: 6, background: INK }} />
-          </div>
+          <img src="/logo.png" style={{ width: 24, height: 24, display: 'block' }} alt="closet" />
           closet
           <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
         </div>
-        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)' }}>private · invite only</div>
       </div>
       <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
 
@@ -168,18 +165,6 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Footer */}
-      <div style={{
-        margin: '32px 20px 28px',
-        display: 'flex', justifyContent: 'space-between',
-        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)',
-        textTransform: 'uppercase', letterSpacing: '0.08em',
-        paddingTop: 14, borderTop: RULE,
-      }}>
-        <span>supabase auth</span>
-        <span>rls enabled</span>
-        <span>v 0.1.0</span>
-      </div>
     </div>
   )
 }

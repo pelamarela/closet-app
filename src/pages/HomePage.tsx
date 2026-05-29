@@ -69,15 +69,9 @@ export default function HomePage() {
             </div>
           </button>
         ) : (
-          <>
-            <div style={{ fontFamily: UI, fontSize: 38, lineHeight: 1.02, fontWeight: 500, letterSpacing: '-0.025em' }}>
-              You haven't<br />logged today.
-            </div>
-            <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
-              <UButton icon="plus" full style={{ flex: 1 }} onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
-              <UButton variant="secondary" icon="spark" style={{ width: 132 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
-            </div>
-          </>
+          <div style={{ fontFamily: UI, fontSize: 38, lineHeight: 1.02, fontWeight: 500, letterSpacing: '-0.025em' }}>
+            You haven't<br />logged today.
+          </div>
         )}
       </div>
 
@@ -168,9 +162,10 @@ export default function HomePage() {
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430,
         background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', zIndex: 25,
+        padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
       }}>
-        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+        <UButton icon="plus" full style={{ flex: 1 }} onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+        <UButton variant="secondary" icon="spark" style={{ width: 120 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
       </div>
     </div>
   )

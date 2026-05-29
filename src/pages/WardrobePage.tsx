@@ -2,8 +2,8 @@ import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
-import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, CREAM, ACCENT } from '../components/ui'
-import { setBatchFiles } from '../lib/batchState'
+import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, RULE, CREAM, ACCENT } from '../components/ui'
+import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import type { Category } from '../types/database'
 
@@ -21,7 +21,6 @@ export default function WardrobePage() {
   const navigate = useNavigate()
   const { items, loading, error } = useItems()
   const [filter, setFilter] = useState<'all' | Category>('all')
-  const [fabOpen, setFabOpen] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -146,23 +145,9 @@ export default function WardrobePage() {
         meta={
           selectMode
             ? <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', padding: 0 }}>cancel</button>
-            : <button onClick={() => { setSelectMode(true); setFabOpen(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', padding: 0 }}>{items.length} items · select</button>
+            : <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)', padding: 0 }}>{items.length} items · select</button>
         }
       />
-
-      {/* Search bar */}
-      <div style={{ padding: '14px 20px 0' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          border: RULE, borderRadius: 4, padding: '0 12px', height: 40, background: '#fff',
-        }}>
-          <Icon name="search" size={16} stroke={1.4} />
-          <div style={{ flex: 1, fontFamily: 'Geist, Inter, system-ui', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>
-            search items, brands, colors…
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.35)', padding: '2px 5px', border: RULE, borderRadius: 3 }}>⌘ K</div>
-        </div>
-      </div>
 
       {/* Filter chips */}
       <div style={{ display: 'flex', gap: 6, padding: '12px 20px 0', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -193,7 +178,7 @@ export default function WardrobePage() {
         </div>
       )}
 
-      {/* Hidden file input for batch upload — triggered directly from user gesture */}
+      {/* Hidden file input — single pick → item form, multiple → batch */}
       <input
         ref={batchInputRef}
         type="file"
@@ -203,63 +188,16 @@ export default function WardrobePage() {
         onChange={e => {
           const files = Array.from(e.target.files ?? [])
           if (!files.length) return
-          setBatchFiles(files)
-          setFabOpen(false)
-          navigate('/wardrobe/batch')
+          e.target.value = ''
+          if (files.length === 1) {
+            setSingleFile(files[0])
+            navigate('/wardrobe/new')
+          } else {
+            setBatchFiles(files)
+            navigate('/wardrobe/batch')
+          }
         }}
       />
-
-      {/* Add item dropdown */}
-      {fabOpen && (
-        <>
-          <div onClick={() => setFabOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 24 }} />
-          <div style={{
-            position: 'fixed', bottom: 158, left: '50%', transform: 'translateX(-50%)',
-            width: '100%', maxWidth: 430, zIndex: 26, paddingLeft: 20, pointerEvents: 'none',
-          }}>
-            <div style={{
-              width: 240, background: '#fff', border: RULE, borderRadius: 4,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.18)', overflow: 'hidden', pointerEvents: 'auto',
-            }}>
-              <div style={{
-                padding: '8px 12px', borderBottom: RULE,
-                fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.55)',
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <span>// add item</span><span>▴</span>
-              </div>
-              <button
-                onClick={() => { setFabOpen(false); navigate('/wardrobe/new') }}
-                style={{ width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer', display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12, padding: '12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}
-              >
-                <div style={{ width: 34, height: 34, border: RULE, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="plus" size={16} stroke={1.6} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>Single item</div>
-                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>form · one piece at a time</div>
-                </div>
-              </button>
-              <button
-                onClick={() => { batchInputRef.current?.click() }}
-                style={{ width: '100%', textAlign: 'left', background: 'none', cursor: 'pointer', display: 'grid', gridTemplateColumns: '34px 1fr', alignItems: 'center', gap: 12, padding: '12px', borderBottom: RULE, borderLeft: 'none', borderRight: 'none', borderTop: 'none' }}
-              >
-                <div style={{ width: 34, height: 34, border: RULE, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="grid" size={16} stroke={1.6} />
-                </div>
-                <div>
-                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>Multiple at once</div>
-                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>batch upload · ai-powered</div>
-                </div>
-              </button>
-              <div style={{ padding: '8px 12px', fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                tap outside to dismiss
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* Fixed action bar */}
       <div style={{
@@ -296,9 +234,8 @@ export default function WardrobePage() {
           )
         ) : (
           <>
-            <UButton icon="plus" onClick={() => setFabOpen(o => !o)} style={{ flex: 1.25, justifyContent: 'flex-start' }}>
+            <UButton icon="plus" onClick={() => batchInputRef.current?.click()} style={{ flex: 1.25 }}>
               Add item
-              <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, opacity: 0.7 }}>{fabOpen ? '▴' : '▾'}</span>
             </UButton>
             <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
               Log outfit

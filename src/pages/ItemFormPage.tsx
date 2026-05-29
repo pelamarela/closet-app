@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
+import { takeSingleFile } from '../lib/batchState'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
 
@@ -103,6 +104,16 @@ export default function ItemFormPage() {
         setLoadingItem(false)
       })
   }, [id, isEdit, user])
+
+  useEffect(() => {
+    if (isEdit) return
+    const file = takeSingleFile()
+    if (file) {
+      setImageFile(file)
+      const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_.]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase())
+      setForm(f => ({ ...f, name }))
+    }
+  }, [isEdit])
 
   const set = (k: keyof ItemFormData) => (v: string) =>
     setForm(f => ({ ...f, [k]: v }) as ItemFormData)
