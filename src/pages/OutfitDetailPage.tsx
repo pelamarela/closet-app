@@ -135,8 +135,7 @@ export default function OutfitDetailPage() {
       {/* Hero */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{
-          width: '100%',
-          aspectRatio: outfitImageUrl ? '5/4' : undefined,
+          width: '100%', aspectRatio: '5/4',
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
           {outfitImageUrl ? (
@@ -147,36 +146,31 @@ export default function OutfitDetailPage() {
             const small = items.filter(i => SMALL_CAT.has(i.category));
             const m = main.length, s = small.length;
             const G = 3;
-            // Height scales with main item count so stacked mains get enough room
-            const H = m <= 1 ? 'min(72vw, 52vh)' : m === 2 ? 'min(90vw, 62vh)' : 'min(105vw, 70vh)';
 
-            const imgCell = (item: typeof items[0], isMain: boolean, style: React.CSSProperties = {}) => (
-              <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', ...style }}>
+            const cell = (item: typeof items[0], pos = 'center', style: React.CSSProperties = {}) => (
+              <div key={item.id} style={{ overflow: 'hidden', background: '#ECEAE6', ...style }}>
                 {item.signedImageUrl
-                  ? <img src={item.signedImageUrl} alt={item.name} style={{
-                      width: '100%', height: '100%', display: 'block',
-                      objectFit: 'cover',
-                      objectPosition: isMain ? 'top center' : 'center',
-                    }} />
+                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, display: 'block' }} />
                   : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
                 }
               </div>
             );
 
-            // All same category → even grid
+            // All same category: even grid filling the 5/4 container
             if (m === 0 || s === 0) {
-              const all = [...main, ...small];
-              const isAllMain = s === 0;
+              const all = m > 0 ? main : small;
+              const pos = m > 0 ? 'top center' : 'center';
               const cols = all.length === 1 ? 1 : 2;
               const rows = Math.ceil(all.length / cols);
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, gap: G, height: H }}>
-                  {all.map((item, i) => imgCell(item, isAllMain, all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}))}
+                <div style={{ display: 'grid', height: '100%', gap: G, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
+                  {all.map((item, i) => cell(item, pos, all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}))}
                 </div>
               );
             }
 
-            // Mixed: main on left (bigger), small on right (tighter grid)
+            // Mixed: main left (wide), small right (grid)
+            // Left % = bigger when few smalls or many mains
             const leftPct = m === 1 && s === 1 ? 62
               : m >= 2 && s === 1 ? 67
               : m === 1 && s >= 3 ? 54
@@ -185,17 +179,17 @@ export default function OutfitDetailPage() {
             const rRows = Math.ceil(s / rCols);
 
             return (
-              <div style={{ display: 'flex', gap: G, height: H }}>
+              <div style={{ display: 'flex', height: '100%', gap: G }}>
                 <div style={{ flex: `0 0 ${leftPct}%`, display: 'flex', flexDirection: 'column', gap: G }}>
-                  {main.map(item => imgCell(item, true, { flex: 1 }))}
+                  {main.map(item => cell(item, 'top center', { flex: 1 }))}
                 </div>
-                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)`, gap: G }}>
-                  {small.map(item => imgCell(item, false))}
+                <div style={{ flex: 1, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
+                  {small.map(item => cell(item, 'center'))}
                 </div>
               </div>
             );
           })() : (
-            <div style={{ width: '100%', aspectRatio: '5/4', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
+            <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
           )}
 
           {/* Weather overlay */}
