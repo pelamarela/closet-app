@@ -132,24 +132,8 @@ export default function OutfitDetailPage() {
         )}
       </div>
 
-      {/* Outfit photo — shown when exists, always above items collage */}
-      {outfitImageUrl && (
-        <div style={{ padding: '16px 20px 0' }}>
-          <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            {outfit.weather && (
-              <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-                <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-                <MonoKV k="cond" v={outfit.weather.conditions} />
-                {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Items collage — always shown when items exist */}
-      <div style={{ padding: `${outfitImageUrl ? 8 : 16}px 20px 0` }}>
+      <div style={{ padding: '16px 20px 0' }}>
         <div style={{
           width: '100%', aspectRatio: '5/4',
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
@@ -182,7 +166,10 @@ export default function OutfitDetailPage() {
               const rows = Math.ceil(all.length / cols);
               return (
                 <div style={{ display: 'grid', height: '100%', gap: G, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
-                  {all.map((item, i) => cell(item, pos, all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}))}
+                  {all.map((item, i) => cell(item, pos, {
+                    minHeight: 0,
+                    ...(all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}),
+                  }))}
                 </div>
               );
             }
@@ -213,9 +200,10 @@ export default function OutfitDetailPage() {
                   {main.map(item => cell(item, 'top center', { flex: 1, minHeight: 0 }))}
                 </div>
                 <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
-                  {small.map((item, i) => cell(item, 'center',
-                    rCols > 1 && s % rCols !== 0 && i === s - 1 ? { gridColumn: '1 / -1' } : {}
-                  ))}
+                  {small.map((item, i) => cell(item, 'center', {
+                    minHeight: 0,
+                    ...(rCols > 1 && s % rCols !== 0 && i === s - 1 ? { gridColumn: '1 / -1' } : {}),
+                  }))}
                 </div>
               </div>
             );
@@ -266,6 +254,22 @@ export default function OutfitDetailPage() {
               <Icon name="forward" size={12} stroke={1.2} />
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Outfit photo — at the bottom */}
+      {outfitImageUrl && (
+        <div style={{ padding: '20px 20px 0' }}>
+          <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            {outfit.weather && (
+              <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+                <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+                <MonoKV k="cond" v={outfit.weather.conditions} />
+                {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
