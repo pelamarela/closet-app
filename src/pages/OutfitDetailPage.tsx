@@ -137,59 +137,57 @@ export default function OutfitDetailPage() {
         <div style={{
           width: '100%',
           aspectRatio: outfitImageUrl ? '5/4' : undefined,
-          maxHeight: (!outfitImageUrl && items.length <= 4) ? '52vh' : undefined,
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
           {outfitImageUrl ? (
             <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : items.length > 0 ? (() => {
-            const SMALL = new Set(['shoes', 'accessory']);
-            const compact = items.length > 4;
-            const mainItems = compact ? items.filter(i => !SMALL.has(i.category)) : [];
-            const smallItems = compact ? items.filter(i => SMALL.has(i.category)) : [];
+            const SMALL_CAT = new Set(['shoes', 'accessory']);
+            const main = items.filter(i => !SMALL_CAT.has(i.category));
+            const small = items.filter(i => SMALL_CAT.has(i.category));
+            const m = main.length, s = small.length;
+            const H = 268, G = 3;
 
-            if (compact && mainItems.length > 0 && smallItems.length > 0) {
-              const rightCols = smallItems.length >= 3 ? 2 : 1;
-              const rightRows = Math.ceil(smallItems.length / rightCols);
+            const imgCell = (item: typeof items[0], style: React.CSSProperties = {}) => (
+              <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', ...style }}>
+                {item.signedImageUrl
+                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                  : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                }
+              </div>
+            );
+
+            // All same category → even grid
+            if (m === 0 || s === 0) {
+              const all = [...main, ...small];
+              const cols = all.length === 1 ? 1 : 2;
+              const rows = Math.ceil(all.length / cols);
               return (
-                <div style={{ display: 'flex', gap: 3, height: 260 }}>
-                  {/* Left: clothing — equal-height flex cells */}
-                  <div style={{ flex: '0 0 56%', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {mainItems.map(item => (
-                      <div key={item.id} style={{ flex: 1, background: '#ECEAE6', overflow: 'hidden' }}>
-                        {item.signedImageUrl
-                          ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                          : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                        }
-                      </div>
-                    ))}
-                  </div>
-                  {/* Right: accessories/shoes — even grid */}
-                  <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${rightCols}, 1fr)`, gridTemplateRows: `repeat(${rightRows}, 1fr)`, gap: 3 }}>
-                    {smallItems.map(item => (
-                      <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden' }}>
-                        {item.signedImageUrl
-                          ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                          : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                        }
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)`, gap: G, height: H }}>
+                  {all.map((item, i) => imgCell(item, all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}))}
                 </div>
               );
             }
 
-            // ≤4 items or all-same-category: masonry
+            // Mixed main + small → two panes
+            // Left % widens when there are few smalls, narrows when many
+            const leftPct = m === 1 && s === 1 ? 62
+              : m >= 2 && s === 1 ? 67
+              : m === 1 && s >= 3 ? 54
+              : 60; // default: m≥2 s≥2 or m=1 s=2
+
+            // Right pane: 1 col for ≤2 smalls, 2 cols for 3+
+            const rCols = s >= 3 ? 2 : 1;
+            const rRows = Math.ceil(s / rCols);
+
             return (
-              <div style={{ columns: items.length === 1 ? 1 : 2, columnGap: 3 }}>
-                {items.map(i => (
-                  <div key={i.id} style={{ breakInside: 'avoid', marginBottom: 3, background: '#ECEAE6' }}>
-                    {i.signedImageUrl
-                      ? <img src={i.signedImageUrl} alt={i.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                      : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                    }
-                  </div>
-                ))}
+              <div style={{ display: 'flex', gap: G, height: H }}>
+                <div style={{ flex: `0 0 ${leftPct}%`, display: 'flex', flexDirection: 'column', gap: G }}>
+                  {main.map(item => imgCell(item, { flex: 1 }))}
+                </div>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)`, gap: G }}>
+                  {small.map(item => imgCell(item))}
+                </div>
               </div>
             );
           })() : (
