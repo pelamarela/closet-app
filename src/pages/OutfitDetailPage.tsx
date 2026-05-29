@@ -181,9 +181,9 @@ export default function OutfitDetailPage() {
             return (
               <div style={{ display: 'flex', height: '100%', gap: G }}>
                 <div style={{ flex: `0 0 ${leftPct}%`, display: 'flex', flexDirection: 'column', gap: G }}>
-                  {main.map(item => cell(item, 'top center', { flex: 1 }))}
+                  {main.map(item => cell(item, 'top center', { flex: 1, minHeight: 0 }))}
                 </div>
-                <div style={{ flex: 1, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
                   {small.map(item => cell(item, 'center'))}
                 </div>
               </div>
