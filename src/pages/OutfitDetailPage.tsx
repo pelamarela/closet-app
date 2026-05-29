@@ -135,7 +135,7 @@ export default function OutfitDetailPage() {
       {/* Hero */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{
-          width: '100%', aspectRatio: '5/4',
+          width: '100%', aspectRatio: outfitImageUrl ? '5/4' : undefined,
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
           {outfitImageUrl ? (
@@ -144,19 +144,19 @@ export default function OutfitDetailPage() {
             <div style={{
               display: 'grid',
               gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
-              gap: 3, width: '100%', height: '100%',
+              gap: 3, width: '100%',
             }}>
               {items.map((item, i) => (
-                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', minHeight: 0, gridColumn: (items.length % 2 !== 0 && i === items.length - 1) ? '1 / -1' : undefined }}>
+                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', gridColumn: (items.length % 2 !== 0 && i === items.length - 1) ? '1 / -1' : undefined }}>
                   {item.signedImageUrl
-                    ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                    : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                    ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
                   }
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
+            <div style={{ width: '100%', aspectRatio: '5/4', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
           )}
 
           {/* Weather overlay */}
