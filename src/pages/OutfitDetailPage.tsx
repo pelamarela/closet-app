@@ -174,25 +174,18 @@ export default function OutfitDetailPage() {
               );
             }
 
-            // Mixed main + secondary → two-pane layout
-            // leftPct and rCols per sketch + generalised rules for unlisted combos
+            // Mixed main + secondary → always 2-column layout (main left, secondary right 1-col)
+            // Right pane is always a single column — no 3-column appearance ever
             let leftPct: number;
-            let rCols: number;
             if (m === 1) {
-              // 1 main (one-piece, outerwear, etc.)
-              // s=4 → 2×2 right (40% right, 2-col); s=5 → wider main (75%), 1-col; s=6+ → 2-col again
-              leftPct = s === 5 ? 75 : 60;
-              rCols   = s === 4 || s >= 6 ? 2 : 1;
+              leftPct = s >= 5 ? 75 : 60;
             } else if (m === 2) {
-              // 2 mains (top + bottom)
-              leftPct = s <= 1 ? 65 : s === 2 ? 50 : s >= 5 ? 57 : 60;
-              rCols   = s >= 5 ? 2 : 1;
+              leftPct = s <= 1 ? 65 : s === 2 ? 50 : 60;
             } else {
-              // 3+ mains
-              leftPct = s <= 1 ? 68 : s >= 5 ? 57 : 63;
-              rCols   = s >= 5 ? 2 : 1;
+              leftPct = s <= 1 ? 68 : 63;
             }
-            const rRows = Math.ceil(s / rCols);
+            const rCols = 1;
+            const rRows = s;
 
             return (
               <div style={{ display: 'flex', height: '100%', gap: G }}>
