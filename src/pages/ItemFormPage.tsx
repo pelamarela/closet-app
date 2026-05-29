@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
-import { takeSingleFile } from '../lib/batchState'
+import { peekSingleFile, clearSingleFile } from '../lib/batchState'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
 
@@ -72,8 +72,15 @@ export default function ItemFormPage() {
   const { user } = useAuth()
   const { addItem, updateItem, archiveItem } = useItemMutations()
 
-  const [form, setForm] = useState<ItemFormData>(EMPTY)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  // peekSingleFile is non-destructive so StrictMode's double-initializer both see the same file
+  const [preloadedFile] = useState<File | null>(() => isEdit ? null : peekSingleFile())
+  const [form, setForm] = useState<ItemFormData>(() => {
+    const f = isEdit ? null : peekSingleFile()
+    if (!f) return EMPTY
+    const name = f.name.replace(/\.[^.]+$/, '').replace(/[-_.]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase())
+    return { ...EMPTY, name }
+  })
+  const [imageFile, setImageFile] = useState<File | null>(() => isEdit ? null : peekSingleFile())
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
   const [loadingItem, setLoadingItem] = useState(isEdit)
   const [saving, setSaving] = useState(false)
@@ -105,15 +112,41 @@ export default function ItemFormPage() {
       })
   }, [id, isEdit, user])
 
+  // Consume the pending file and run AI analysis (mirrors what batch upload does)
   useEffect(() => {
-    if (isEdit) return
-    const file = takeSingleFile()
-    if (file) {
-      setImageFile(file)
-      const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_.]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase())
-      setForm(f => ({ ...f, name }))
+    if (!preloadedFile) return
+    clearSingleFile()
+    async function analyze() {
+      try {
+        const { compressImage } = await import('../lib/imageUtils')
+        const compressed = await compressImage(preloadedFile!)
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve((reader.result as string).split(',')[1])
+          reader.onerror = reject
+          reader.readAsDataURL(compressed)
+        })
+        const res = await fetch('/api/analyze-item', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: base64, media_type: 'image/jpeg' }),
+        })
+        if (!res.ok) return
+        const ai = await res.json()
+        setForm(f => ({
+          ...f,
+          ...(ai.category ? { category: ai.category } : {}),
+          ...(ai.color    ? { color: ai.color }       : {}),
+          ...(ai.brand    ? { brand: ai.brand }       : {}),
+          ...(ai.material ? { material: ai.material } : {}),
+          ...(ai.pattern  ? { pattern: ai.pattern }   : {}),
+          ...(ai.subcategory ? { subcategory: ai.subcategory } : {}),
+        }))
+      } catch { /* silently skip on analysis failure */ }
     }
-  }, [isEdit])
+    analyze()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const set = (k: keyof ItemFormData) => (v: string) =>
     setForm(f => ({ ...f, [k]: v }) as ItemFormData)
