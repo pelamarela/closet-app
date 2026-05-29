@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
-import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitSwatch } from '../components/ui'
+import { useItems } from '../hooks/useItems'
+import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitSwatch, outfitTitle } from '../components/ui'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
@@ -45,6 +46,7 @@ function OutfitThumb({ outfit, small }: { outfit?: OutfitWithItems; small?: bool
 export default function OutfitsPage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
+  const { items } = useItems()
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
@@ -247,7 +249,7 @@ export default function OutfitsPage() {
                   </div>
                   <div>
                     <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                      {o.occasion || 'outfit'}
+                      {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
                       <span>{o.item_ids.length} pieces</span>

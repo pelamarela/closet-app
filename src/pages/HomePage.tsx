@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitSwatch } from '../components/ui'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitSwatch, outfitTitle } from '../components/ui'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat']
 
@@ -62,7 +62,7 @@ export default function HomePage() {
             }}
           >
             <div style={{ fontFamily: UI, fontSize: 32, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
-              {todayOutfit.occasion || 'Outfit logged.'}
+              {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
             </div>
             <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>
               {todayOutfit.item_ids.length} pieces · tap to view ›
@@ -135,7 +135,7 @@ export default function HomePage() {
               }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
-                  {o.occasion || 'outfit'}
+                  {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
                 </div>
                 <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
                   {o.date_worn} · {o.item_ids.length} pieces
