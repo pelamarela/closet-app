@@ -142,12 +142,12 @@ export default function OutfitDetailPage() {
             <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : items.length > 0 ? (
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
-              gap: 3, width: '100%',
+              columns: items.length === 1 ? 1 : 2,
+              columnGap: 3,
+              width: '100%',
             }}>
-              {items.map((item, i) => (
-                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', gridColumn: (items.length % 2 !== 0 && i === items.length - 1) ? '1 / -1' : undefined }}>
+              {items.map((item) => (
+                <div key={item.id} style={{ breakInside: 'avoid', marginBottom: 3, background: '#ECEAE6' }}>
                   {item.signedImageUrl
                     ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
                     : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
