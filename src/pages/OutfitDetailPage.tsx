@@ -132,15 +132,29 @@ export default function OutfitDetailPage() {
         )}
       </div>
 
-      {/* Hero */}
-      <div style={{ padding: '16px 20px 0' }}>
+      {/* Outfit photo — shown when exists, always above items collage */}
+      {outfitImageUrl && (
+        <div style={{ padding: '16px 20px 0' }}>
+          <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            {outfit.weather && (
+              <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+                <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+                <MonoKV k="cond" v={outfit.weather.conditions} />
+                {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Items collage — always shown when items exist */}
+      <div style={{ padding: `${outfitImageUrl ? 8 : 16}px 20px 0` }}>
         <div style={{
           width: '100%', aspectRatio: '5/4',
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
-          {outfitImageUrl ? (
-            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          ) : items.length > 0 ? (() => {
+          {items.length > 0 ? (() => {
             const SMALL_CAT = new Set(['shoes', 'accessory']);
             const main = items.filter(i => !SMALL_CAT.has(i.category));
             const small = items.filter(i => SMALL_CAT.has(i.category));
@@ -208,14 +222,9 @@ export default function OutfitDetailPage() {
           })() : (
             <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
           )}
-
-          {/* Weather overlay */}
-          {outfit.weather && (
-            <div style={{
-              position: 'absolute', top: 8, left: 8,
-              display: 'flex', flexDirection: 'column', gap: 2,
-              background: '#fff', padding: '4px 6px',
-            }}>
+          {/* Weather overlay — only on collage when no outfit photo */}
+          {!outfitImageUrl && outfit.weather && (
+            <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
               <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
               <MonoKV k="cond" v={outfit.weather.conditions} />
               {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
