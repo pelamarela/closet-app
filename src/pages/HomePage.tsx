@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, CREAM } from '../components/ui'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitSwatch } from '../components/ui'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat']
 
@@ -131,7 +131,7 @@ export default function HomePage() {
             >
               <div style={{
                 width: 34, height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0,
-                background: `repeating-linear-gradient(135deg, ${CREAM} 0 10px, #E8D3BD 10px 20px)`,
+                background: (() => { const [c1,c2] = outfitSwatch(o.id); return `repeating-linear-gradient(135deg, ${c1} 0 10px, ${c2} 10px 20px)` })(),
               }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>

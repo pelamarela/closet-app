@@ -125,6 +125,21 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
   )
 }
 
+const OUTFIT_SWATCHES: [string, string][] = [
+  ['#F2E1D0', '#E8D3BD'],  // warm cream
+  ['#D8E5DC', '#C6D8CB'],  // sage
+  ['#E2D8E6', '#D2C8D8'],  // lavender
+  ['#E6D8D8', '#D8C8C8'],  // blush
+  ['#D8DCE6', '#C8CED8'],  // slate
+  ['#E6E0D4', '#D8D2C2'],  // warm olive
+  ['#E8D4CC', '#DAC4BA'],  // terracotta soft
+]
+
+export function outfitSwatch(id: string): [string, string] {
+  const n = parseInt(id.replace(/-/g, '').slice(0, 6), 16)
+  return OUTFIT_SWATCHES[n % OUTFIT_SWATCHES.length]
+}
+
 export function SectionLabel({ children, right }: {
   children: React.ReactNode
   right?: React.ReactNode
