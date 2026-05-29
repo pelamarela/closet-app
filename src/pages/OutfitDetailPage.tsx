@@ -137,7 +137,7 @@ export default function OutfitDetailPage() {
         <div style={{
           width: '100%',
           aspectRatio: outfitImageUrl ? '5/4' : undefined,
-          maxHeight: outfitImageUrl ? undefined : '52vh',
+          maxHeight: (!outfitImageUrl && items.length <= 4) ? '52vh' : undefined,
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
           {outfitImageUrl ? (
@@ -145,28 +145,41 @@ export default function OutfitDetailPage() {
           ) : items.length > 0 ? (() => {
             const SMALL = new Set(['shoes', 'accessory']);
             const compact = items.length > 4;
-            const mainItems = compact ? items.filter(i => !SMALL.has(i.category)) : items;
+            const mainItems = compact ? items.filter(i => !SMALL.has(i.category)) : [];
             const smallItems = compact ? items.filter(i => SMALL.has(i.category)) : [];
-            const thumb = (item: typeof items[0]) => (
-              <div key={item.id} style={{ background: '#ECEAE6', flexShrink: 0 }}>
-                {item.signedImageUrl
-                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                  : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                }
-              </div>
-            );
+
             if (compact && mainItems.length > 0 && smallItems.length > 0) {
+              const rightCols = smallItems.length >= 3 ? 2 : 1;
+              const rightRows = Math.ceil(smallItems.length / rightCols);
               return (
-                <div style={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
-                  <div style={{ flex: '0 0 58%', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {mainItems.map(thumb)}
+                <div style={{ display: 'flex', gap: 3, height: 260 }}>
+                  {/* Left: clothing — equal-height flex cells */}
+                  <div style={{ flex: '0 0 56%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {mainItems.map(item => (
+                      <div key={item.id} style={{ flex: 1, background: '#ECEAE6', overflow: 'hidden' }}>
+                        {item.signedImageUrl
+                          ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                          : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                        }
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {smallItems.map(thumb)}
+                  {/* Right: accessories/shoes — even grid */}
+                  <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${rightCols}, 1fr)`, gridTemplateRows: `repeat(${rightRows}, 1fr)`, gap: 3 }}>
+                    {smallItems.map(item => (
+                      <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden' }}>
+                        {item.signedImageUrl
+                          ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                          : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                        }
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
             }
+
+            // ≤4 items or all-same-category: masonry
             return (
               <div style={{ columns: items.length === 1 ? 1 : 2, columnGap: 3 }}>
                 {items.map(i => (
