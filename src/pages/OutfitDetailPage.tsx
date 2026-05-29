@@ -135,7 +135,9 @@ export default function OutfitDetailPage() {
       {/* Hero */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{
-          width: '100%', aspectRatio: outfitImageUrl ? '5/4' : undefined,
+          width: '100%',
+          aspectRatio: outfitImageUrl ? '5/4' : undefined,
+          maxHeight: outfitImageUrl ? undefined : '52vh',
           border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
         }}>
           {outfitImageUrl ? (
