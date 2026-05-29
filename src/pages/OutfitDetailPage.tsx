@@ -145,6 +145,7 @@ export default function OutfitDetailPage() {
             const main = items.filter(i => !SMALL_CAT.has(i.category));
             const small = items.filter(i => SMALL_CAT.has(i.category));
             const m = main.length, s = small.length;
+            const total = m + s;
             const G = 3;
 
             const cell = (item: typeof items[0], pos = 'center', style: React.CSSProperties = {}) => (
@@ -156,11 +157,14 @@ export default function OutfitDetailPage() {
               </div>
             );
 
-            // All same category: even grid filling the 5/4 container
-            if (m === 0 || s === 0) {
-              const all = m > 0 ? main : small;
+            // 1 item: single full-width cell
+            if (total === 1) return cell(items[0], m > 0 ? 'top center' : 'center', { height: '100%' });
+
+            // All same category OR total=2 (any split): even 2-col grid
+            if (m === 0 || s === 0 || total === 2) {
+              const all = [...main, ...small];
               const pos = m > 0 ? 'top center' : 'center';
-              const cols = all.length === 1 ? 1 : 2;
+              const cols = 2;
               const rows = Math.ceil(all.length / cols);
               return (
                 <div style={{ display: 'grid', height: '100%', gap: G, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
@@ -169,13 +173,16 @@ export default function OutfitDetailPage() {
               );
             }
 
-            // Mixed: main left (wide), small right (grid)
-            // Left % = bigger when few smalls or many mains
-            const leftPct = m === 1 && s === 1 ? 62
-              : m >= 2 && s === 1 ? 67
-              : m === 1 && s >= 3 ? 54
-              : 60;
-            const rCols = s >= 3 ? 2 : 1;
+            // Mixed main + secondary → two-pane layout from sketch
+            const leftPct =
+              m === 1 ? 60 :
+              m === 2 && s <= 1 ? 65 :
+              m === 2 && s === 2 ? 50 :   // symmetric 2×2
+              m === 2 && s >= 3 ? 60 :
+              m >= 3 && s <= 1 ? 68 : 57; // m >= 3 && s >= 2
+
+            // rCols=2 only when right pane is wide enough AND there are enough secondary items
+            const rCols = (m <= 1 && s >= 4) || (m >= 2 && s >= 5) ? 2 : 1;
             const rRows = Math.ceil(s / rCols);
 
             return (
@@ -184,7 +191,9 @@ export default function OutfitDetailPage() {
                   {main.map(item => cell(item, 'top center', { flex: 1, minHeight: 0 }))}
                 </div>
                 <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
-                  {small.map(item => cell(item, 'center'))}
+                  {small.map((item, i) => cell(item, 'center',
+                    rCols > 1 && s % rCols !== 0 && i === s - 1 ? { gridColumn: '1 / -1' } : {}
+                  ))}
                 </div>
               </div>
             );
