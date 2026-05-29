@@ -18,6 +18,8 @@ export default function StyleProfileEditorPage() {
   const [text, setText] = useState('')
   const [original, setOriginal] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deriving, setDeriving] = useState(false)
+  const [deriveError, setDeriveError] = useState<string | null>(null)
 
   const isDirty = text !== original
 
@@ -41,10 +43,49 @@ export default function StyleProfileEditorPage() {
     navigate('/settings')
   }
 
+  const deriveFromOutfits = async () => {
+    if (!user) return
+    setDeriving(true)
+    setDeriveError(null)
+    try {
+      const { data: outfits } = await supabase
+        .from('outfits')
+        .select('date_worn, occasion, rating, notes, outfit_items(item_id)')
+        .eq('user_id', user.id)
+        .order('date_worn', { ascending: false })
+        .limit(40)
+
+      const itemIds = [...new Set(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (outfits ?? []).flatMap((o: any) => (o.outfit_items ?? []).map((oi: any) => oi.item_id))
+      )]
+
+      let items: { id: string; name: string; category: string; color: string | null; brand: string | null }[] = []
+      if (itemIds.length > 0) {
+        const { data } = await supabase.from('items').select('id, name, category, color, brand').in('id', itemIds)
+        items = data ?? []
+      }
+
+      const res = await fetch('/api/generate-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ outfits, items }),
+      })
+
+      if (!res.ok) throw new Error(await res.text())
+      const { description } = await res.json()
+      setText(description)
+    } catch (err) {
+      setDeriveError(err instanceof Error ? err.message : 'Failed to generate')
+    } finally {
+      setDeriving(false)
+    }
+  }
+
   return (
     <div style={{ paddingBottom: 100 }}>
       <AppBar
-        title={<><span style={{ marginRight: 6 }}>←</span> Settings</>}
+        title="Settings"
         back
         onBack={() => navigate('/settings')}
         meta={isDirty ? 'unsaved' : 'saved'}
@@ -58,6 +99,35 @@ export default function StyleProfileEditorPage() {
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
           free text · fed verbatim into the suggestion prompt
         </div>
+      </div>
+
+      {/* Derive button */}
+      <div style={{ padding: '14px 20px 0' }}>
+        <button
+          onClick={deriveFromOutfits}
+          disabled={deriving}
+          style={{
+            width: '100%', border: RULE, background: deriving ? 'rgba(0,0,0,0.04)' : '#fff',
+            padding: '10px 14px', cursor: deriving ? 'default' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            opacity: deriving ? 0.6 : 1,
+          }}
+        >
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>
+              {deriving ? 'Analysing your wardrobe…' : 'Derive from my outfits'}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
+              Claude reads your outfit history and writes a profile
+            </div>
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 12 }}>
+            {deriving ? '…' : 'AI ›'}
+          </div>
+        </button>
+        {deriveError && (
+          <div style={{ fontFamily: MONO, fontSize: 9.5, color: ACCENT, marginTop: 6 }}>{deriveError}</div>
+        )}
       </div>
 
       {/* Textarea */}
@@ -76,10 +146,9 @@ export default function StyleProfileEditorPage() {
               resize: 'none', padding: 0,
             }}
           />
-          <div style={{
-            position: 'absolute', bottom: 8, right: 10,
-            fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)',
-          }}>{text.length} / 1000</div>
+          <div style={{ position: 'absolute', bottom: 8, right: 10, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>
+            {text.length} / 1000
+          </div>
         </div>
       </div>
 
@@ -88,12 +157,7 @@ export default function StyleProfileEditorPage() {
         <SectionLabel>try answering</SectionLabel>
         <div style={{ borderTop: RULE }}>
           {PROMPTS.map((q, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'baseline', gap: 10,
-              padding: '8px 0', borderBottom: RULE,
-              fontFamily: UI, fontSize: 12, letterSpacing: '-0.005em',
-              color: 'rgba(0,0,0,0.65)',
-            }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '8px 0', borderBottom: RULE, fontFamily: UI, fontSize: 12, letterSpacing: '-0.005em', color: 'rgba(0,0,0,0.65)' }}>
               <span style={{ fontFamily: MONO, fontSize: 9.5, color: ACCENT, fontWeight: 600, flexShrink: 0 }}>0{i+1}</span>
               {q}
             </div>
@@ -110,13 +174,7 @@ export default function StyleProfileEditorPage() {
       </div>
 
       {/* CTA */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px 28px', display: 'flex', gap: 8,
-        zIndex: 10,
-      }}>
+      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: '#F7F6F5', borderTop: RULE, padding: '12px 20px 28px', display: 'flex', gap: 8, zIndex: 10 }}>
         <UButton variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/settings')}>Discard</UButton>
         <UButton style={{ flex: 1.4 }} icon="check" disabled={saving || !isDirty} onClick={save}>
           {saving ? 'Saving…' : 'Save profile'}
