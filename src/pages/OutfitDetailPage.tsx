@@ -146,8 +146,8 @@ export default function OutfitDetailPage() {
               gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
               gap: 3, width: '100%', height: '100%',
             }}>
-              {items.slice(0, 4).map(item => (
-                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', minHeight: 0 }}>
+              {items.map((item, i) => (
+                <div key={item.id} style={{ background: '#ECEAE6', overflow: 'hidden', minHeight: 0, gridColumn: (items.length % 2 !== 0 && i === items.length - 1) ? '1 / -1' : undefined }}>
                   {item.signedImageUrl
                     ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
