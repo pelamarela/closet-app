@@ -58,9 +58,11 @@ export function useItems() {
       })
     }
 
+    const LEGACY_CATEGORY: Record<string, Category> = { dress: 'one-piece', set: 'one-piece' }
     setItems(
       (data ?? []).map(item => ({
         ...item,
+        category: (LEGACY_CATEGORY[item.category] ?? item.category) as Category,
         signedImageUrl: item.image_url ? (signedUrlMap[item.image_url] ?? null) : null,
       }))
     )
