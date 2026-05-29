@@ -142,22 +142,44 @@ export default function OutfitDetailPage() {
         }}>
           {outfitImageUrl ? (
             <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          ) : items.length > 0 ? (
-            <div style={{
-              columns: items.length === 1 ? 1 : 2,
-              columnGap: 3,
-              width: '100%',
-            }}>
-              {items.map((item) => (
-                <div key={item.id} style={{ breakInside: 'avoid', marginBottom: 3, background: '#ECEAE6' }}>
-                  {item.signedImageUrl
-                    ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
-                    : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                  }
+          ) : items.length > 0 ? (() => {
+            const SMALL = new Set(['shoes', 'accessory']);
+            const compact = items.length > 4;
+            const mainItems = compact ? items.filter(i => !SMALL.has(i.category)) : items;
+            const smallItems = compact ? items.filter(i => SMALL.has(i.category)) : [];
+            const thumb = (item: typeof items[0]) => (
+              <div key={item.id} style={{ background: '#ECEAE6', flexShrink: 0 }}>
+                {item.signedImageUrl
+                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                  : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                }
+              </div>
+            );
+            if (compact && mainItems.length > 0 && smallItems.length > 0) {
+              return (
+                <div style={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                  <div style={{ flex: '0 0 58%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {mainItems.map(thumb)}
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {smallItems.map(thumb)}
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
+              );
+            }
+            return (
+              <div style={{ columns: items.length === 1 ? 1 : 2, columnGap: 3 }}>
+                {items.map(i => (
+                  <div key={i.id} style={{ breakInside: 'avoid', marginBottom: 3, background: '#ECEAE6' }}>
+                    {i.signedImageUrl
+                      ? <img src={i.signedImageUrl} alt={i.name} style={{ width: '100%', height: 'auto', display: 'block' }} />
+                      : <div style={{ width: '100%', aspectRatio: '1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
+                    }
+                  </div>
+                ))}
+              </div>
+            );
+          })() : (
             <div style={{ width: '100%', aspectRatio: '5/4', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
           )}
 
