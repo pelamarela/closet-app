@@ -126,14 +126,10 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
 }
 
 const OUTFIT_SWATCHES: [string, string][] = [
-  ['#EED9BC', '#DAC5A8'],  // 01 warm cream
-  ['#E6E4DE', '#D6D4CE'],  // 03 off-white
-  ['#D2CEC0', '#BEBAB0'],  // 05 cool grey
-  ['#E2CAA2', '#CEBA8E'],  // 07 warm tan
-  ['#1E1E1E', '#0A0A0A'],  // 09 black
-  ['#EAD9C0', '#D6C5AC'],  // 11 warm sand
-  ['#DCDCDC', '#C8C8C8'],  // 12 silver grey
-  ['#EBBBB2', '#D8A89E'],  // 14 dusty rose
+  ['#F2E1D0', '#E4CDB8'],  // cream
+  ['#DFAFA1', '#CE9C8E'],  // blush
+  ['#F7F6F5', '#E8E7E6'],  // off-white
+  ['#1A1A1A', '#000000'],  // black
 ]
 
 export function outfitSwatch(id: string): [string, string] {
