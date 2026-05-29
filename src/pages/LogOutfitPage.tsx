@@ -136,34 +136,36 @@ export default function LogOutfitPage() {
               <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                 // selected
               </div>
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 8, paddingBottom: 12 }}>
                 {Array.from(selectedIds).map(sid => {
                   const item = items.find(i => i.id === sid)
                   if (!item) return null
                   return (
-                    <div key={sid} style={{ position: 'relative', flexShrink: 0, width: 64 }}>
+                    <div key={sid} style={{ position: 'relative', flexShrink: 0, paddingTop: 8, paddingRight: 8 }}>
                       <div style={{
-                        width: 64, height: 80, overflow: 'hidden', border: `2px solid ${INK}`, borderRadius: 2,
+                        width: 64, height: 80, overflow: 'hidden',
+                        border: `1.5px solid ${INK}`, borderRadius: 2, position: 'relative',
                       }}>
                         {item.signedImageUrl ? (
                           <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                         ) : (
                           <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(135deg, ${CREAM} 0 8px, #E8D3BD 8px 16px)` }} />
                         )}
+                        <div style={{
+                          position: 'absolute', top: 4, left: 4,
+                          fontFamily: MONO, fontSize: 7.5,
+                          background: 'rgba(255,255,255,0.9)', color: INK,
+                          padding: '1px 4px', letterSpacing: '0.03em',
+                        }}>{item.category}</div>
                       </div>
-                      <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0,
-                        fontFamily: MONO, fontSize: 7.5, background: INK, color: '#fff',
-                        padding: '2px 4px', textAlign: 'center',
-                      }}>{item.category}</div>
                       <button
                         onClick={() => toggleItem(sid)}
                         style={{
-                          position: 'absolute', top: -6, right: -6,
-                          width: 18, height: 18, borderRadius: '50%',
+                          position: 'absolute', top: 0, right: 0,
+                          width: 20, height: 20, borderRadius: '50%',
                           background: INK, color: '#fff', border: 'none', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 10, lineHeight: 1, padding: 0,
+                          fontSize: 11, lineHeight: 1, padding: 0,
                         }}
                       >×</button>
                     </div>
@@ -213,9 +215,10 @@ export default function LogOutfitPage() {
                           <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(135deg, ${CREAM} 0 8px, #E8D3BD 8px 16px)` }} />
                         )}
                         <div style={{
-                          position: 'absolute', bottom: 0, left: 0, right: 0,
+                          position: 'absolute', top: 4, left: 4,
                           fontFamily: MONO, fontSize: 7.5,
-                          background: 'rgba(255,255,255,0.88)', padding: '2px 4px',
+                          background: 'rgba(255,255,255,0.9)', color: INK,
+                          padding: '1px 4px', letterSpacing: '0.03em',
                         }}>{item.category}</div>
                         {selectedIds.has(item.id) && (
                           <div style={{
