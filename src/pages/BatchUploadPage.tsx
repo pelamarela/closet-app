@@ -445,7 +445,7 @@ export default function BatchUploadPage() {
       {/* Footer */}
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 1200,
+        width: '100%', maxWidth: 700,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px',
         display: 'flex', gap: 8,

@@ -29,7 +29,8 @@
       "Bash(xargs ls -la)",
       "Bash(gh run *)",
       "Bash(gh deployment *)",
-      "Bash(vercel *)"
+      "Bash(vercel *)",
+      "Bash(python3 *)"
     ]
   }
 }

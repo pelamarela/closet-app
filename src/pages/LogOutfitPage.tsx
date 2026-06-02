@@ -257,7 +257,7 @@ export default function LogOutfitPage() {
         padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 8,
       } : {
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
+        width: '100%', maxWidth: 700,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', zIndex: 20,
       }}>
