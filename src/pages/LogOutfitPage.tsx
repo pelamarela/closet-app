@@ -1,67 +1,60 @@
 import { useState, useRef, useEffect } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
-import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { AppBar, SectionLabel, UButton, Icon, MonoTag, MONO, UI, INK, RULE, CREAM } from '../components/ui'
 import type { Category } from '../types/database'
+import { useOutfitMutations } from '../hooks/useOutfitMutations'
+import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 
 const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
-
-const CLOSET_FILTERS: { value: 'all' | Category; label: string }[] = [
-  { value: 'all',       label: 'all' },
-  { value: 'top',       label: 'top' },
-  { value: 'bottom',    label: 'btm' },
-  { value: 'outerwear', label: 'otw' },
-  { value: 'shoes',     label: 'shoe' },
-  { value: 'accessory', label: 'acc' },
-  { value: 'one-piece', label: '1pc' },
-]
 
 function today() { return new Date().toISOString().slice(0, 10) }
 
 export default function LogOutfitPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { id: editId } = useParams<{ id: string }>()
+  const { id: editId } = useParams<{ id?: string }>()
   const isEdit = !!editId
-  const navState = location.state as { preselectedIds?: string[]; occasion?: string } | null
-  const { user } = useAuth()
+  const navState = location.state as { preselectedIds?: string[]; occasion?: string; date?: string } | null
   const { items, loading: itemsLoading } = useItems()
   const { logOutfit, updateOutfit } = useOutfitMutations()
+  const { isDesktop } = useBreakpoint()
 
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useState(navState?.date ?? today())
   const [occasion, setOccasion] = useState(navState?.occasion ?? '')
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
-  const [closetFilter, setClosetFilter] = useState<'all' | Category>('all')
+  const [filterCat, setFilterCat] = useState<string>('all')
   const [imageFile, setImageFile] = useState<File | null>(null)
-  const [loadingOutfit, setLoadingOutfit] = useState(isEdit)
+  const [loadingEdit, setLoadingEdit] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!isEdit || !editId || !user) return
-    supabase
-      .from('outfits')
-      .select('*, outfit_items(item_id)')
-      .eq('id', editId)
-      .eq('user_id', user.id)
-      .single()
+    if (!isEdit || !editId) return
+    async function load() {
+      const { data } = await supabase
+        .from('outfits')
+        .select('*, outfit_items(item_id)')
+        .eq('id', editId!)
+        .single()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then(({ data }: { data: any }) => {
-        if (!data) { setLoadingOutfit(false); return }
-        setDate(data.date_worn)
-        setOccasion(data.occasion ?? '')
-        setRating(data.rating ?? null)
-        setNotes(data.notes ?? '')
-        setSelectedIds(new Set((data.outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)))
-        setLoadingOutfit(false)
-      })
-  }, [isEdit, editId, user])
+      const d = data as any
+      if (!d) { setLoadingEdit(false); return }
+      setDate(d.date_worn)
+      setOccasion(d.occasion ?? '')
+      setRating(d.rating ?? null)
+      setNotes(d.notes ?? '')
+      const ids = (d.outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
+      setSelectedIds(new Set(ids))
+      setLoadingEdit(false)
+    }
+    load()
+  }, [editId, isEdit])
 
   const toggleItem = (id: string) =>
     setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -84,21 +77,26 @@ export default function LogOutfitPage() {
   }
 
   const selectedCount = selectedIds.size
-  const filteredItems = closetFilter === 'all' ? items : items.filter(i => i.category === closetFilter)
 
-  if (loadingOutfit) return (
+  if (loadingEdit) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
       <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
     </div>
   )
 
   return (
-    <div style={{ paddingBottom: 120 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 180 }}>
       <AppBar
-        title={isEdit ? 'Edit outfit' : 'Log outfit'}
+        title={isEdit ? 'Edit outfit' : 'Log an outfit'}
         back
         onBack={() => navigate(-1)}
       />
+
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em' }}>
+          {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
+        </div>
+      </div>
 
       {/* Date */}
       <div style={{ padding: '20px 20px 0' }}>
@@ -115,7 +113,7 @@ export default function LogOutfitPage() {
         />
       </div>
 
-      {/* Occasion — tags only */}
+      {/* Occasion */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel>occasion</SectionLabel>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
@@ -134,6 +132,64 @@ export default function LogOutfitPage() {
             >{o}</button>
           ))}
         </div>
+      </div>
+
+      {/* Items grid */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <SectionLabel right={selectedCount > 0 ? `${selectedCount} selected` : undefined}>items</SectionLabel>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {(['all', 'top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'] as const).map(cat => (
+            <button key={cat} onClick={() => setFilterCat(cat)} style={{
+              fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
+              border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
+              background: filterCat === cat ? INK : 'transparent',
+              color: filterCat === cat ? '#fff' : INK,
+              borderRadius: 2, cursor: 'pointer',
+            }}>
+              {cat === 'all' ? 'all' : catLabel(cat)}
+            </button>
+          ))}
+        </div>
+        {itemsLoading ? (
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
+        ) : items.length === 0 ? (
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+            {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
+              <button
+                key={item.id}
+                onClick={() => toggleItem(item.id)}
+                style={{ padding: 0, background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <div style={{
+                  width: '100%', aspectRatio: '3/4',
+                  border: selectedIds.has(item.id) ? `2px solid ${INK}` : RULE,
+                  position: 'relative', overflow: 'hidden',
+                }}>
+                  {item.signedImageUrl ? (
+                    <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
+                  )}
+                  <div style={{
+                    position: 'absolute', top: 4, left: 4,
+                    fontFamily: MONO, fontSize: 7.5,
+                    background: 'rgba(255,255,255,0.9)', padding: '1px 4px',
+                  }}>{catLabel(item.category)}</div>
+                  {selectedIds.has(item.id) && (
+                    <div style={{
+                      position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.38)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+                    }}>
+                      <Icon name="check" size={22} stroke={2.5} />
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Rating */}
@@ -156,85 +212,6 @@ export default function LogOutfitPage() {
         </div>
       </div>
 
-      {/* Pieces: selected items + closet picker */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel right={selectedCount > 0 ? `${selectedCount} selected` : undefined}>pieces</SectionLabel>
-
-        <div style={{ border: RULE, borderRadius: 4, overflow: 'hidden', marginTop: 10 }}>
-          {/* Selected items — horizontal scroll strip */}
-          {selectedCount > 0 && (
-            <div style={{ padding: '12px 12px 0', borderBottom: RULE }}>
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                // selected
-              </div>
-              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', paddingTop: 8, paddingBottom: 12 }}>
-                {Array.from(selectedIds).map(sid => {
-                  const item = items.find(i => i.id === sid)
-                  if (!item) return null
-                  return (
-                    <div key={sid} style={{ position: 'relative', flexShrink: 0, paddingTop: 8, paddingRight: 8 }}>
-                      <div style={{ width: 64, height: 80, overflow: 'hidden', border: `1.5px solid ${INK}`, borderRadius: 2, position: 'relative' }}>
-                        {item.signedImageUrl ? (
-                          <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(135deg, ${CREAM} 0 8px, #E8D3BD 8px 16px)` }} />
-                        )}
-                        <div style={{ position: 'absolute', top: 4, left: 4, fontFamily: MONO, fontSize: 7.5, background: 'rgba(255,255,255,0.9)', color: INK, padding: '1px 4px', letterSpacing: '0.03em' }}>{item.category}</div>
-                      </div>
-                      <button
-                        onClick={() => toggleItem(sid)}
-                        style={{ position: 'absolute', top: 0, right: 0, width: 20, height: 20, borderRadius: '50%', background: INK, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, lineHeight: 1, padding: 0 }}
-                      >×</button>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Closet picker */}
-          <div style={{ padding: '12px' }}>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-              // pick from closet
-            </div>
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 10 }}>
-              {CLOSET_FILTERS.map(f => (
-                <button key={f.value} onClick={() => setClosetFilter(f.value)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
-                  <MonoTag filled={closetFilter === f.value}>{f.label}</MonoTag>
-                </button>
-              ))}
-            </div>
-            {itemsLoading ? (
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
-            ) : filteredItems.length === 0 ? (
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items</div>
-            ) : (
-              <div style={{ maxHeight: 300, overflowY: 'auto', scrollbarWidth: 'none' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
-                  {filteredItems.map(item => (
-                    <button key={item.id} onClick={() => toggleItem(item.id)} style={{ padding: 0, background: 'none', border: 'none', cursor: 'pointer' }}>
-                      <div style={{ width: '100%', aspectRatio: '3/4', border: selectedIds.has(item.id) ? `2px solid ${INK}` : RULE, position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
-                        {item.signedImageUrl ? (
-                          <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', background: `repeating-linear-gradient(135deg, ${CREAM} 0 8px, #E8D3BD 8px 16px)` }} />
-                        )}
-                        <div style={{ position: 'absolute', top: 4, left: 4, fontFamily: MONO, fontSize: 7.5, background: 'rgba(255,255,255,0.9)', color: INK, padding: '1px 4px', letterSpacing: '0.03em' }}>{item.category}</div>
-                        {selectedIds.has(item.id) && (
-                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                            <Icon name="check" size={20} stroke={2.5} />
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Notes */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel>notes</SectionLabel>
@@ -243,7 +220,13 @@ export default function LogOutfitPage() {
           onChange={e => setNotes(e.target.value)}
           placeholder="how did you feel wearing this?"
           rows={3}
-          style={{ width: '100%', boxSizing: 'border-box', fontFamily: UI, fontSize: 13, color: notes ? INK : 'rgba(0,0,0,0.35)', background: 'none', border: 'none', outline: 'none', borderBottom: RULE, padding: '6px 0', marginTop: 8, resize: 'none' }}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            fontFamily: UI, fontSize: 13,
+            color: notes ? INK : 'rgba(0,0,0,0.35)',
+            background: 'none', border: 'none', outline: 'none',
+            borderBottom: RULE, padding: '6px 0', resize: 'none',
+          }}
         />
       </div>
 
@@ -253,7 +236,13 @@ export default function LogOutfitPage() {
         <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
         <button
           onClick={() => fileInputRef.current?.click()}
-          style={{ width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)', background: 'none', cursor: 'pointer', marginTop: 8, padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+          style={{
+            width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)',
+            background: 'none', cursor: 'pointer', padding: '32px 0',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+            fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)',
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}
         >
           {imageFile ? (
             <span style={{ color: INK, textTransform: 'none', letterSpacing: 0 }}>{imageFile.name} ✓</span>
@@ -263,13 +252,20 @@ export default function LogOutfitPage() {
         </button>
       </div>
 
-      {/* Fixed bottom bar */}
-      <div style={{ position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: '#F7F6F5', borderTop: RULE, padding: '12px 20px', zIndex: 20 }}>
+      {/* Bottom bar */}
+      <div style={isDesktop ? {
+        padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 8,
+      } : {
+        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430,
+        background: '#F7F6F5', borderTop: RULE,
+        padding: '12px 20px', zIndex: 20,
+      }}>
         {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
         <div style={{ display: 'flex', gap: 8 }}>
           <UButton variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1 }}>Cancel</UButton>
           <UButton icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave} style={{ flex: 2 }}>
-            {saving ? 'Saving…' : isEdit ? 'Update outfit' : 'Log outfit'}
+            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save outfit'}
           </UButton>
         </div>
       </div>

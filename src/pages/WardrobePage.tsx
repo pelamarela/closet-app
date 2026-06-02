@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
@@ -11,7 +12,7 @@ const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all',        label: 'all' },
   { value: 'top',        label: 'top' },
   { value: 'bottom',     label: 'btm' },
-  { value: 'one-piece',  label: '1pc' },
+  { value: 'dress',      label: '1pc' },
   { value: 'outerwear',  label: 'otw' },
   { value: 'shoes',      label: 'shoe' },
   { value: 'accessory',  label: 'acc' },
@@ -26,6 +27,7 @@ export default function WardrobePage() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const batchInputRef = useRef<HTMLInputElement>(null)
+  const { isDesktop } = useBreakpoint()
   const { deleteItems } = useItemMutations()
 
   const toggleSelect = useCallback((id: string) => {
@@ -139,7 +141,7 @@ export default function WardrobePage() {
   }
 
   return (
-    <div style={{ paddingBottom: 100 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
       <TopBar
         title="Closet"
         meta={
@@ -166,7 +168,7 @@ export default function WardrobePage() {
           no {FILTERS.find(f => f.value === filter)?.label} yet
         </div>
       ) : (
-        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
+        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(160px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
           {filtered.map(item => (
             <ItemCard
               key={item.id}
@@ -201,10 +203,12 @@ export default function WardrobePage() {
 
       {/* Fixed action bar */}
       <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
+        ...(isDesktop ? { padding: '16px 20px', display: 'flex', gap: 8 } : {
+          position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          background: '#F7F6F5', borderTop: RULE,
+          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
+        }),
       }}>
         {selectMode ? (
           confirmDelete ? (

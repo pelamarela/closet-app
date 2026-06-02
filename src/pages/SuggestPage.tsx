@@ -6,6 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { TopBar, AppBar, SectionLabel, MonoTag, UButton, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 
 const OCCASION_PRESETS = ['studio', 'dinner', 'gallery', 'weekend', 'client', 'errands']
 type Suggestion = { item_ids: string[]; reasoning: string }
@@ -154,7 +155,7 @@ export default function SuggestPage() {
                   position: 'absolute', bottom: 0, left: 0, right: 0,
                   fontFamily: MONO, fontSize: 7.5, background: 'rgba(255,255,255,0.9)',
                   padding: '2px 4px', textAlign: 'center', letterSpacing: '0.04em',
-                }}>{item.category}</div>
+                }}>{catLabel(item.category)}</div>
               </div>
             ))}
           </div>
@@ -186,7 +187,7 @@ export default function SuggestPage() {
                   fontFamily: MONO, fontSize: 10,
                 }}>
                   <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</span>
-                  <span style={{ color: 'rgba(0,0,0,0.5)', textAlign: 'right' }}>{item.category}</span>
+                  <span style={{ color: 'rgba(0,0,0,0.5)', textAlign: 'right' }}>{catLabel(item.category)}</span>
                 </div>
               )
             })}
@@ -196,7 +197,7 @@ export default function SuggestPage() {
         {/* Actions */}
         <div style={{
           position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 430,
+          width: '100%', maxWidth: 1200,
           background: '#F7F6F5', borderTop: RULE,
           padding: '12px 20px', display: 'flex', gap: 8, zIndex: 10,
         }}>
@@ -329,7 +330,7 @@ export default function SuggestPage() {
       {/* CTA */}
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
+        width: '100%', maxWidth: 1200,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', zIndex: 10,
       }}>

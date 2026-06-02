@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 
 export const MONO = '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace'
 export const UI = "'Geist', 'Inter', system-ui, sans-serif"
@@ -51,6 +52,7 @@ export function TopBar({ title, meta }: {
   meta?: React.ReactNode
 }) {
   const navigate = useNavigate()
+  const { isDesktop } = useBreakpoint()
   return (
     <div>
       <div style={{
@@ -71,12 +73,14 @@ export function TopBar({ title, meta }: {
           {meta && (
             <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
           )}
-          <button
-            onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
-          >
-            <Icon name="user" size={18} stroke={1.5} />
-          </button>
+          {!isDesktop && (
+            <button
+              onClick={() => navigate('/settings')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
+            >
+              <Icon name="user" size={18} stroke={1.5} />
+            </button>
+          )}
         </div>
       </div>
       <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />

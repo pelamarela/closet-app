@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
-import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitSwatch, outfitTitle } from '../components/ui'
+import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle } from '../components/ui'
+import { outfitPalette } from '../lib/outfitPalette'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
@@ -33,12 +35,12 @@ function topOccasion(outfits: OutfitWithItems[]): string {
 }
 
 function OutfitThumb({ outfit, small }: { outfit?: OutfitWithItems; small?: boolean }) {
-  const [c1, c2] = outfit ? outfitSwatch(outfit.id) : ['#F2E1D0', '#E8D3BD']
-  const step = small ? 8 : 10
+  const [a, b] = outfit ? outfitPalette(outfit.id) : ['#E8D4C0', '#D4BEA8']
+  const sz = small ? 8 : 10
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: `repeating-linear-gradient(135deg, ${c1} 0 ${step}px, ${c2} ${step}px ${step * 2}px)`,
+      background: `repeating-linear-gradient(135deg, ${a} 0 ${sz}px, ${b} ${sz}px ${sz * 2}px)`,
     }} />
   )
 }
@@ -47,6 +49,7 @@ export default function OutfitsPage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
+  const { isDesktop } = useBreakpoint()
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
@@ -100,7 +103,7 @@ export default function OutfitsPage() {
   }
 
   return (
-    <div style={{ paddingBottom: 160 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
       <TopBar title="Calendar" />
 
       {/* Month nav */}
@@ -296,11 +299,11 @@ export default function OutfitsPage() {
 
       <div style={{
         position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
+        width: '100%', maxWidth: 1200,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px', zIndex: 25,
       }}>
-        <UButton full icon="hanger" onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+        <UButton full icon="hanger" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>Log outfit</UButton>
       </div>
     </div>
   )

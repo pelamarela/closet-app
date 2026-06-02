@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitSwatch, outfitTitle } from '../components/ui'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitTitle } from '../components/ui'
+import { outfitPalette } from '../lib/outfitPalette'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat']
 
@@ -14,6 +16,7 @@ function todayStr() {
 export default function HomePage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
+  const { isDesktop } = useBreakpoint()
   const { items } = useItems()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
@@ -40,7 +43,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ paddingBottom: 160 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
       <TopBar
         title={<>
           closet
@@ -131,7 +134,7 @@ export default function HomePage() {
             >
               <div style={{
                 width: 34, height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0,
-                background: (() => { const [c1,c2] = outfitSwatch(o.id); return `repeating-linear-gradient(135deg, ${c1} 0 10px, ${c2} 10px 20px)` })(),
+                background: (() => { const [a,b] = outfitPalette(o.id); return `repeating-linear-gradient(135deg, ${a} 0 10px, ${b} 10px 20px)`; })(),
               }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
@@ -158,15 +161,17 @@ export default function HomePage() {
         </div>
       )}
 
-      <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
-      }}>
-        <UButton icon="plus" full style={{ flex: 1 }} onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
-        <UButton variant="secondary" icon="spark" style={{ width: 120 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
-      </div>
+      {!isDesktop && (
+        <div style={{
+          position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          background: '#F7F6F5', borderTop: RULE,
+          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
+        }}>
+          <UButton icon="plus" full style={{ flex: 1 }} onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
+          <UButton variant="secondary" icon="spark" style={{ width: 120 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
+        </div>
+      )}
     </div>
   )
 }

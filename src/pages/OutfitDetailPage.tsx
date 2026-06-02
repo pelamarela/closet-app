@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { catLabel } from '../lib/categoryLabel'
 import type { Outfit, Item } from '../types/database'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
@@ -155,10 +156,8 @@ export default function OutfitDetailPage() {
               </div>
             );
 
-            // 1 item: single full-width cell
             if (total === 1) return cell(items[0], m > 0 ? 'top center' : 'center', { height: '100%' });
 
-            // All same category OR total=2 (any split): even 2-col grid
             if (m === 0 || s === 0 || total === 2) {
               const all = [...main, ...small];
               const pos = m > 0 ? 'top center' : 'center';
@@ -174,8 +173,6 @@ export default function OutfitDetailPage() {
               );
             }
 
-            // Mixed main + secondary → always 2-column layout (main left, secondary right 1-col)
-            // Right pane is always a single column — no 3-column appearance ever
             let leftPct: number;
             if (m === 1) {
               leftPct = s >= 5 ? 75 : 60;
@@ -238,7 +235,7 @@ export default function OutfitDetailPage() {
               <div>
                 <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-                  {item.category}{item.color ? ` · ${item.color}` : ''}
+                  {catLabel(item.category)}{item.color ? ` · ${item.color}` : ''}
                 </div>
               </div>
               <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textAlign: 'right' }}>

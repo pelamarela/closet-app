@@ -3,8 +3,6 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// ─── Pre-filter helpers ───────────────────────────────────────────────────────
-
 function warmthRange(tempC: number): [number, number] {
   if (tempC < 5)  return [4, 5]
   if (tempC < 12) return [3, 5]
@@ -21,47 +19,26 @@ function formalityRange(occasion: string): [number, number] | null {
   return null
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// one-piece covers: one-piece (new), dress (legacy), set (legacy)
+const isOnePiece = (cat: string) => ['dress', 'set'].includes(cat)
 
 type Item = {
-  id: string
-  name: string
-  category: string
-  subcategory?: string | null
-  color?: string | null
-  warmth: number
-  formality: number
+  id: string; name: string; category: string; subcategory?: string | null
+  color?: string | null; warmth: number; formality: number
 }
-
-type RecentOutfit = {
-  date: string
-  occasion?: string | null
-  item_names: string[]
-}
-
+type RecentOutfit = { date: string; occasion?: string | null; item_names: string[] }
 type RequestBody = {
-  occasion: string
-  weather: { temp_c: number; conditions: string }
-  items: Item[]
-  style_profile: string
-  recent_outfits: RecentOutfit[]
+  occasion: string; weather: { temp_c: number; conditions: string }
+  items: Item[]; style_profile: string; recent_outfits: RecentOutfit[]
 }
-
-type Suggestion = {
-  item_ids: string[]
-  reasoning: string
-}
-
-// ─── Handler ──────────────────────────────────────────────────────────────────
+type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const { occasion, weather, items, style_profile, recent_outfits } = req.body as RequestBody
-
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
-  // Pre-filter by warmth and formality
   const [wMin, wMax] = warmthRange(weather.temp_c)
   const fRange = formalityRange(occasion)
 
@@ -71,11 +48,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return true
   })
 
-  // Fall back to all items if filtered set can't form a complete outfit
   const canForm = (pool: Item[]) => {
-    const cats = new Set(pool.map(i => i.category))
-    const hasShoes = cats.has('shoes')
-    return hasShoes && (cats.has('dress') || (cats.has('top') && cats.has('bottom')))
+    const cats = pool.map(i => i.category)
+    const hasShoes = cats.includes('shoes')
+    return hasShoes && (cats.some(isOnePiece) || (cats.includes('top') && cats.includes('bottom')))
   }
   const candidates = canForm(filtered) ? filtered : items
 
@@ -84,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ).join('\n')
 
   const historyText = recent_outfits.length
-    ? recent_outfits.slice(0, 7).map(o =>
+    ? recent_outfits.slice(0, 20).map(o =>
         `${o.date}${o.occasion ? ` (${o.occasion})` : ''}: ${o.item_names.join(', ')}`
       ).join('\n')
     : 'None yet'
@@ -98,18 +74,19 @@ STYLE NOTES: ${style_profile || 'No style profile set'}
 AVAILABLE ITEMS:
 ${itemList}
 
-RECENT OUTFIT HISTORY (avoid repeating recent combinations):
+OUTFIT HISTORY (use to understand her style patterns and avoid recent repeats):
 ${historyText}
 
 Rules:
+- Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
-- Valid outfit structures: (top + bottom + shoes) OR (dress + shoes)
-- Outerwear and accessories are optional additions — never a substitute for the above
+- Valid outfit structures: (top + bottom + shoes) OR (one-piece/dress + shoes)
+- Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits
 - Keep reasoning to 1–2 sentences
 
-Respond with JSON only, no markdown:
+Respond with JSON only, no markdown fences:
 {"suggestions":[{"item_ids":["id1","id2"],"reasoning":"..."}]}`
 
   const message = await client.messages.create({
@@ -118,26 +95,25 @@ Respond with JSON only, no markdown:
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+  const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
   let suggestions: Suggestion[] = []
   try {
     const parsed = JSON.parse(text)
     suggestions = parsed.suggestions ?? []
   } catch {
-    return res.status(500).json({ error: 'Failed to parse suggestions', raw: text })
+    return res.status(500).json({ error: 'Failed to parse suggestions', raw })
   }
 
-  // Validate IDs and enforce outfit completeness rules:
-  // must be (top + bottom + shoes) or (dress + shoes); accessories/outerwear optional
   const idToItem = new Map(candidates.map(i => [i.id, i]))
 
   const isCompleteOutfit = (ids: string[]) => {
-    const cats = new Set(ids.map(id => idToItem.get(id)?.category ?? ''))
-    const hasShoes = cats.has('shoes')
+    const cats = ids.map(id => idToItem.get(id)?.category ?? '')
+    const hasShoes = cats.includes('shoes')
     if (!hasShoes) return false
-    if (cats.has('dress')) return true
-    return cats.has('top') && cats.has('bottom')
+    if (cats.some(isOnePiece)) return true
+    return cats.includes('top') && cats.includes('bottom')
   }
 
   const safe = suggestions
