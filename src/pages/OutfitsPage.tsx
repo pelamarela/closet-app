@@ -8,11 +8,12 @@ import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle } 
 import { outfitPalette } from '../lib/outfitPalette'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
-function firstDayOfMonth(y: number, m: number) { return new Date(y, m, 1).getDay() }
+// Returns 0=Mon … 6=Sun so the calendar grid starts on Monday
+function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7 }
 
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-const DAY_LABELS = ['sun','mon','tue','wed','thu','fri','sat']
+const DAY_LABELS = ['mon','tue','wed','thu','fri','sat','sun']
 
 function calcStreak(outfits: OutfitWithItems[]): number {
   const dates = new Set(outfits.map(o => o.date_worn))

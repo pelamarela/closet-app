@@ -7,7 +7,7 @@ import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather
 import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitTitle } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
 
-const DOW = ['sun','mon','tue','wed','thu','fri','sat']
+const DOW = ['sun','mon','tue','wed','thu','fri','sat'] // indexed by getDay() — Sun=0
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
