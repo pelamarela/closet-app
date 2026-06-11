@@ -106,7 +106,7 @@ export default function LogOutfitPage() {
           value={date}
           onChange={e => setDate(e.target.value)}
           style={{
-            fontFamily: UI, fontSize: 15, fontWeight: 500, color: INK,
+            fontFamily: UI, fontSize: 16, fontWeight: 500, color: INK,
             background: 'none', border: 'none', outline: 'none',
             borderBottom: RULE, paddingBottom: 6, cursor: 'pointer', width: '100%',
           }}

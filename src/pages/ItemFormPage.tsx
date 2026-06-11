@@ -55,7 +55,7 @@ function Field({
         style={{
           width: '100%',
           fontFamily: mono ? MONO : UI,
-          fontSize: mono ? 12 : 15,
+          fontSize: 16,
           fontWeight: 500,
           color: value ? INK : 'rgba(0,0,0,0.35)',
           background: 'none', border: 'none', outline: 'none', padding: 0,

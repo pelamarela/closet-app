@@ -114,7 +114,7 @@ export default function LoginPage() {
             onChange={e => setEmail(e.target.value)}
             style={{
               width: '100%', background: 'none', border: 'none', outline: 'none',
-              fontFamily: MONO, fontSize: 14, fontWeight: 500, color: INK,
+              fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK,
               marginTop: 6, padding: 0,
             }}
           />
@@ -133,7 +133,7 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             style={{
               width: '100%', background: 'none', border: 'none', outline: 'none',
-              fontFamily: MONO, fontSize: 14, fontWeight: 500, color: INK,
+              fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK,
               marginTop: 6, padding: 0,
             }}
           />
