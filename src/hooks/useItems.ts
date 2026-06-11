@@ -62,7 +62,7 @@ export function useItems() {
     setItems(
       (data ?? []).map(item => ({
         ...item,
-        category: (LEGACY_CATEGORY[item.category] ?? item.category) as Category,
+        category: (LEGACY_CATEGORY[item.category as string] ?? item.category) as Category,
         signedImageUrl: item.image_url ? (signedUrlMap[item.image_url] ?? null) : null,
       }))
     )

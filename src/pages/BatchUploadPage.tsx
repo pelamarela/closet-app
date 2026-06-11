@@ -11,7 +11,7 @@ import type { Category } from '../types/database'
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top',        label: 'top' },
   { value: 'bottom',     label: 'btm' },
-  { value: 'dress',      label: '1pc' },
+  { value: 'one-piece',  label: '1pc' },
   { value: 'outerwear',  label: 'otw' },
   { value: 'shoes',      label: 'shoe' },
   { value: 'accessory',  label: 'acc' },
@@ -64,7 +64,7 @@ async function analyzeImage(file: File): Promise<Partial<Draft>> {
   }
 }
 
-const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'])
+const VALID_CATEGORIES = new Set<Category>(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 
 function toCategory(raw: string | undefined): Category {
   if (raw && VALID_CATEGORIES.has(raw as Category)) return raw as Category

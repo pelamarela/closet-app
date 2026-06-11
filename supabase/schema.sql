@@ -10,7 +10,7 @@ create extension if not exists "uuid-ossp";
 create table if not exists public.items (
   id          uuid primary key default uuid_generate_v4(),
   name        text not null,
-  category    text not null check (category in ('top','bottom','dress','outerwear','shoes','accessory')),
+  category    text not null check (category in ('top','bottom','one-piece','outerwear','shoes','accessory')),
   subcategory text,
   color       text,
   pattern     text,

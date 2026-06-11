@@ -30,7 +30,9 @@
       "Bash(gh run *)",
       "Bash(gh deployment *)",
       "Bash(vercel *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(npx tsc *)",
+      "Bash(supabase --version)"
     ]
   }
 }

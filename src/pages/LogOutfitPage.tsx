@@ -138,7 +138,7 @@ export default function LogOutfitPage() {
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel right={selectedCount > 0 ? `${selectedCount} selected` : undefined}>items</SectionLabel>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-          {(['all', 'top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'] as const).map(cat => (
+          {(['all', 'top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'] as const).map(cat => (
             <button key={cat} onClick={() => setFilterCat(cat)} style={{
               fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
               border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,

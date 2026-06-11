@@ -19,8 +19,7 @@ function formalityRange(occasion: string): [number, number] | null {
   return null
 }
 
-// one-piece covers: one-piece (new), dress (legacy), set (legacy)
-const isOnePiece = (cat: string) => ['dress', 'set'].includes(cat)
+const isOnePiece = (cat: string) => cat === 'one-piece'
 
 type Item = {
   id: string; name: string; category: string; subcategory?: string | null
@@ -81,7 +80,7 @@ Rules:
 - Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
-- Valid outfit structures: (top + bottom + shoes) OR (one-piece/dress + shoes)
+- Valid outfit structures: (top + bottom + shoes) OR (one-piece + shoes)
 - Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits
 - Keep reasoning to 1–2 sentences
