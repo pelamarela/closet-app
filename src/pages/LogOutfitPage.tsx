@@ -155,6 +155,7 @@ export default function LogOutfitPage() {
         ) : items.length === 0 ? (
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
         ) : (
+          <div style={{ maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
               <button
@@ -188,6 +189,7 @@ export default function LogOutfitPage() {
                 </div>
               </button>
             ))}
+          </div>
           </div>
         )}
       </div>
