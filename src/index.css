@@ -11,6 +11,8 @@
   --rule: 1px solid rgba(0,0,0,0.10);
   --rule-strong: 1px solid rgba(0,0,0,0.18);
   --rule-dashed: 1px dashed rgba(0,0,0,0.18);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --nav-h: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 
 * {

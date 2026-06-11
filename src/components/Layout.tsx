@@ -13,13 +13,13 @@ export default function Layout() {
 
   return (
     <div style={{ minHeight: '100svh', background: '#F7F6F5', display: 'flex', flexDirection: 'column' }}>
-      <main style={{ flex: 1, paddingBottom: 84 }}>
+      <main style={{ flex: 1, paddingBottom: 'var(--nav-h)' }}>
         <Outlet />
       </main>
 
       <nav style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        height: 84, paddingBottom: 24,
+        height: 'var(--nav-h)', paddingBottom: 'var(--safe-b)',
         borderTop: '1px solid rgba(0,0,0,0.10)',
         background: '#F7F6F5',
         display: 'flex',

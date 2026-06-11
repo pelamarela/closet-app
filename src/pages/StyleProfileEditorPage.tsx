@@ -153,7 +153,7 @@ export default function StyleProfileEditorPage() {
 
       {/* CTA */}
       <div style={{
-        position: 'fixed', bottom: 84, left: '50%', transform: 'translateX(-50%)',
+        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 700,
         background: '#F7F6F5', borderTop: RULE,
         padding: '12px 20px 28px', display: 'flex', gap: 8,
