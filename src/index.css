@@ -17,14 +17,20 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   font-family: 'Geist', 'Inter', system-ui, sans-serif;
   background: #F7F6F5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100svh;
+  max-width: 100vw;
 }
