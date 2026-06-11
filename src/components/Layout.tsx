@@ -12,8 +12,8 @@ export default function Layout() {
   const { pathname } = useLocation()
 
   return (
-    <div style={{ minHeight: '100svh', background: '#F7F6F5', display: 'flex', flexDirection: 'column' }}>
-      <main style={{ flex: 1, paddingBottom: 'var(--nav-h)' }}>
+    <div style={{ minHeight: '100svh', background: '#F7F6F5', display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}>
+      <main style={{ flex: 1, paddingTop: 'var(--safe-t)', paddingBottom: 'var(--nav-h)', overflowX: 'hidden' }}>
         <Outlet />
       </main>
 
