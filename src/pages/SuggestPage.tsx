@@ -68,6 +68,19 @@ export default function SuggestPage() {
       item_names: o.item_ids.map(id => items.find(i => i.id === id)?.name ?? '').filter(Boolean),
     }))
 
+    const { data: feedbackRows } = await supabase
+      .from('suggestion_feedback')
+      .select('item_ids, feedback, occasion')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false })
+      .limit(30)
+
+    const feedback_history = (feedbackRows ?? []).map(f => ({
+      item_names: f.item_ids.map((id: string) => items.find(i => i.id === id)?.name).filter(Boolean) as string[],
+      feedback: f.feedback as 'up' | 'down',
+      occasion: f.occasion,
+    })).filter(f => f.item_names.length > 0)
+
     try {
       const res = await fetch('/api/suggest', {
         method: 'POST',
@@ -78,6 +91,7 @@ export default function SuggestPage() {
             ({ id, name, category, subcategory, color, warmth, formality })),
           style_profile: profileData?.description ?? '',
           recent_outfits,
+          feedback_history,
         }),
       })
       const data = await res.json()

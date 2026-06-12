@@ -26,16 +26,18 @@ type Item = {
   color?: string | null; warmth: number; formality: number
 }
 type RecentOutfit = { date: string; occasion?: string | null; item_names: string[] }
+type FeedbackEntry = { item_names: string[]; feedback: 'up' | 'down'; occasion?: string | null }
 type RequestBody = {
   occasion: string; weather: { temp_c: number; conditions: string }
   items: Item[]; style_profile: string; recent_outfits: RecentOutfit[]
+  feedback_history?: FeedbackEntry[]
 }
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { occasion, weather, items, style_profile, recent_outfits } = req.body as RequestBody
+  const { occasion, weather, items, style_profile, recent_outfits, feedback_history } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
   const [wMin, wMax] = warmthRange(weather.temp_c)
@@ -64,6 +66,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ).join('\n')
     : 'None yet'
 
+  const liked   = (feedback_history ?? []).filter(f => f.feedback === 'up')
+  const disliked = (feedback_history ?? []).filter(f => f.feedback === 'down')
+  const feedbackText = (liked.length || disliked.length)
+    ? [
+        liked.length   ? `Liked (lean into these combinations):\n${liked.map(f => `- ${f.occasion ? `(${f.occasion}) ` : ''}${f.item_names.join(', ')}`).join('\n')}` : '',
+        disliked.length ? `Disliked (avoid these combinations):\n${disliked.map(f => `- ${f.occasion ? `(${f.occasion}) ` : ''}${f.item_names.join(', ')}`).join('\n')}` : '',
+      ].filter(Boolean).join('\n\n')
+    : 'No feedback yet'
+
   const prompt = `You are a personal stylist. Suggest 1–3 outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
@@ -76,8 +87,12 @@ ${itemList}
 OUTFIT HISTORY (use to understand her style patterns and avoid recent repeats):
 ${historyText}
 
+PAST SUGGESTION FEEDBACK (thumbs up/down on previous AI suggestions — prioritise this signal):
+${feedbackText}
+
 Rules:
 - Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
+- Use the feedback to guide combinations: reinforce liked item pairings, avoid disliked ones
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
 - Valid outfit structures: (top + bottom + shoes) OR (one-piece + shoes)
