@@ -168,7 +168,7 @@ export default function WardrobePage() {
           no {FILTERS.find(f => f.value === filter)?.label} yet
         </div>
       ) : (
-        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(160px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
+        <div style={{ padding: '16px 20px 0', display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(160px, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
           {filtered.map(item => (
             <ItemCard
               key={item.id}

@@ -131,7 +131,7 @@ export default function IdeaEditPage() {
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
         ) : (
           <div style={{ maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
               {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).sort((a, b) => Number(!initialSelectedIds.has(a.id)) - Number(!initialSelectedIds.has(b.id))).map(item => (
                 <button
                   key={item.id}
