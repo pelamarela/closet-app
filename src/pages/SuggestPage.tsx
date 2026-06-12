@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, AppBar, SectionLabel, MonoTag, UButton, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 
@@ -32,6 +32,8 @@ export default function SuggestPage() {
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState<number | null>(null)
   const [savedMsg, setSavedMsg] = useState(false)
+  const [feedback, setFeedback] = useState<('up' | 'down' | null)[]>([])
+  const [feedbackIds, setFeedbackIds] = useState<string[]>([])
   const { saveIdea } = useIdeaMutations()
 
   const fetchWeather = async () => {
@@ -80,7 +82,10 @@ export default function SuggestPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')
-      setSuggestions(data.suggestions ?? [])
+      const incoming = data.suggestions ?? []
+      setSuggestions(incoming)
+      setFeedback(incoming.map(() => null))
+      setFeedbackIds(incoming.map(() => crypto.randomUUID()))
       setElapsed(Math.round((Date.now() - t0) / 100) / 10)
       setView('result')
     } catch (e) {
@@ -100,6 +105,25 @@ export default function SuggestPage() {
       setTimeout(() => setSavedMsg(false), 2000)
     } catch {
       // silently ignore
+    }
+  }
+
+  const handleFeedback = async (optionIndex: number, value: 'up' | 'down') => {
+    const next = value === feedback[optionIndex] ? null : value
+    setFeedback(prev => prev.map((f, i) => i === optionIndex ? next : f))
+    if (!user) return
+    const suggestion = suggestions[optionIndex]
+    if (!suggestion) return
+    if (next === null) {
+      await supabase.from('suggestion_feedback').delete().eq('id', feedbackIds[optionIndex])
+    } else {
+      await supabase.from('suggestion_feedback').upsert({
+        id: feedbackIds[optionIndex],
+        user_id: user.id,
+        occasion: occasion.trim() || null,
+        item_ids: suggestion.item_ids,
+        feedback: next,
+      })
     }
   }
 
@@ -183,6 +207,34 @@ export default function SuggestPage() {
           }}>
             {currentSuggestion?.reasoning}
           </div>
+        </div>
+
+        {/* Feedback */}
+        <div style={{ padding: '12px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            rate this suggestion
+          </div>
+          <div style={{ flex: 1, borderTop: '1px dashed rgba(0,0,0,0.12)' }} />
+          {(['up', 'down'] as const).map(dir => {
+            const active = feedback[selectedOption] === dir
+            return (
+              <button
+                key={dir}
+                onClick={() => handleFeedback(selectedOption, dir)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 36, height: 36,
+                  border: `1px solid ${active ? INK : 'rgba(0,0,0,0.15)'}`,
+                  background: active ? INK : 'transparent',
+                  color: active ? '#fff' : 'rgba(0,0,0,0.45)',
+                  borderRadius: 2, cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <Icon name={`thumbs-${dir}`} size={15} stroke={active ? 2 : 1.5} />
+              </button>
+            )
+          })}
         </div>
 
         {/* Pieces list */}

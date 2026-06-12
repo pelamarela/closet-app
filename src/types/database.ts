@@ -121,6 +121,12 @@ export type Database = {
         Update: { idea_id: string; item_id: string }
         Relationships: []
       }
+      suggestion_feedback: {
+        Row: { id: string; user_id: string; occasion: string | null; item_ids: string[]; feedback: 'up' | 'down'; created_at: string }
+        Insert: { id: string; user_id: string; occasion?: string | null; item_ids: string[]; feedback: 'up' | 'down' }
+        Update: { feedback?: 'up' | 'down' }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
