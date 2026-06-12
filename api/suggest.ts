@@ -57,8 +57,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const candidates = canForm(filtered) ? filtered : items
 
-  // Shuffle so Claude doesn't always fixate on the same top items
-  const shuffled = [...candidates].sort(() => Math.random() - 0.5)
+  // Hard-exclude previously shown core items (tops/bottoms/one-pieces) so Claude
+  // is forced to explore the rest of the wardrobe on each regen.
+  // Shoes/outerwear/accessories stay available — fewer options there.
+  const REGEN_EXCLUDE = new Set(['top', 'bottom', 'one-piece'])
+  const shownIds = new Set((previously_shown ?? []).flat())
+  const fresh = candidates.filter(i => !shownIds.has(i.id) || !REGEN_EXCLUDE.has(i.category))
+  const pool = canForm(fresh) ? fresh : candidates
+
+  // Shuffle so Claude doesn't anchor on the same list order
+  const shuffled = [...pool].sort(() => Math.random() - 0.5)
 
   const itemList = shuffled.map(i =>
     `ID:${i.id} | ${i.name}${i.color ? ` (${i.color})` : ''} | ${i.category}${i.subcategory ? `/${i.subcategory}` : ''} | warmth:${i.warmth} formality:${i.formality}`
@@ -69,13 +77,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `${o.date}${o.occasion ? ` (${o.occasion})` : ''}: ${o.item_names.join(', ')}`
       ).join('\n')
     : 'None yet'
-
-  const idToName = new Map(items.map(i => [i.id, i.name]))
-  const shownText = (previously_shown ?? []).length
-    ? (previously_shown ?? []).map(ids =>
-        `- ${ids.map(id => idToName.get(id)).filter(Boolean).join(', ')}`
-      ).join('\n')
-    : null
 
   const liked   = (feedback_history ?? []).filter(f => f.feedback === 'up')
   const disliked = (feedback_history ?? []).filter(f => f.feedback === 'down')
@@ -100,11 +101,10 @@ ${historyText}
 
 PAST SUGGESTION FEEDBACK (thumbs up/down on previous AI suggestions — prioritise this signal):
 ${feedbackText}
-${shownText ? `\nALREADY SUGGESTED THIS SESSION — do NOT repeat these combinations; use different pieces:\n${shownText}` : ''}
+
 Rules:
 - Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Use the feedback to guide combinations: reinforce liked item pairings, avoid disliked ones
-- If ALREADY SUGGESTED items are listed above, build outfits from pieces NOT in those combinations — explore the rest of the wardrobe
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
 - Valid outfit structures: (top + bottom + shoes) OR (one-piece + shoes)
