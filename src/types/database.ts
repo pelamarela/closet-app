@@ -64,6 +64,17 @@ export type OutfitItem = {
   item_id: string
 }
 
+export type OutfitIdea = {
+  id: string
+  user_id: string
+  occasion: string | null
+  reasoning: string | null
+  notes: string | null
+  created_at: string
+}
+
+export type OutfitIdeaWithItems = OutfitIdea & { item_ids: string[] }
+
 export type StyleProfile = {
   id: string
   user_id: string
@@ -96,6 +107,18 @@ export type Database = {
         Row: StyleProfile
         Insert: Omit<StyleProfile, 'id' | 'updated_at'>
         Update: Partial<Omit<StyleProfile, 'id'>>
+        Relationships: []
+      }
+      outfit_ideas: {
+        Row: OutfitIdea
+        Insert: Omit<OutfitIdea, 'id' | 'created_at'>
+        Update: Partial<Omit<OutfitIdea, 'id' | 'created_at'>>
+        Relationships: []
+      }
+      idea_items: {
+        Row: { idea_id: string; item_id: string }
+        Insert: { idea_id: string; item_id: string }
+        Update: { idea_id: string; item_id: string }
         Relationships: []
       }
     }

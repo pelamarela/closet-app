@@ -13,6 +13,8 @@ import SuggestPage from './pages/SuggestPage'
 import BatchUploadPage from './pages/BatchUploadPage'
 import SettingsPage from './pages/SettingsPage'
 import StyleProfileEditorPage from './pages/StyleProfileEditorPage'
+import IdeasPage from './pages/IdeasPage'
+import IdeaDetailPage from './pages/IdeaDetailPage'
 
 function ProtectedRoutes() {
   const { session, loading } = useAuth()
@@ -49,6 +51,8 @@ export default function App() {
             <Route path="/outfits/:id" element={<OutfitDetailPage />} />
             <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
+            <Route path="/ideas" element={<IdeasPage />} />
+            <Route path="/ideas/:id" element={<IdeaDetailPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
           </Route>

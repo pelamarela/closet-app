@@ -43,6 +43,7 @@ export function Icon({ name, size = 20, stroke = 1.5 }: {
     case 'cloud':    return <svg {...p}><path d="M7 18a4 4 0 1 1 .9-7.9A6 6 0 0 1 19 12a4 4 0 0 1-.7 8z"/></svg>
     case 'camera':   return <svg {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
     case 'home':     return <svg {...p}><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    case 'bookmark': return <svg {...p}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
     default:         return null
   }
 }

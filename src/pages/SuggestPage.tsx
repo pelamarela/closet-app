@@ -7,6 +7,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { TopBar, AppBar, SectionLabel, MonoTag, UButton, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
+import { useIdeaMutations } from '../hooks/useIdeaMutations'
 
 const OCCASION_PRESETS = ['studio', 'dinner', 'gallery', 'weekend', 'client', 'errands']
 type Suggestion = { item_ids: string[]; reasoning: string }
@@ -30,6 +31,8 @@ export default function SuggestPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState<number | null>(null)
+  const [savedMsg, setSavedMsg] = useState(false)
+  const { saveIdea } = useIdeaMutations()
 
   const fetchWeather = async () => {
     setWeatherLoading(true); setWeatherError(null)
@@ -88,6 +91,16 @@ export default function SuggestPage() {
 
   const handleLog = (itemIds: string[]) => {
     navigate('/outfits/new', { state: { preselectedIds: itemIds, occasion } })
+  }
+
+  const handleSaveIdea = async (itemIds: string[], reasoning: string) => {
+    try {
+      await saveIdea(occasion, reasoning, itemIds)
+      setSavedMsg(true)
+      setTimeout(() => setSavedMsg(false), 2000)
+    } catch {
+      // silently ignore
+    }
   }
 
   const itemMap = new Map(
@@ -199,13 +212,23 @@ export default function SuggestPage() {
           position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
           width: '100%', maxWidth: 700,
           background: '#F7F6F5', borderTop: RULE,
-          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 10,
+          padding: '12px 20px', zIndex: 10,
         }}>
-          <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading}>
-            {loading ? '…' : 'Regen'}
-          </UButton>
-          <UButton style={{ flex: 1.6 }} icon="check" onClick={() => handleLog(currentSuggestion?.item_ids ?? [])}>
-            Log this outfit
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading}>
+              {loading ? '…' : 'Regen'}
+            </UButton>
+            <UButton style={{ flex: 1.6 }} icon="check" onClick={() => handleLog(currentSuggestion?.item_ids ?? [])}>
+              Log this outfit
+            </UButton>
+          </div>
+          <UButton
+            variant="ghost"
+            full
+            icon="bookmark"
+            onClick={() => handleSaveIdea(currentSuggestion?.item_ids ?? [], currentSuggestion?.reasoning ?? '')}
+          >
+            {savedMsg ? 'Saved to ideas ✓' : 'Save as idea'}
           </UButton>
         </div>
       </div>
