@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
@@ -9,7 +9,12 @@ import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RU
 import { catLabel } from '../lib/categoryLabel'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 
-const OCCASION_PRESETS = ['studio', 'dinner', 'gallery', 'weekend', 'client', 'errands']
+const TIME_DEFAULTS: Record<'weekday' | 'friday' | 'weekend', string[]> = {
+  weekday: ['work', 'lunch', 'errands', 'dinner', 'casual', 'gym'],
+  friday:  ['dinner', 'drinks', 'work', 'casual', 'date', 'errands'],
+  weekend: ['weekend', 'brunch', 'casual', 'dinner', 'walk', 'errands'],
+}
+
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default function SuggestPage() {
@@ -32,6 +37,29 @@ export default function SuggestPage() {
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState<number | null>(null)
   const [savedMsg, setSavedMsg] = useState(false)
+
+  const occasionPresets = useMemo(() => {
+    const freq: Record<string, number> = {}
+    outfits.forEach(o => {
+      const k = o.occasion?.trim().toLowerCase()
+      if (k) freq[k] = (freq[k] ?? 0) + 1
+    })
+    const fromHistory = Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([k]) => k)
+    if (fromHistory.length >= 5) return fromHistory.slice(0, 6)
+    const dow = new Date().getDay()
+    const slot = dow === 0 || dow === 6 ? 'weekend' : dow === 5 ? 'friday' : 'weekday'
+    const seen = new Set(fromHistory)
+    const padded = [...fromHistory]
+    for (const d of TIME_DEFAULTS[slot]) {
+      if (!seen.has(d)) { padded.push(d); seen.add(d) }
+      if (padded.length >= 6) break
+    }
+    return padded
+  }, [outfits])
+
   const [feedback, setFeedback] = useState<('up' | 'down' | null)[]>([])
   const [feedbackIds, setFeedbackIds] = useState<string[]>([])
   const { saveIdea } = useIdeaMutations()
@@ -322,7 +350,7 @@ export default function SuggestPage() {
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel right="required *">occasion</SectionLabel>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          {OCCASION_PRESETS.map(o => (
+          {occasionPresets.map(o => (
             <button key={o} onClick={() => setOccasion(prev => prev === o ? '' : o)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <MonoTag filled={occasion === o}>{o}</MonoTag>
             </button>
@@ -330,7 +358,7 @@ export default function SuggestPage() {
         </div>
         <input
           type="text"
-          value={OCCASION_PRESETS.includes(occasion) ? '' : occasion}
+          value={occasionPresets.includes(occasion) ? '' : occasion}
           onChange={e => setOccasion(e.target.value)}
           placeholder="or type custom…"
           style={{
