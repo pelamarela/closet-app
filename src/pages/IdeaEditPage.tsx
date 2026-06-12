@@ -20,6 +20,7 @@ export default function IdeaEditPage() {
   const [occasion, setOccasion] = useState('')
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [initialSelectedIds, setInitialSelectedIds] = useState<Set<string>>(new Set())
   const [filterCat, setFilterCat] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,6 +41,7 @@ export default function IdeaEditPage() {
       setNotes(d.notes ?? '')
       const ids = (d.idea_items ?? []).map((ii: { item_id: string }) => ii.item_id)
       setSelectedIds(new Set(ids))
+      setInitialSelectedIds(new Set(ids))
       setLoading(false)
     }
     load()
@@ -130,7 +132,7 @@ export default function IdeaEditPage() {
         ) : (
           <div style={{ maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' }}>
             <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
-              {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
+              {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).sort((a, b) => Number(!initialSelectedIds.has(a.id)) - Number(!initialSelectedIds.has(b.id))).map(item => (
                 <button
                   key={item.id}
                   onClick={() => toggleItem(item.id)}

@@ -27,6 +27,7 @@ export default function LogOutfitPage() {
   const [rating, setRating] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
+  const [initialSelectedIds, setInitialSelectedIds] = useState<Set<string>>(new Set(navState?.preselectedIds ?? []))
   const [filterCat, setFilterCat] = useState<string>('all')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [loadingEdit, setLoadingEdit] = useState(isEdit)
@@ -51,6 +52,7 @@ export default function LogOutfitPage() {
       setNotes(d.notes ?? '')
       const ids = (d.outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
       setSelectedIds(new Set(ids))
+      setInitialSelectedIds(new Set(ids))
       setLoadingEdit(false)
     }
     load()
@@ -157,7 +159,7 @@ export default function LogOutfitPage() {
         ) : (
           <div style={{ maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
-            {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).map(item => (
+            {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).sort((a, b) => Number(!initialSelectedIds.has(a.id)) - Number(!initialSelectedIds.has(b.id))).map(item => (
               <button
                 key={item.id}
                 onClick={() => toggleItem(item.id)}
