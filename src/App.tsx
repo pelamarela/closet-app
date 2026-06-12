@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage'
 import StyleProfileEditorPage from './pages/StyleProfileEditorPage'
 import IdeasPage from './pages/IdeasPage'
 import IdeaDetailPage from './pages/IdeaDetailPage'
+import IdeaEditPage from './pages/IdeaEditPage'
 
 function ProtectedRoutes() {
   const { session, loading } = useAuth()
@@ -53,6 +54,7 @@ export default function App() {
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/ideas" element={<IdeasPage />} />
             <Route path="/ideas/:id" element={<IdeaDetailPage />} />
+            <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
           </Route>

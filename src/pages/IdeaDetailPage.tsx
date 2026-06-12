@@ -136,13 +136,21 @@ export default function IdeaDetailPage() {
         back
         onBack={() => navigate('/ideas')}
         right={
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.45)', padding: 4, opacity: deleting ? 0.4 : 1 }}
-          >
-            <Icon name="trash" size={16} stroke={1.4} />
-          </button>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <button
+              onClick={() => navigate(`/ideas/${id}/edit`)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 4 }}
+            >
+              <Icon name="edit" size={17} stroke={1.4} />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.45)', padding: 4, opacity: deleting ? 0.4 : 1 }}
+            >
+              <Icon name="trash" size={16} stroke={1.4} />
+            </button>
+          </div>
         }
       />
 

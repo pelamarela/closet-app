@@ -44,21 +44,20 @@ function IdeaRow({ idea, items, onClick }: {
         ))}
       </div>
 
-      <div>
-        <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+      <div style={{ minWidth: 0, overflow: 'hidden' }}>
+        <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {outfitTitle(idea.item_ids, items, idea.occasion || 'idea')}
         </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
-          <span>{idea.item_ids.length} pieces</span>
-          {idea.occasion && <><span>·</span><span>{idea.occasion}</span></>}
-          <span>·</span>
-          <span>{String(d.getDate()).padStart(2,'0')} {MONTH_SHORT[d.getMonth()].toLowerCase()}</span>
+        <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+          <span style={{ flexShrink: 0 }}>{idea.item_ids.length} pieces</span>
+          {idea.occasion && <><span style={{ flexShrink: 0 }}>·</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{idea.occasion}</span></>}
+          <span style={{ flexShrink: 0 }}>·</span>
+          <span style={{ flexShrink: 0 }}>{String(d.getDate()).padStart(2,'0')} {MONTH_SHORT[d.getMonth()].toLowerCase()}</span>
         </div>
         {idea.reasoning && (
           <div style={{
             fontFamily: UI, fontSize: 11, color: 'rgba(0,0,0,0.5)', marginTop: 4,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            maxWidth: '100%',
           }}>
             {idea.reasoning}
           </div>
