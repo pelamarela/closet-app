@@ -62,6 +62,7 @@ export default function SuggestPage() {
 
   const [feedback, setFeedback] = useState<('up' | 'down' | null)[]>([])
   const [feedbackIds, setFeedbackIds] = useState<string[]>([])
+  const [previousSuggestions, setPreviousSuggestions] = useState<string[][]>([])
   const { saveIdea } = useIdeaMutations()
 
   const fetchWeather = async () => {
@@ -87,6 +88,8 @@ export default function SuggestPage() {
     if (!weather) { setError('Weather data needed.'); return }
     setLoading(true); setError(null); setSuggestions([]); setSelectedOption(0)
     const t0 = Date.now()
+    const alreadyShown = [...previousSuggestions, ...suggestions.map(s => s.item_ids)]
+    setPreviousSuggestions(alreadyShown)
 
     const { data: profileData } = await supabase
       .from('style_profile').select('description').eq('user_id', user!.id).single()
@@ -120,6 +123,7 @@ export default function SuggestPage() {
           style_profile: profileData?.description ?? '',
           recent_outfits,
           feedback_history,
+          previously_shown: alreadyShown,
         }),
       })
       const data = await res.json()

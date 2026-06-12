@@ -31,13 +31,14 @@ type RequestBody = {
   occasion: string; weather: { temp_c: number; conditions: string }
   items: Item[]; style_profile: string; recent_outfits: RecentOutfit[]
   feedback_history?: FeedbackEntry[]
+  previously_shown?: string[][]
 }
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { occasion, weather, items, style_profile, recent_outfits, feedback_history } = req.body as RequestBody
+  const { occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
   const [wMin, wMax] = warmthRange(weather.temp_c)
@@ -56,7 +57,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const candidates = canForm(filtered) ? filtered : items
 
-  const itemList = candidates.map(i =>
+  // Shuffle so Claude doesn't always fixate on the same top items
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5)
+
+  const itemList = shuffled.map(i =>
     `ID:${i.id} | ${i.name}${i.color ? ` (${i.color})` : ''} | ${i.category}${i.subcategory ? `/${i.subcategory}` : ''} | warmth:${i.warmth} formality:${i.formality}`
   ).join('\n')
 
@@ -65,6 +69,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `${o.date}${o.occasion ? ` (${o.occasion})` : ''}: ${o.item_names.join(', ')}`
       ).join('\n')
     : 'None yet'
+
+  const idToName = new Map(items.map(i => [i.id, i.name]))
+  const shownText = (previously_shown ?? []).length
+    ? (previously_shown ?? []).map(ids =>
+        `- ${ids.map(id => idToName.get(id)).filter(Boolean).join(', ')}`
+      ).join('\n')
+    : null
 
   const liked   = (feedback_history ?? []).filter(f => f.feedback === 'up')
   const disliked = (feedback_history ?? []).filter(f => f.feedback === 'down')
@@ -89,10 +100,11 @@ ${historyText}
 
 PAST SUGGESTION FEEDBACK (thumbs up/down on previous AI suggestions — prioritise this signal):
 ${feedbackText}
-
+${shownText ? `\nALREADY SUGGESTED THIS SESSION — do NOT repeat these combinations; use different pieces:\n${shownText}` : ''}
 Rules:
 - Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Use the feedback to guide combinations: reinforce liked item pairings, avoid disliked ones
+- If ALREADY SUGGESTED items are listed above, build outfits from pieces NOT in those combinations — explore the rest of the wardrobe
 - Only use items from the list above (exact IDs)
 - Every outfit MUST include shoes — no exceptions
 - Valid outfit structures: (top + bottom + shoes) OR (one-piece + shoes)
