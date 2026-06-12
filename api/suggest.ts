@@ -106,8 +106,10 @@ Rules:
 - Study the outfit history to understand her colour palette, silhouette preferences, and what she pairs together
 - Use the feedback to guide combinations: reinforce liked item pairings, avoid disliked ones
 - Only use items from the list above (exact IDs)
-- Every outfit MUST include shoes — no exceptions
+- Every outfit MUST include exactly ONE pair of shoes — never two
 - Valid outfit structures: (top + bottom + shoes) OR (one-piece + shoes)
+- Never combine a one-piece with a separate top or bottom
+- Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits
 - Keep reasoning to 1–2 sentences
@@ -134,17 +136,27 @@ Respond with JSON only, no markdown fences:
 
   const idToItem = new Map(candidates.map(i => [i.id, i]))
 
-  const isCompleteOutfit = (ids: string[]) => {
+  const count = (cats: string[], cat: string) => cats.filter(c => c === cat).length
+
+  const isValidOutfit = (ids: string[]) => {
     const cats = ids.map(id => idToItem.get(id)?.category ?? '')
-    const hasShoes = cats.includes('shoes')
-    if (!hasShoes) return false
+    // Must have exactly one pair of shoes
+    if (count(cats, 'shoes') !== 1) return false
+    // No duplicate bottoms or tops
+    if (count(cats, 'bottom') > 1) return false
+    if (count(cats, 'top') > 1) return false
+    // No duplicate one-pieces
+    if (count(cats, 'one-piece') > 1) return false
+    // Can't mix one-piece with top or bottom
+    if (cats.some(isOnePiece) && (cats.includes('top') || cats.includes('bottom'))) return false
+    // Must have valid base: one-piece OR top+bottom
     if (cats.some(isOnePiece)) return true
     return cats.includes('top') && cats.includes('bottom')
   }
 
   const safe = suggestions
     .map(s => ({ ...s, item_ids: s.item_ids.filter(id => idToItem.has(id)) }))
-    .filter(s => isCompleteOutfit(s.item_ids))
+    .filter(s => isValidOutfit(s.item_ids))
 
   return res.json({ suggestions: safe })
 }
