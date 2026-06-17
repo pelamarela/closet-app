@@ -45,7 +45,7 @@ export default function LoginPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', color: INK }}>
           <img src="/logo.png" style={{ width: 24, height: 24, display: 'block' }} alt="closet" />
           closet
-          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
+          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v2.1.0</span>
         </div>
       </div>
       <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
@@ -74,7 +74,7 @@ export default function LoginPage() {
           your wardrobe
         </span>
         <span style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          v 0.1.0
+          v 2.1.0
         </span>
       </div>
 

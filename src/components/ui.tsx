@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { useBreakpoint } from '../hooks/useBreakpoint'
 
 export const MONO = '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace'
 export const UI = "'Geist', 'Inter', system-ui, sans-serif"
@@ -46,6 +45,7 @@ export function Icon({ name, size = 20, stroke = 1.5 }: {
     case 'bookmark':    return <svg {...p}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
     case 'thumbs-up':   return <svg {...p}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
     case 'thumbs-down': return <svg {...p}><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+    case 'bag':         return <svg {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
     default:            return null
   }
 }
@@ -55,7 +55,6 @@ export function TopBar({ title, meta }: {
   meta?: React.ReactNode
 }) {
   const navigate = useNavigate()
-  const { isDesktop } = useBreakpoint()
   return (
     <div>
       <div style={{
@@ -76,14 +75,12 @@ export function TopBar({ title, meta }: {
           {meta && (
             <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
           )}
-          {!isDesktop && (
-            <button
-              onClick={() => navigate('/settings')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
-            >
-              <Icon name="user" size={18} stroke={1.5} />
-            </button>
-          )}
+          <button
+            onClick={() => navigate('/settings')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
+          >
+            <Icon name="user" size={18} stroke={1.5} />
+          </button>
         </div>
       </div>
       <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />

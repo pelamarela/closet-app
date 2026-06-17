@@ -7,6 +7,7 @@ const tabs = [
   { id: 'calendar', label: 'calendar', to: '/outfits',  icon: 'calendar', active: (p: string) => p.startsWith('/outfits') },
   { id: 'ideas',    label: 'ideas',    to: '/ideas',    icon: 'bookmark', active: (p: string) => p.startsWith('/ideas') },
   { id: 'suggest',  label: 'suggest',  to: '/suggest',  icon: 'spark',    active: (p: string) => p.startsWith('/suggest') },
+  { id: 'shop',     label: 'shop',     to: '/shop',     icon: 'bag',      active: (p: string) => p.startsWith('/shop') },
 ]
 
 export default function Layout() {
