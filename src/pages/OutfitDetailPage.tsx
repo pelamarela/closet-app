@@ -3,9 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
-import { catLabel } from '../lib/categoryLabel'
 import type { Outfit, Item } from '../types/database'
+import ItemCollage from '../components/ItemCollage'
+import PieceRow from '../components/PieceRow'
+import Spinner from '../components/Spinner'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
 
@@ -14,6 +17,7 @@ export default function OutfitDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { deleteOutfit } = useOutfitMutations()
+  const { isDesktop } = useBreakpoint()
 
   const [outfit, setOutfit] = useState<Outfit | null>(null)
   const [items, setItems] = useState<ItemWithMeta[]>([])
@@ -73,17 +77,62 @@ export default function OutfitDetailPage() {
     catch { setDeleting(false) }
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-      <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
-    </div>
-  )
+  if (loading) return <Spinner />
 
   if (!outfit) return <div style={{ padding: '20px', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>Not found.</div>
 
   const dateStr = outfit.date_worn
   const d = new Date(dateStr + 'T00:00:00')
   const dow = ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]
+
+  // ── Items collage ────────────────────────────────────────────────────────────
+  const Collage = (
+    <div style={{ position: 'relative' }}>
+      <ItemCollage items={items} />
+      {!outfitImageUrl && outfit.weather && (
+        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+          <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+          <MonoKV k="cond" v={outfit.weather.conditions} />
+          {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+        </div>
+      )}
+    </div>
+  )
+
+  // ── Title + meta ─────────────────────────────────────────────────────────────
+  const TitleBlock = (
+    <div>
+      <div style={{
+        display: 'flex', alignItems: 'baseline', gap: 8,
+        fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+      }}>
+        {dateStr} · {dow}
+        {outfit.occasion && (
+          <>
+            <div style={{ width: 4, height: 4, background: BLUSH, display: 'inline-block', flexShrink: 0 }} />
+            {outfit.occasion}
+          </>
+        )}
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.05 }}>
+        {outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}
+      </div>
+      {outfit.notes && (
+        <div style={{ fontFamily: UI, fontSize: 13, color: 'rgba(0,0,0,0.6)', marginTop: 10, fontStyle: 'italic' }}>"{outfit.notes}"</div>
+      )}
+    </div>
+  )
+
+  // ── Pieces list ──────────────────────────────────────────────────────────────
+  const PiecesList = items.length > 0 ? (
+    <div style={{ marginTop: isDesktop ? 24 : 0 }}>
+      <SectionLabel>pieces ({items.length})</SectionLabel>
+      {items.map(item => (
+        <PieceRow key={item.id} item={item} right={`worn ${item.wearCount}×`} />
+      ))}
+    </div>
+  ) : null
 
   return (
     <div style={{ paddingBottom: 40 }}>
@@ -110,157 +159,52 @@ export default function OutfitDetailPage() {
         }
       />
 
-      {/* Title block */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <div style={{
-          display: 'flex', alignItems: 'baseline', gap: 8,
-          fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
-          textTransform: 'uppercase', letterSpacing: '0.08em',
-        }}>
-          {dateStr} · {dow}
-          {outfit.occasion && (
-            <>
-              <div style={{ width: 4, height: 4, background: BLUSH, display: 'inline-block', flexShrink: 0 }} />
-              {outfit.occasion}
-            </>
-          )}
-        </div>
-        <div style={{ fontFamily: UI, fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.05 }}>
-          {outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}
-        </div>
-        {outfit.notes && (
-          <div style={{ fontFamily: UI, fontSize: 13, color: 'rgba(0,0,0,0.6)', marginTop: 10, fontStyle: 'italic' }}>"{outfit.notes}"</div>
-        )}
-      </div>
-
-      {/* Items collage — always shown when items exist */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{
-          width: '100%', aspectRatio: '5/4',
-          border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative',
-        }}>
-          {items.length > 0 ? (() => {
-            const SMALL_CAT = new Set(['shoes', 'accessory']);
-            const main = items.filter(i => !SMALL_CAT.has(i.category));
-            const small = items.filter(i => SMALL_CAT.has(i.category));
-            const m = main.length, s = small.length;
-            const total = m + s;
-            const G = 3;
-
-            const cell = (item: typeof items[0], pos = 'center', style: React.CSSProperties = {}) => (
-              <div key={item.id} style={{ overflow: 'hidden', background: '#ECEAE6', ...style }}>
-                {item.signedImageUrl
-                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos, display: 'block' }} />
-                  : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
-                }
-              </div>
-            );
-
-            if (total === 1) return cell(items[0], m > 0 ? 'top center' : 'center', { height: '100%' });
-
-            if (m === 0 || s === 0 || total === 2) {
-              const all = [...main, ...small];
-              const pos = m > 0 ? 'top center' : 'center';
-              const cols = 2;
-              const rows = Math.ceil(all.length / cols);
-              return (
-                <div style={{ display: 'grid', height: '100%', gap: G, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
-                  {all.map((item, i) => cell(item, pos, {
-                    minHeight: 0,
-                    ...(all.length % 2 !== 0 && i === all.length - 1 ? { gridColumn: '1 / -1' } : {}),
-                  }))}
-                </div>
-              );
-            }
-
-            let leftPct: number;
-            if (m === 1) {
-              leftPct = s >= 5 ? 75 : 60;
-            } else if (m === 2) {
-              leftPct = s <= 1 ? 65 : s === 2 ? 50 : 60;
-            } else {
-              leftPct = s <= 1 ? 68 : 63;
-            }
-            const rCols = 1;
-            const rRows = s;
-
-            return (
-              <div style={{ display: 'flex', height: '100%', gap: G }}>
-                <div style={{ flex: `0 0 ${leftPct}%`, display: 'flex', flexDirection: 'column', gap: G }}>
-                  {main.map(item => cell(item, 'top center', { flex: 1, minHeight: 0 }))}
-                </div>
-                <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: G, gridTemplateColumns: `repeat(${rCols}, 1fr)`, gridTemplateRows: `repeat(${rRows}, 1fr)` }}>
-                  {small.map((item, i) => cell(item, 'center', {
-                    minHeight: 0,
-                    ...(rCols > 1 && s % rCols !== 0 && i === s - 1 ? { gridColumn: '1 / -1' } : {}),
-                  }))}
-                </div>
-              </div>
-            );
-          })() : (
-            <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 14px, #DCD9D3 14px 28px)' }} />
-          )}
-          {/* Weather overlay — only on collage when no outfit photo */}
-          {!outfitImageUrl && outfit.weather && (
-            <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-              <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-              <MonoKV k="cond" v={outfit.weather.conditions} />
-              {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Pieces */}
-      {items.length > 0 && (
-        <div style={{ padding: '20px 20px 0' }}>
-          <SectionLabel>pieces ({items.length})</SectionLabel>
-          {items.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(`/wardrobe/${item.id}`)}
-              style={{
-                width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                display: 'grid', gridTemplateColumns: '34px 1fr 60px 14px',
-                alignItems: 'center', gap: 12,
-                paddingTop: 8, paddingBottom: 8, borderBottom: RULE,
-              }}
-            >
-              <div style={{ height: 42, borderRadius: 2, overflow: 'hidden', border: RULE }}>
-                {item.signedImageUrl
-                  ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
-                }
-              </div>
-              <div>
-                <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-                  {catLabel(item.category)}{item.color ? ` · ${item.color}` : ''}
-                </div>
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', textAlign: 'right' }}>
-                worn {item.wearCount}×
-              </div>
-              <Icon name="forward" size={12} stroke={1.2} />
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Outfit photo — at the bottom */}
-      {outfitImageUrl && (
-        <div style={{ padding: '20px 20px 0' }}>
-          <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-            <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            {outfit.weather && (
-              <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-                <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-                <MonoKV k="cond" v={outfit.weather.conditions} />
-                {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+      {isDesktop ? (
+        /* Desktop: 2-column */
+        <div style={{ display: 'grid', gridTemplateColumns: '55% 45%', gap: 0, margin: '20px 20px 0', alignItems: 'start' }}>
+          {/* Left: collage + optional outfit photo */}
+          <div style={{ minWidth: 0, paddingRight: 28 }}>
+            {Collage}
+            {outfitImageUrl && (
+              <div style={{ marginTop: 16, width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                {outfit.weather && (
+                  <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+                    <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+                    <MonoKV k="cond" v={outfit.weather.conditions} />
+                    {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+                  </div>
+                )}
               </div>
             )}
           </div>
+          {/* Right: title + pieces */}
+          <div style={{ minWidth: 0 }}>
+            {TitleBlock}
+            {PiecesList}
+          </div>
         </div>
+      ) : (
+        /* Mobile: stacked */
+        <>
+          <div style={{ padding: '20px 20px 0' }}>{TitleBlock}</div>
+          <div style={{ padding: '16px 20px 0' }}>{Collage}</div>
+          {PiecesList && <div style={{ padding: '20px 20px 0' }}>{PiecesList}</div>}
+          {outfitImageUrl && (
+            <div style={{ padding: '20px 20px 0' }}>
+              <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                {outfit.weather && (
+                  <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+                    <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+                    <MonoKV k="cond" v={outfit.weather.conditions} />
+                    {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

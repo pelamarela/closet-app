@@ -5,6 +5,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { AppBar, SectionLabel, UButton, MonoTag, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import FixedBar from '../components/FixedBar'
 
 const PROMPTS = [
   'What occasions do you dress for most?',
@@ -35,7 +36,7 @@ export default function StyleProfileEditorPage() {
   }, [user])
 
   const generateFromOutfits = async () => {
-    if (outfits.length < 5) { alert('Log at least 5 outfits first so Claude has enough to work with.'); return }
+    if (outfits.length < 5) { alert('Log at least 5 outfits first so AI has enough to work with.'); return }
     setGenerating(true)
     try {
       const res = await fetch('/api/generate-profile', {
@@ -99,7 +100,7 @@ export default function StyleProfileEditorPage() {
               {generating ? 'Analysing your wardrobe…' : 'Generate from my outfits'}
             </div>
             <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-              Claude reads your outfit history and writes a profile
+              AI reads your outfit history and writes a profile
             </div>
           </div>
           <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 12 }}>
@@ -152,18 +153,12 @@ export default function StyleProfileEditorPage() {
       </div>
 
       {/* CTA */}
-      <div style={{
-        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 700,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px 28px', display: 'flex', gap: 8,
-        zIndex: 10,
-      }}>
+      <FixedBar zIndex={10}>
         <UButton variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/settings')}>Discard</UButton>
         <UButton style={{ flex: 1.4 }} icon="check" disabled={saving || !isDirty} onClick={save}>
           {saving ? 'Saving…' : 'Save profile'}
         </UButton>
-      </div>
+      </FixedBar>
     </div>
   )
 }

@@ -27,18 +27,20 @@ type Item = {
 }
 type RecentOutfit = { date: string; occasion?: string | null; item_names: string[] }
 type FeedbackEntry = { item_names: string[]; feedback: 'up' | 'down'; occasion?: string | null }
+type AnchorItem = { id: string; name: string; category: string; subcategory?: string | null; color?: string | null }
 type RequestBody = {
   occasion: string; weather: { temp_c: number; conditions: string }
   items: Item[]; style_profile: string; recent_outfits: RecentOutfit[]
   feedback_history?: FeedbackEntry[]
   previously_shown?: string[][]
+  anchor_item?: AnchorItem
 }
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown } = req.body as RequestBody
+  const { occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
   const [wMin, wMax] = warmthRange(weather.temp_c)
@@ -60,10 +62,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Hard-exclude previously shown core items (tops/bottoms/one-pieces) so Claude
   // is forced to explore the rest of the wardrobe on each regen.
   // Shoes/outerwear/accessories stay available — fewer options there.
+  // Anchor item is always kept in pool regardless of exclusion rules.
   const REGEN_EXCLUDE = new Set(['top', 'bottom', 'one-piece'])
   const shownIds = new Set((previously_shown ?? []).flat())
-  const fresh = candidates.filter(i => !shownIds.has(i.id) || !REGEN_EXCLUDE.has(i.category))
+  const fresh = candidates.filter(i =>
+    i.id === anchor_item?.id || !shownIds.has(i.id) || !REGEN_EXCLUDE.has(i.category)
+  )
   const pool = canForm(fresh) ? fresh : candidates
+
+  // Ensure anchor item is always in the pool even if it was filtered by warmth/formality
+  if (anchor_item && !pool.some(i => i.id === anchor_item.id)) {
+    const anchorFull = items.find(i => i.id === anchor_item.id)
+    if (anchorFull) pool.push(anchorFull)
+  }
 
   // Shuffle so Claude doesn't anchor on the same list order
   const shuffled = [...pool].sort(() => Math.random() - 0.5)
@@ -87,12 +98,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ].filter(Boolean).join('\n\n')
     : 'No feedback yet'
 
+  const anchorBlock = anchor_item
+    ? `\nANCHOR ITEM: The user wants to wear "${anchor_item.name}"${anchor_item.color ? ` (${anchor_item.color})` : ''} — ${anchor_item.category}${anchor_item.subcategory ? `/${anchor_item.subcategory}` : ''} · ID:${anchor_item.id}\nYou MUST include this item (ID:${anchor_item.id}) in every outfit. Your job is to suggest complementary pieces that work specifically with this item — consider its colour, formality, and silhouette when choosing what to pair it with.\n`
+    : ''
+
   const prompt = `You are a personal stylist. Suggest 1–3 outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
 STYLE NOTES: ${style_profile || 'No style profile set'}
-
+${anchorBlock}
 AVAILABLE ITEMS:
 ${itemList}
 
@@ -111,8 +126,8 @@ Rules:
 - Never combine a one-piece with a separate top or bottom
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
-- Vary the suggestions — don't repeat the same item across all outfits
-- Keep reasoning to 1–2 sentences
+- Vary the suggestions — don't repeat the same item across all outfits${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}
+- Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
 Respond with JSON only, no markdown fences:
 {"suggestions":[{"item_ids":["id1","id2"],"reasoning":"..."}]}`
@@ -157,6 +172,7 @@ Respond with JSON only, no markdown fences:
   const safe = suggestions
     .map(s => ({ ...s, item_ids: s.item_ids.filter(id => idToItem.has(id)) }))
     .filter(s => isValidOutfit(s.item_ids))
+    .filter(s => !anchor_item || s.item_ids.includes(anchor_item.id))
 
   return res.json({ suggestions: safe })
 }

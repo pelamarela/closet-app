@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
-import { TopBar, UButton, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle } from '../components/ui'
+import { TopBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
+import Spinner from '../components/Spinner'
+import FixedBar from '../components/FixedBar'
+import LogOutfitButton from '../components/LogOutfitButton'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
-// Returns 0=Mon … 6=Sun so the calendar grid starts on Monday
 function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7 }
 
 const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -55,7 +57,6 @@ export default function OutfitsPage() {
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [libView, setLibView] = useState<'list' | 'grid'>('list')
 
   const prevMonth = () => {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
@@ -96,54 +97,51 @@ export default function OutfitsPage() {
     : monthOutfits
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-        <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
-      </div>
-    )
+    return <Spinner />
   }
 
-  return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
-      <TopBar title="Calendar" />
+  // ── Shared blocks ─────────────────────────────────────────────────────────────
 
-      {/* Month nav */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            {viewYear}
-          </div>
-          <div style={{ fontFamily: UI, fontSize: 32, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1, marginTop: 4 }}>
-            {MONTH_FULL[viewMonth]}
-          </div>
+  const MonthNav = (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          {viewYear}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11, paddingBottom: 4 }}>
-          <button onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
-            ‹ {MONTH_SHORT[viewMonth === 0 ? 11 : viewMonth - 1].toLowerCase()}
-          </button>
-          <button onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
-            {MONTH_SHORT[viewMonth === 11 ? 0 : viewMonth + 1].toLowerCase()} ›
-          </button>
+        <div style={{ fontFamily: UI, fontSize: 32, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1, marginTop: 4 }}>
+          {MONTH_FULL[viewMonth]}
         </div>
       </div>
-
-      {/* Stats strip */}
-      <div style={{ margin: '14px 20px 0', border: RULE, borderRadius: 4, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-        {[
-          ['logged', `${loggedDays} days`],
-          ['streak', `${streak} days`],
-          ['top occ', topOcc],
-        ].map(([k, v], i) => (
-          <div key={i} style={{ padding: 10, borderRight: i < 2 ? RULE : 'none' }}>
-            <div style={{ fontFamily: MONO, fontSize: 8.5, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k}</div>
-            <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, letterSpacing: '-0.015em', marginTop: 4 }}>{v}</div>
-          </div>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontFamily: MONO, fontSize: 11, paddingBottom: 4 }}>
+        <button onClick={prevMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
+          ‹ {MONTH_SHORT[viewMonth === 0 ? 11 : viewMonth - 1].toLowerCase()}
+        </button>
+        <button onClick={nextMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', padding: 0 }}>
+          {MONTH_SHORT[viewMonth === 11 ? 0 : viewMonth + 1].toLowerCase()} ›
+        </button>
       </div>
+    </div>
+  )
 
-      {/* Day headers */}
+  const StatsStrip = (
+    <div style={{ marginTop: 14, border: RULE, borderRadius: 4, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+      {[
+        ['logged', `${loggedDays} days`],
+        ['streak', `${streak} days`],
+        ['top occ', topOcc],
+      ].map(([k, v], i) => (
+        <div key={i} style={{ padding: 10, borderRight: i < 2 ? RULE : 'none' }}>
+          <div style={{ fontFamily: MONO, fontSize: 8.5, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k}</div>
+          <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, letterSpacing: '-0.015em', marginTop: 4 }}>{v}</div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const CalendarGrid = (
+    <>
       <div style={{
-        margin: '20px 20px 0',
+        marginTop: 20,
         display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
         fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)',
         textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -153,9 +151,7 @@ export default function OutfitsPage() {
           <div key={d} style={{ textAlign: 'center' }}>{d}</div>
         ))}
       </div>
-
-      {/* Calendar grid */}
-      <div style={{ margin: '0 20px', display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderRight: RULE, borderBottom: RULE }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderRight: RULE, borderBottom: RULE }}>
         {cells.map((day, i) => {
           if (!day) return <div key={`blank-${i}`} style={{ aspectRatio: '1/1.05', borderLeft: RULE, borderTop: RULE, background: 'transparent', opacity: 0.35 }} />
           const ds = toDateStr(day)
@@ -198,114 +194,107 @@ export default function OutfitsPage() {
           )
         })}
       </div>
+    </>
+  )
 
-      {/* Library section */}
-      <div style={{ padding: '24px 20px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flex: 1 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
-              // {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : MONTH_FULL[viewMonth]}
+  const LibraryHeader = (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+      <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+        // {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : MONTH_FULL[viewMonth]}
+      </div>
+      <div style={{ flex: 1, borderTop: RULE_DASHED }} />
+      <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>{visibleOutfits.length}</div>
+    </div>
+  )
+
+  const LibraryList = visibleOutfits.length === 0 ? (
+    <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
+      no outfits {selectedDate ? 'this day' : 'this month'}
+    </div>
+  ) : (
+    <div style={{ borderTop: RULE }}>
+      {visibleOutfits.map((o) => {
+        const d = new Date(o.date_worn + 'T00:00:00')
+        return (
+          <button
+            key={o.id}
+            onClick={() => navigate(`/outfits/${o.id}`)}
+            style={{
+              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              display: 'grid', gridTemplateColumns: '50px 48px 1fr 14px',
+              gap: 12, alignItems: 'center',
+              paddingTop: 12, paddingBottom: 12, borderBottom: RULE,
+            }}
+          >
+            <div style={{ fontFamily: MONO }}>
+              <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1 }}>{String(d.getDate()).padStart(2,'0')}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 3, letterSpacing: '0.04em' }}>
+                {MONTH_SHORT[d.getMonth()].toLowerCase()} · {DAY_LABELS[d.getDay()]}
+              </div>
             </div>
-            <div style={{ flex: 1, borderTop: RULE_DASHED }} />
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>{visibleOutfits.length}</div>
+            <div style={{ width: 48, height: 60, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
+              <OutfitThumb outfit={o} />
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
+                <span>{o.item_ids.length} pieces</span>
+                {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
+                {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
+              </div>
+            </div>
+            <Icon name="forward" size={12} stroke={1.2} />
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  const LogButton = (
+    <LogOutfitButton full navigationState={selectedDate ? { date: selectedDate } : undefined}>
+      Log outfit
+    </LogOutfitButton>
+  )
+
+  return (
+    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
+      <TopBar title="Calendar" />
+
+      {isDesktop ? (
+        <div style={{
+          display: 'grid', gridTemplateColumns: '70% 30%',
+          margin: '0 20px',
+          height: 'calc(100dvh - 56px - var(--nav-h))',
+          overflow: 'hidden',
+          alignItems: 'start',
+        }}>
+          {/* Left: calendar */}
+          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 16, height: '100%', overflowY: 'auto' }}>
+            {MonthNav}
+            {StatsStrip}
+            {CalendarGrid}
           </div>
-          <div style={{ display: 'flex', gap: 6, marginLeft: 12, fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)' }}>
-            <button
-              onClick={() => setLibView('list')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: libView === 'list' ? INK : 'rgba(0,0,0,0.4)', borderBottom: libView === 'list' ? `1px solid ${INK}` : 'none', paddingBottom: 2, fontFamily: MONO, fontSize: 10 }}
-            >list</button>
-            <span style={{ color: 'rgba(0,0,0,0.3)' }}>·</span>
-            <button
-              onClick={() => setLibView('grid')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: libView === 'grid' ? INK : 'rgba(0,0,0,0.4)', borderBottom: libView === 'grid' ? `1px solid ${INK}` : 'none', paddingBottom: 2, fontFamily: MONO, fontSize: 10 }}
-            >grid</button>
+          {/* Right: outfit library — scrolls independently */}
+          <div style={{ minWidth: 0, paddingTop: 16, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {LibraryHeader}
+            <div style={{ flex: 1, overflowY: 'auto' }}>{LibraryList}</div>
+            <div style={{ paddingTop: 16, paddingBottom: 8 }}>{LogButton}</div>
           </div>
         </div>
-
-        {visibleOutfits.length === 0 ? (
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>
-            no outfits {selectedDate ? 'this day' : 'this month'}
+      ) : (
+        <>
+          <div style={{ padding: '16px 20px 0' }}>{MonthNav}</div>
+          <div style={{ margin: '0 20px' }}>{StatsStrip}</div>
+          <div style={{ margin: '20px 20px 0' }}>{CalendarGrid}</div>
+          <div style={{ padding: '24px 20px 0' }}>
+            {LibraryHeader}
+            {LibraryList}
           </div>
-        ) : libView === 'list' ? (
-          /* List view */
-          <div style={{ borderTop: RULE }}>
-            {visibleOutfits.map((o) => {
-              const d = new Date(o.date_worn + 'T00:00:00')
-              return (
-                <button
-                  key={o.id}
-                  onClick={() => navigate(`/outfits/${o.id}`)}
-                  style={{
-                    width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                    display: 'grid', gridTemplateColumns: '50px 48px 1fr 14px',
-                    gap: 12, alignItems: 'center',
-                    paddingTop: 12, paddingBottom: 12, borderBottom: RULE,
-                  }}
-                >
-                  <div style={{ fontFamily: MONO }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1 }}>{String(d.getDate()).padStart(2,'0')}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 3, letterSpacing: '0.04em' }}>
-                      {MONTH_SHORT[d.getMonth()].toLowerCase()} · {DAY_LABELS[d.getDay()]}
-                    </div>
-                  </div>
-                  <div style={{ width: 48, height: 60, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
-                    <OutfitThumb outfit={o} />
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                      {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
-                      <span>{o.item_ids.length} pieces</span>
-                      {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
-                      {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
-                    </div>
-                  </div>
-                  <Icon name="forward" size={12} stroke={1.2} />
-                </button>
-              )
-            })}
-          </div>
-        ) : (
-          /* Grid view */
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {visibleOutfits.map(o => {
-              const d = new Date(o.date_worn + 'T00:00:00')
-              return (
-                <button
-                  key={o.id}
-                  onClick={() => navigate(`/outfits/${o.id}`)}
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <div style={{ width: '100%', aspectRatio: '3/4', border: RULE, position: 'relative', overflow: 'hidden' }}>
-                    <OutfitThumb outfit={o} />
-                    <div style={{
-                      position: 'absolute', top: 6, left: 6,
-                      fontFamily: MONO, fontSize: 9.5, fontWeight: 600,
-                      background: '#fff', padding: '2px 5px', color: INK,
-                    }}>{String(d.getDate()).padStart(2,'0')}</div>
-                    <div style={{
-                      position: 'absolute', top: 6, right: 6,
-                      fontFamily: MONO, fontSize: 8,
-                      color: 'rgba(255,255,255,0.85)', background: 'rgba(0,0,0,0.45)',
-                      padding: '2px 4px', textTransform: 'uppercase', letterSpacing: '0.06em',
-                    }}>{MONTH_SHORT[d.getMonth()].toLowerCase()}</div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      <div style={{
-        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 700,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', zIndex: 25,
-      }}>
-        <UButton full icon="hanger" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>Log outfit</UButton>
-      </div>
+          <FixedBar>{LogButton}</FixedBar>
+        </>
+      )}
     </div>
   )
 }

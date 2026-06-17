@@ -3,10 +3,12 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
-import type { Category } from '../types/database'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
-import { catLabel } from '../lib/categoryLabel'
+import Spinner from '../components/Spinner'
+import FixedBar from '../components/FixedBar'
+import OccasionPicker from '../components/OccasionPicker'
+import SelectableItemGrid from '../components/SelectableItemGrid'
 
 const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
 
@@ -78,30 +80,36 @@ export default function LogOutfitPage() {
     }
   }
 
-  const selectedCount = selectedIds.size
 
-  if (loadingEdit) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-      <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
+
+  if (loadingEdit) return <Spinner />
+
+  // ── Shared pieces ────────────────────────────────────────────────────────────
+
+  const ItemGrid = (
+    <div>
+      {itemsLoading ? (
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
+      ) : items.length === 0 ? (
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
+      ) : (
+        <SelectableItemGrid
+          items={items}
+          selected={selectedIds}
+          onToggle={toggleItem}
+          initialSelected={initialSelectedIds}
+          filterCat={filterCat}
+          onFilterCat={setFilterCat}
+          scrollable
+        />
+      )}
     </div>
   )
 
-  return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 180 }}>
-      <AppBar
-        title={isEdit ? 'Edit outfit' : 'Log an outfit'}
-        back
-        onBack={() => navigate(-1)}
-      />
-
-      <div style={{ padding: '12px 20px 0' }}>
-        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em' }}>
-          {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
-        </div>
-      </div>
-
+  const FormFields = (
+    <>
       {/* Date */}
-      <div style={{ padding: '20px 20px 0' }}>
+      <div style={{ marginBottom: 20 }}>
         <SectionLabel>date</SectionLabel>
         <input
           type="date"
@@ -116,88 +124,13 @@ export default function LogOutfitPage() {
       </div>
 
       {/* Occasion */}
-      <div style={{ padding: '20px 20px 0' }}>
+      <div style={{ marginBottom: 20 }}>
         <SectionLabel>occasion</SectionLabel>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-          {OCCASION_PRESETS.map(o => (
-            <button
-              key={o}
-              onClick={() => setOccasion(prev => prev === o ? '' : o)}
-              style={{
-                fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em',
-                padding: '5px 10px', cursor: 'pointer',
-                border: `1px solid ${occasion === o ? INK : 'rgba(0,0,0,0.15)'}`,
-                background: occasion === o ? INK : 'transparent',
-                color: occasion === o ? '#fff' : INK,
-                borderRadius: 2,
-              }}
-            >{o}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* Items grid */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel right={selectedCount > 0 ? `${selectedCount} selected` : undefined}>items</SectionLabel>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-          {(['all', 'top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'] as const).map(cat => (
-            <button key={cat} onClick={() => setFilterCat(cat)} style={{
-              fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
-              border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
-              background: filterCat === cat ? INK : 'transparent',
-              color: filterCat === cat ? '#fff' : INK,
-              borderRadius: 2, cursor: 'pointer',
-            }}>
-              {cat === 'all' ? 'all' : catLabel(cat)}
-            </button>
-          ))}
-        </div>
-        {itemsLoading ? (
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
-        ) : items.length === 0 ? (
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
-        ) : (
-          <div style={{ maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(130px, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
-            {items.filter(item => filterCat === 'all' || item.category === (filterCat as Category)).sort((a, b) => Number(!initialSelectedIds.has(a.id)) - Number(!initialSelectedIds.has(b.id))).map(item => (
-              <button
-                key={item.id}
-                onClick={() => toggleItem(item.id)}
-                style={{ padding: 0, background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                <div style={{
-                  width: '100%', aspectRatio: '3/4',
-                  border: selectedIds.has(item.id) ? `2px solid ${INK}` : RULE,
-                  position: 'relative', overflow: 'hidden',
-                }}>
-                  {item.signedImageUrl ? (
-                    <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
-                  )}
-                  <div style={{
-                    position: 'absolute', top: 4, left: 4,
-                    fontFamily: MONO, fontSize: 7.5,
-                    background: 'rgba(255,255,255,0.9)', padding: '1px 4px',
-                  }}>{catLabel(item.category)}</div>
-                  {selectedIds.has(item.id) && (
-                    <div style={{
-                      position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.38)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
-                    }}>
-                      <Icon name="check" size={22} stroke={2.5} />
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-          </div>
-        )}
+        <OccasionPicker value={occasion} onChange={setOccasion} presets={OCCASION_PRESETS} showCustomInput={false} />
       </div>
 
       {/* Rating */}
-      <div style={{ padding: '20px 20px 0' }}>
+      <div style={{ marginBottom: 20 }}>
         <SectionLabel right={rating === null ? 'none' : undefined}>rating</SectionLabel>
         <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
           {[1,2,3,4,5].map(n => (
@@ -217,7 +150,7 @@ export default function LogOutfitPage() {
       </div>
 
       {/* Notes */}
-      <div style={{ padding: '20px 20px 0' }}>
+      <div style={{ marginBottom: 20 }}>
         <SectionLabel>notes</SectionLabel>
         <textarea
           value={notes}
@@ -235,14 +168,14 @@ export default function LogOutfitPage() {
       </div>
 
       {/* Photo */}
-      <div style={{ padding: '20px 20px 0' }}>
+      <div style={{ marginBottom: 20 }}>
         <SectionLabel right="optional">photo</SectionLabel>
         <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
         <button
           onClick={() => fileInputRef.current?.click()}
           style={{
             width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)',
-            background: 'none', cursor: 'pointer', padding: '32px 0',
+            background: 'none', cursor: 'pointer', padding: '28px 0',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
             fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)',
             textTransform: 'uppercase', letterSpacing: '0.06em',
@@ -255,24 +188,62 @@ export default function LogOutfitPage() {
           )}
         </button>
       </div>
+    </>
+  )
 
-      {/* Bottom bar */}
-      <div style={isDesktop ? {
-        padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 8,
-      } : {
-        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 700,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px', zIndex: 20,
-      }}>
-        {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <UButton variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1 }}>Cancel</UButton>
-          <UButton icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave} style={{ flex: 2 }}>
-            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save outfit'}
-          </UButton>
-        </div>
+  const SaveBar = (
+    <>
+      {error && <div style={{ fontFamily: MONO, fontSize: 10, color: '#9C5544', marginBottom: 8 }}>{error}</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <UButton variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1 }}>Cancel</UButton>
+        <UButton icon="check" disabled={saving || selectedIds.size === 0} onClick={handleSave} style={{ flex: 2 }}>
+          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save outfit'}
+        </UButton>
       </div>
+    </>
+  )
+
+  return (
+    <div style={{ paddingBottom: isDesktop ? 40 : 180 }}>
+      <AppBar
+        title={isEdit ? 'Edit outfit' : 'Log an outfit'}
+        back
+        onBack={() => navigate(-1)}
+      />
+
+      {isDesktop ? (
+        <div style={{
+          display: 'grid', gridTemplateColumns: '58% 42%',
+          margin: '0 20px',
+          height: 'calc(100dvh - 56px - var(--nav-h))',
+          overflow: 'hidden',
+          alignItems: 'start',
+        }}>
+          {/* Left: item picker — scrolls independently */}
+          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
+            {ItemGrid}
+          </div>
+          {/* Right: form fields + save — fully visible, no scroll needed */}
+          <div style={{ minWidth: 0, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
+            <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em', marginBottom: 20 }}>
+              {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
+            </div>
+            {FormFields}
+            {SaveBar}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ padding: '12px 20px 0' }}>
+            <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em' }}>
+              {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
+            </div>
+          </div>
+          <div style={{ padding: '20px 20px 0' }}>{ItemGrid}</div>
+          <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
+          <FixedBar>{SaveBar}</FixedBar>
+        </>
+      )}
     </div>
   )
 }

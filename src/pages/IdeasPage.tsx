@@ -5,6 +5,7 @@ import type { OutfitIdeaWithItems } from '../types/database'
 import { TopBar, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import { outfitTitle } from '../components/ui'
 import { useBreakpoint } from '../hooks/useBreakpoint'
+import Spinner from '../components/Spinner'
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
@@ -76,11 +77,7 @@ export default function IdeasPage() {
   const { isDesktop } = useBreakpoint()
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-        <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
-      </div>
-    )
+    return <Spinner />
   }
 
   return (

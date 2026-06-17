@@ -7,6 +7,7 @@ import { useItems } from '../hooks/useItems'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import type { Category } from '../types/database'
+import FixedBar from '../components/FixedBar'
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top',        label: 'top' },
@@ -261,7 +262,7 @@ export default function BatchUploadPage() {
         minHeight: '100svh', padding: '0 32px', textAlign: 'center',
       }}>
         <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>
-          // claude is reading your photos
+          // AI is reading your photos
         </div>
         <div style={{ width: '100%', height: 2, background: 'rgba(0,0,0,0.08)', borderRadius: 1, marginBottom: 14 }}>
           <div style={{ height: '100%', background: INK, width: `${pct}%`, transition: 'width 0.3s', borderRadius: 1 }} />
@@ -347,7 +348,7 @@ export default function BatchUploadPage() {
         </div>
         {/* AI badge */}
         <div style={{ marginTop: 8, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.06em' }}>
-          // pre-filled by claude · review and correct
+          // pre-filled by AI · review and correct
         </div>
       </div>
 
@@ -443,13 +444,7 @@ export default function BatchUploadPage() {
       </div>
 
       {/* Footer */}
-      <div style={{
-        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 700,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px',
-        display: 'flex', gap: 8,
-      }}>
+      <FixedBar>
         {current > 0 ? (
           <UButton variant="ghost" onClick={() => setCurrent(c => c - 1)} style={{ flex: 1 }}>
             ← Back
@@ -473,7 +468,7 @@ export default function BatchUploadPage() {
             Save all {drafts.length} items
           </UButton>
         )}
-      </div>
+      </FixedBar>
     </div>
   )
 }

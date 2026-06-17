@@ -7,6 +7,10 @@ import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, RULE, CREAM, AC
 import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import type { Category } from '../types/database'
+import QuickActions from '../components/QuickActions'
+import Spinner from '../components/Spinner'
+import FixedBar from '../components/FixedBar'
+import AddItemButton from '../components/AddItemButton'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all',        label: 'all' },
@@ -52,11 +56,7 @@ export default function WardrobePage() {
     v === 'all' ? items.length : items.filter(i => i.category === v).length
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-        <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</span>
-      </div>
-    )
+    return <Spinner />
   }
 
   if (error) {
@@ -131,7 +131,7 @@ export default function WardrobePage() {
         </div>
 
         <div style={{ padding: '20px 20px 0' }}>
-          <UButton icon="plus" full onClick={() => navigate('/wardrobe/new')}>Add first item</UButton>
+          <AddItemButton full>Add first item</AddItemButton>
           <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', textAlign: 'center', marginTop: 10 }}>
             targeted for 150–400 items total
           </div>
@@ -202,14 +202,7 @@ export default function WardrobePage() {
       />
 
       {/* Fixed action bar */}
-      <div style={{
-        ...(isDesktop ? { padding: '16px 20px', display: 'flex', gap: 8 } : {
-          position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 700,
-          background: '#F7F6F5', borderTop: RULE,
-          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
-        }),
-      }}>
+      <FixedBar>
         {selectMode ? (
           confirmDelete ? (
             <>
@@ -238,15 +231,10 @@ export default function WardrobePage() {
           )
         ) : (
           <>
-            <UButton icon="plus" onClick={() => batchInputRef.current?.click()} style={{ flex: 1.25 }}>
-              Add item
-            </UButton>
-            <UButton variant="secondary" icon="hanger" onClick={() => navigate('/outfits/new')} style={{ flex: 1 }}>
-              Log outfit
-            </UButton>
+            <QuickActions />
           </>
         )}
-      </div>
+      </FixedBar>
     </div>
   )
 }

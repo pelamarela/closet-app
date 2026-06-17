@@ -27,6 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 400,
+    temperature: 0,
     messages: [{
       role: 'user',
       content: `Analyze these outfit logs and write a concise personal style profile (3-5 sentences). Focus on: recurring colours/silhouettes, preferred brands if visible, how formality shifts by occasion, and any patterns in what gets worn together. Write in first person as if the person wrote it themselves. No headers, no bullet points — flowing prose only.

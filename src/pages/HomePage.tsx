@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, UButton, Icon, MONO, UI, RULE, outfitTitle } from '../components/ui'
+import { TopBar, SectionLabel, Icon, MONO, UI, RULE, outfitTitle } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
+import QuickActions from '../components/QuickActions'
+import FixedBar from '../components/FixedBar'
+import AddItemButton from '../components/AddItemButton'
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat'] // indexed by getDay() — Sun=0
 
@@ -16,7 +18,6 @@ function todayStr() {
 export default function HomePage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
-  const { isDesktop } = useBreakpoint()
   const { items } = useItems()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
@@ -43,11 +44,11 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
+    <div style={{ paddingBottom: 160 }}>
       <TopBar
         title={<>
           closet
-          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v0.1</span>
+          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>v2.1.0</span>
         </>}
         meta={dateLabel}
       />
@@ -157,21 +158,11 @@ export default function HomePage() {
           <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
             // start here
           </div>
-          <UButton icon="plus" onClick={() => navigate('/wardrobe/new')}>Add your first item</UButton>
+          <AddItemButton>Add your first item</AddItemButton>
         </div>
       )}
 
-      {!isDesktop && (
-        <div style={{
-          position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 700,
-          background: '#F7F6F5', borderTop: RULE,
-          padding: '12px 20px', display: 'flex', gap: 8, zIndex: 25,
-        }}>
-          <UButton icon="plus" full style={{ flex: 1 }} onClick={() => navigate('/outfits/new')}>Log outfit</UButton>
-          <UButton variant="secondary" icon="spark" style={{ width: 120 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
-        </div>
-      )}
+      <FixedBar><QuickActions /></FixedBar>
     </div>
   )
 }

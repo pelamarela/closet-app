@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { AppBar, SectionLabel, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import TextBlock from '../components/TextBlock'
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -68,16 +69,12 @@ export default function SettingsPage() {
             edit ›
           </button>
         }>style profile</SectionLabel>
-        <div style={{
-          border: RULE, background: '#fff', padding: 14,
-          fontFamily: UI, fontSize: 13, lineHeight: 1.55,
-          letterSpacing: '-0.005em', color: 'rgba(0,0,0,0.78)',
-        }}>
+        <TextBlock>
           {profile
             ? profile
             : <span style={{ color: 'rgba(0,0,0,0.35)', fontStyle: 'italic' }}>No style profile yet — used by suggestions.</span>
           }
-        </div>
+        </TextBlock>
         <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
           <span>used by suggestions</span>
           {profile && <span>{profile.length} chars</span>}
@@ -93,12 +90,31 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Wardrobe */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <SectionLabel>wardrobe</SectionLabel>
+        <div style={{ borderTop: RULE }}>
+          <button
+            onClick={() => navigate('/settings/archived')}
+            style={{
+              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              cursor: 'pointer',
+              fontFamily: MONO, fontSize: 11, color: INK,
+            }}
+          >
+            Archived items
+            <Icon name="forward" size={14} stroke={1.2} />
+          </button>
+        </div>
+      </div>
+
       {/* Sync */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel>account</SectionLabel>
         <div style={{ borderTop: RULE }}>
           <Row k="provider" v="supabase auth" />
-          <Row k="version"  v="v 0.1.0" last />
+          <Row k="version"  v="v 2.1.0" last />
         </div>
       </div>
 

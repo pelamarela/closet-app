@@ -4,11 +4,13 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
 import { peekSingleFile, clearSingleFile } from '../lib/batchState'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
+import FixedBar from '../components/FixedBar'
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: 'top' },
@@ -25,19 +27,10 @@ const EMPTY: ItemFormData = {
 }
 
 function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-  mono,
+  label, value, onChange, placeholder, required, mono,
 }: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  required?: boolean
-  mono?: boolean
+  label: string; value: string; onChange: (v: string) => void
+  placeholder?: string; required?: boolean; mono?: boolean
 }) {
   return (
     <div style={{ padding: '12px 0', borderBottom: RULE }}>
@@ -48,15 +41,10 @@ function Field({
         {label}{required && <span style={{ color: '#9C5544', marginLeft: 3 }}>*</span>}
       </div>
       <input
-        type="text"
-        value={value}
-        onChange={e => onChange(e.target.value)}
+        type="text" value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
-          width: '100%',
-          fontFamily: mono ? MONO : UI,
-          fontSize: 16,
-          fontWeight: 500,
+          width: '100%', fontFamily: mono ? MONO : UI, fontSize: 16, fontWeight: 500,
           color: value ? INK : 'rgba(0,0,0,0.35)',
           background: 'none', border: 'none', outline: 'none', padding: 0,
         }}
@@ -71,8 +59,8 @@ export default function ItemFormPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addItem, updateItem, archiveItem } = useItemMutations()
+  const { isDesktop } = useBreakpoint()
 
-  // peekSingleFile is non-destructive so StrictMode's double-initializer both see the same file
   const [preloadedFile] = useState<File | null>(() => isEdit ? null : peekSingleFile())
   const [form, setForm] = useState<ItemFormData>(() => {
     const f = isEdit ? null : peekSingleFile()
@@ -87,7 +75,6 @@ export default function ItemFormPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Same AI-fill logic as batch upload
   const parseName = (file: File) => {
     const base = file.name.replace(/\.[^.]+$/, '')
     const seg = base.split('_').pop() ?? base
@@ -142,15 +129,10 @@ export default function ItemFormPage() {
       .then(async ({ data }) => {
         if (!data) { setLoadingItem(false); return }
         setForm({
-          name: data.name,
-          category: data.category as Category,
-          subcategory: data.subcategory ?? '',
-          color: data.color ?? '',
-          pattern: data.pattern ?? '',
-          material: data.material ?? '',
-          warmth: data.warmth,
-          formality: data.formality,
-          brand: data.brand ?? '',
+          name: data.name, category: data.category as Category,
+          subcategory: data.subcategory ?? '', color: data.color ?? '',
+          pattern: data.pattern ?? '', material: data.material ?? '',
+          warmth: data.warmth, formality: data.formality, brand: data.brand ?? '',
         })
         if (data.image_url) {
           const { data: s } = await supabase.storage
@@ -161,7 +143,6 @@ export default function ItemFormPage() {
       })
   }, [id, isEdit, user])
 
-  // Consume the pending file and run AI analysis (mirrors what batch upload does)
   useEffect(() => {
     if (!preloadedFile) return
     clearSingleFile()
@@ -205,8 +186,7 @@ export default function ItemFormPage() {
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!form.name.trim()) return
-    setSaving(true)
-    setError(null)
+    setSaving(true); setError(null)
     try {
       if (isEdit && id) {
         await updateItem(id, form, imageFile ?? undefined)
@@ -240,9 +220,98 @@ export default function ItemFormPage() {
     )
   }
 
+  // ── Photo uploader (shared between mobile and desktop) ───────────────────────
+  const PhotoUploader = (
+    <>
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        style={{
+          width: '100%',
+          aspectRatio: isDesktop ? '3/4' : '4/3',
+          border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.25)',
+          borderRadius: 3, overflow: 'hidden', background: '#fff',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 8,
+          position: 'relative', cursor: 'pointer',
+        }}
+      >
+        {imagePreview ? (
+          <>
+            <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{
+                border: '1px solid rgba(255,255,255,0.7)', borderRadius: 2,
+                padding: '6px 12px', fontFamily: MONO, fontSize: 9, color: '#fff',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+              }}>{analyzing ? 'analyzing…' : 'change photo'}</div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ width: 40, height: 40, border: RULE, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: INK }}>
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </div>
+            <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
+            {analyzing && <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>// analyzing with AI…</div>}
+          </>
+        )}
+      </button>
+      <input
+        ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+        onChange={e => {
+          const file = e.target.files?.[0] ?? null
+          setImageFile(file)
+          if (file) analyzePhoto(file)
+        }}
+      />
+    </>
+  )
+
+  // ── Form fields (shared) ─────────────────────────────────────────────────────
+  const FormFields = (
+    <>
+      <SectionLabel right="required *">attributes</SectionLabel>
+      <Field label="name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" required />
+      <div style={{ padding: '12px 0', borderBottom: RULE }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+          category <span style={{ color: '#9C5544' }}>*</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {CATEGORIES.map(c => (
+            <button
+              key={c.value} type="button"
+              onClick={() => setForm(f => ({ ...f, category: c.value }))}
+              style={{
+                padding: '3px 10px', borderRadius: 2,
+                border: `1px solid ${form.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
+                background: form.category === c.value ? INK : 'transparent',
+                color: form.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
+                fontFamily: MONO, fontSize: 10, cursor: 'pointer', letterSpacing: '0.04em',
+              }}
+            >{c.label}</button>
+          ))}
+        </div>
+      </div>
+      <RatingPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} label="Warmth" hint="1 = light · 5 = heavy" />
+      <RatingPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} label="Formality" hint="1 = casual · 5 = formal" />
+      <Field label="color" value={form.color} onChange={set('color')} placeholder="white, navy, black…" mono />
+      <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" mono />
+      <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" mono />
+      <Field label="pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" mono />
+      <Field label="subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" mono />
+    </>
+  )
+
   return (
     <div style={{ paddingBottom: 100 }}>
-      {/* AppBar */}
+      {/* Header */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button
@@ -260,24 +329,19 @@ export default function ItemFormPage() {
           </button>
           {isEdit && (
             <button
-              onClick={handleArchive}
-              disabled={saving}
+              onClick={handleArchive} disabled={saving}
               style={{
                 fontFamily: MONO, fontSize: 9.5, color: '#9C5544',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-                opacity: saving ? 0.4 : 1,
+                textTransform: 'uppercase', letterSpacing: '0.06em', opacity: saving ? 0.4 : 1,
               }}
-            >
-              archive
-            </button>
+            >archive</button>
           )}
         </div>
         <div style={{ borderTop: RULE, marginTop: 12 }} />
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Page title */}
         <div style={{ padding: '14px 20px 0' }}>
           <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
             {isEdit ? 'Edit item' : 'Add an item'}
@@ -287,133 +351,41 @@ export default function ItemFormPage() {
           </div>
         </div>
 
-        {/* Photo uploader */}
-        <div style={{ padding: '16px 20px 0' }}>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              width: '100%', aspectRatio: '4/3',
-              border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.25)',
-              borderRadius: 3, overflow: 'hidden',
-              background: '#fff',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 8,
-              position: 'relative', cursor: 'pointer',
-            }}
-          >
-            {imagePreview ? (
-              <>
-                <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'rgba(0,0,0,0.3)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <div style={{
-                    border: '1px solid rgba(255,255,255,0.7)', borderRadius: 2,
-                    padding: '6px 12px',
-                    fontFamily: MONO, fontSize: 9, color: '#fff',
-                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                  }}>{analyzing ? 'analyzing…' : 'change photo'}</div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{
-                  width: 40, height: 40, border: RULE, borderRadius: 2,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: INK }}>
-                    <path d="M12 5v14M5 12h14"/>
-                  </svg>
-                </div>
-                <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
-              {analyzing && <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>// analyzing with claude…</div>}
-              </>
-            )}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={e => {
-              const file = e.target.files?.[0] ?? null
-              setImageFile(file)
-              if (file) analyzePhoto(file)
-            }}
-          />
-        </div>
-
-        {/* Attributes */}
-        <div style={{ padding: '20px 20px 0' }}>
-          <SectionLabel right="required *">attributes</SectionLabel>
-
-          <Field label="name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" required />
-
-          {/* Category picker */}
-          <div style={{ padding: '12px 0', borderBottom: RULE }}>
-            <div style={{
-              fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-              textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-            }}>
-              category <span style={{ color: '#9C5544' }}>*</span>
+        {isDesktop ? (
+          /* Desktop: 2-column */
+          <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 0, margin: '16px 20px 0', alignItems: 'start' }}>
+            <div style={{ paddingRight: 24, position: 'sticky', top: 0 }}>
+              {PhotoUploader}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {CATEGORIES.map(c => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, category: c.value }))}
-                  style={{
-                    padding: '3px 10px', borderRadius: 2,
-                    border: `1px solid ${form.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
-                    background: form.category === c.value ? INK : 'transparent',
-                    color: form.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
-                    fontFamily: MONO, fontSize: 10, cursor: 'pointer',
-                    letterSpacing: '0.04em',
-                  }}
-                >{c.label}</button>
-              ))}
+            <div>
+              {FormFields}
             </div>
           </div>
-
-          <RatingPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} label="Warmth" hint="1 = light · 5 = heavy" />
-          <RatingPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} label="Formality" hint="1 = casual · 5 = formal" />
-
-          <Field label="color" value={form.color} onChange={set('color')} placeholder="white, navy, black…" mono />
-          <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" mono />
-          <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" mono />
-          <Field label="pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" mono />
-          <Field label="subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" mono />
-        </div>
+        ) : (
+          /* Mobile: stacked */
+          <>
+            <div style={{ padding: '16px 20px 0' }}>{PhotoUploader}</div>
+            <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
+          </>
+        )}
 
         {error && (
           <div style={{ padding: '12px 20px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
         )}
       </form>
 
-      {/* Footer actions */}
-      <div style={{
-        position: 'fixed', bottom: 'var(--nav-h)', left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 700,
-        background: '#F7F6F5', borderTop: RULE,
-        padding: '12px 20px',
-        display: 'flex', gap: 8,
-      }}>
+      {/* Footer */}
+      <FixedBar>
         <UButton variant="ghost" onClick={() => navigate('/wardrobe')} style={{ flex: 1 }}>
           Cancel
         </UButton>
         <UButton
-          onClick={() => handleSubmit()}
-          disabled={saving || !form.name.trim()}
+          onClick={() => handleSubmit()} disabled={saving || !form.name.trim()}
           style={{ flex: 1.6 }}
         >
           {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}
         </UButton>
-      </div>
+      </FixedBar>
     </div>
   )
 }
