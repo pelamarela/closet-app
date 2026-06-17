@@ -149,7 +149,7 @@ Respond with JSON only, no markdown fences:
     return res.status(500).json({ error: 'Failed to parse suggestions', raw })
   }
 
-  const idToItem = new Map(candidates.map(i => [i.id, i]))
+  const idToItem = new Map(pool.map(i => [i.id, i]))
 
   const count = (cats: string[], cat: string) => cats.filter(c => c === cat).length
 

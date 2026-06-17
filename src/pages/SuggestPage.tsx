@@ -141,6 +141,7 @@ export default function SuggestPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')
       const incoming = data.suggestions ?? []
+      if (incoming.length === 0) throw new Error('No valid outfits found — try a different anchor item or occasion.')
       setSuggestions(incoming)
       setFeedback(incoming.map(() => null))
       setFeedbackIds(incoming.map(() => crypto.randomUUID()))
