@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UButton } from './ui'
-import { setBatchFiles } from '../lib/batchState'
+import { setBatchFiles, setSingleFile } from '../lib/batchState'
 
 type Props = {
   children?: React.ReactNode
@@ -18,9 +18,15 @@ export default function AddItemButton({ children, full, variant, style, beforeNa
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
-    setBatchFiles(files)
+    e.target.value = ''
     beforeNavigate?.()
-    navigate('/wardrobe/batch')
+    if (files.length === 1) {
+      setSingleFile(files[0])
+      navigate('/wardrobe/new')
+    } else {
+      setBatchFiles(files)
+      navigate('/wardrobe/batch')
+    }
   }
 
   return (

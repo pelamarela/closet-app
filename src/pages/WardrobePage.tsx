@@ -1,10 +1,9 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import ItemCard from '../components/ItemCard'
 import { TopBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, RULE, CREAM, ACCENT } from '../components/ui'
-import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import type { Category } from '../types/database'
 import QuickActions from '../components/QuickActions'
@@ -30,7 +29,6 @@ export default function WardrobePage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const batchInputRef = useRef<HTMLInputElement>(null)
   const { isDesktop } = useBreakpoint()
   const { deleteItems } = useItemMutations()
 
@@ -179,27 +177,6 @@ export default function WardrobePage() {
           ))}
         </div>
       )}
-
-      {/* Hidden file input — single pick → item form, multiple → batch */}
-      <input
-        ref={batchInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: 'none' }}
-        onChange={e => {
-          const files = Array.from(e.target.files ?? [])
-          if (!files.length) return
-          e.target.value = ''
-          if (files.length === 1) {
-            setSingleFile(files[0])
-            navigate('/wardrobe/new')
-          } else {
-            setBatchFiles(files)
-            navigate('/wardrobe/batch')
-          }
-        }}
-      />
 
       {/* Fixed action bar */}
       <FixedBar>
