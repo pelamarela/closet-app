@@ -69,7 +69,7 @@ Return ONLY a JSON object with exactly these fields:
 }
 
 Rules:
-- style_match: an honest 0-100 score. Most items should land 45-70. Only something that perfectly matches her aesthetic AND pairs with 10+ wardrobe items AND fills a clear gap earns 80+. Something that clashes with her style OR is redundant with existing items should score below 50. Be critical — a generous stylist is a useless one.
+- style_match: score 0-100 based on three specific questions: (1) Does this item match her style profile — her aesthetic, colours, silhouettes? (2) How many items in her existing wardrobe does it actually pair with — concretely count them? (3) Does it fill a genuine gap or duplicate something she already has? A low answer on any of these should pull the score down significantly. Do not default to a high number — if the wardrobe context is thin or the item is a poor fit, score accordingly.
 - verdict is derived from style_match: 80+ = "buy", 50-79 = "maybe", below 50 = "skip"
 - pros: 3-5 short bullets (≤5 words each) — why it works: style, versatility, gap it fills
 - concerns: 0-3 short bullets (≤5 words each) — honest issues; empty array [] if none
