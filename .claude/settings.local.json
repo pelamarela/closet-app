@@ -40,7 +40,9 @@
       "Bash(sed -i '' 's/v 0\\\\.1\\\\.0/v 2.1.0/g' /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/src/pages/SettingsPage.tsx)",
       "Read(//Users/spelaanzeljcgacnik/.local/share/com.vercel.cli/**)",
       "Read(//Users/spelaanzeljcgacnik/.config/vercel/**)",
-      "Read(//Users/spelaanzeljcgacnik/**)"
+      "Read(//Users/spelaanzeljcgacnik/**)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts|json|css\\)$\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }
