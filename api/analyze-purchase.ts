@@ -69,7 +69,7 @@ Return ONLY a JSON object with exactly these fields:
 }
 
 Rules:
-- style_match: score 0-100 by adding up: style alignment with profile (0-40) + wardrobe versatility / how many items it pairs with (0-40) + fills a gap vs. redundant (0-20). Calculate each component and sum them. The number must reflect the actual item — do not default to a round number.
+- style_match: an honest 0-100 score. Most items should land 45-70. Only something that perfectly matches her aesthetic AND pairs with 10+ wardrobe items AND fills a clear gap earns 80+. Something that clashes with her style OR is redundant with existing items should score below 50. Be critical — a generous stylist is a useless one.
 - verdict is derived from style_match: 80+ = "buy", 50-79 = "maybe", below 50 = "skip"
 - pros: 3-5 short bullets (≤5 words each) — why it works: style, versatility, gap it fills
 - concerns: 0-3 short bullets (≤5 words each) — honest issues; empty array [] if none
@@ -81,7 +81,7 @@ Rules:
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
-      temperature: 0.3,
+      temperature: 0.7,
       messages: [{
         role: 'user',
         content: [

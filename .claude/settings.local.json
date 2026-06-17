@@ -32,7 +32,15 @@
       "Bash(vercel *)",
       "Bash(python3 *)",
       "Bash(npx tsc *)",
-      "Bash(supabase --version)"
+      "Bash(supabase --version)",
+      "Bash(identify /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/public/apple-touch-icon.png)",
+      "Bash(git -C /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app status --porcelain)",
+      "Bash(git *)",
+      "Bash(sed -i '' 's/v0\\\\.1</span>/v2.1.0<\\\\/span>/g' /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/src/pages/LoginPage.tsx)",
+      "Bash(sed -i '' 's/v 0\\\\.1\\\\.0/v 2.1.0/g' /Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/src/pages/SettingsPage.tsx)",
+      "Read(//Users/spelaanzeljcgacnik/.local/share/com.vercel.cli/**)",
+      "Read(//Users/spelaanzeljcgacnik/.config/vercel/**)",
+      "Read(//Users/spelaanzeljcgacnik/**)"
     ]
   }
 }
