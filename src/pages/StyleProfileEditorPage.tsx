@@ -22,6 +22,7 @@ export default function StyleProfileEditorPage() {
   const [original, setOriginal] = useState('')
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const { items } = useItems()
   const { outfits } = useOutfits()
 
@@ -37,7 +38,7 @@ export default function StyleProfileEditorPage() {
 
   const generateFromOutfits = async () => {
     if (outfits.length < 5) { alert('Log at least 5 outfits first so AI has enough to work with.'); return }
-    setGenerating(true)
+    setGenerating(true); setGenerateError(null)
     try {
       const res = await fetch('/api/generate-profile', {
         method: 'POST',
@@ -48,8 +49,11 @@ export default function StyleProfileEditorPage() {
         }),
       })
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Generation failed')
       if (data.profile) setText(data.profile)
-    } catch { /* silent */ } finally { setGenerating(false) }
+    } catch (e) {
+      setGenerateError(e instanceof Error ? e.message : 'Generation failed')
+    } finally { setGenerating(false) }
   }
 
   const save = async () => {
@@ -107,6 +111,9 @@ export default function StyleProfileEditorPage() {
             {generating ? '…' : 'AI ›'}
           </div>
         </button>
+      {generateError && (
+        <div style={{ marginTop: 6, fontFamily: MONO, fontSize: 9.5, color: ACCENT }}>{generateError}</div>
+      )}
       </div>
 
       {/* Textarea */}

@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, Icon, MONO, UI, INK } from '../components/ui'
+import { AppBar, SectionLabel, Icon, MONO, UI, INK, ACCENT } from '../components/ui'
 import type { OutfitIdea, Item } from '../types/database'
 import ItemCollage from '../components/ItemCollage'
 import PieceRow from '../components/PieceRow'
@@ -26,6 +26,7 @@ export default function IdeaDetailPage() {
   const [items, setItems] = useState<ItemWithImage[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id || !user) return
@@ -67,9 +68,9 @@ export default function IdeaDetailPage() {
 
   const handleDelete = async () => {
     if (!id || !confirm('Delete this idea?')) return
-    setDeleting(true)
+    setDeleting(true); setDeleteError(null)
     try { await deleteIdea(id); navigate('/ideas') }
-    catch { setDeleting(false) }
+    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'Delete failed') }
   }
 
   const handleLog = () => {
@@ -112,6 +113,11 @@ export default function IdeaDetailPage() {
 
   return (
     <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
+      {deleteError && (
+        <div style={{ padding: '8px 20px', fontFamily: MONO, fontSize: 10, color: ACCENT, background: 'rgba(156,85,68,0.07)' }}>
+          {deleteError}
+        </div>
+      )}
       <AppBar
         title="Ideas"
         back

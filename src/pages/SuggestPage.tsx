@@ -44,6 +44,7 @@ export default function SuggestPage() {
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState<number | null>(null)
   const [savedMsg, setSavedMsg] = useState(false)
+  const [saveIdeaError, setSaveIdeaError] = useState<string | null>(null)
 
   const occasionPresets = useMemo(() => {
     const freq: Record<string, number> = {}
@@ -158,12 +159,14 @@ export default function SuggestPage() {
   }
 
   const handleSaveIdea = async (itemIds: string[], reasoning: string) => {
+    setSaveIdeaError(null)
     try {
       await saveIdea(occasion, reasoning, itemIds)
       setSavedMsg(true)
       setTimeout(() => setSavedMsg(false), 2000)
-    } catch {
-      // silently ignore
+    } catch (e) {
+      setSaveIdeaError(e instanceof Error ? e.message : 'Failed to save idea')
+      setTimeout(() => setSaveIdeaError(null), 4000)
     }
   }
 
@@ -335,7 +338,7 @@ export default function SuggestPage() {
           icon="bookmark"
           onClick={() => handleSaveIdea(currentSuggestion?.item_ids ?? [], currentSuggestion?.reasoning ?? '')}
         >
-          {savedMsg ? 'Saved to ideas ✓' : 'Save as idea'}
+          {savedMsg ? 'Saved to ideas ✓' : saveIdeaError ? saveIdeaError : 'Save as idea'}
         </UButton>
       </>
     )

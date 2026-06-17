@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH, ACCENT } from '../components/ui'
 import type { Outfit, Item } from '../types/database'
 import ItemCollage from '../components/ItemCollage'
 import PieceRow from '../components/PieceRow'
@@ -24,6 +24,7 @@ export default function OutfitDetailPage() {
   const [outfitImageUrl, setOutfitImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id || !user) return
@@ -72,9 +73,9 @@ export default function OutfitDetailPage() {
 
   const handleDelete = async () => {
     if (!id || !confirm('Delete this outfit?')) return
-    setDeleting(true)
+    setDeleting(true); setDeleteError(null)
     try { await deleteOutfit(id); navigate('/outfits') }
-    catch { setDeleting(false) }
+    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'Delete failed') }
   }
 
   if (loading) return <Spinner />
@@ -136,6 +137,11 @@ export default function OutfitDetailPage() {
 
   return (
     <div style={{ paddingBottom: 40 }}>
+      {deleteError && (
+        <div style={{ padding: '8px 20px', fontFamily: MONO, fontSize: 10, color: ACCENT, background: 'rgba(156,85,68,0.07)' }}>
+          {deleteError}
+        </div>
+      )}
       <AppBar
         title="Library"
         back

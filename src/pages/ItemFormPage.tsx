@@ -73,6 +73,7 @@ export default function ItemFormPage() {
   const [loadingItem, setLoadingItem] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const parseName = (file: File) => {
@@ -86,7 +87,7 @@ export default function ItemFormPage() {
   const toCategory = (raw: string): Category => VALID_CATS.has(raw) ? raw as Category : 'top'
 
   const analyzePhoto = async (file: File) => {
-    setAnalyzing(true)
+    setAnalyzing(true); setAnalyzeError(null)
     try {
       const compressed = await import('../lib/imageUtils').then(m => m.compressImage(file))
       const reader = new FileReader()
@@ -117,7 +118,7 @@ export default function ItemFormPage() {
         warmth: typeof ai.warmth === 'number' ? ai.warmth : prev.warmth,
         formality: typeof ai.formality === 'number' ? ai.formality : prev.formality,
       }))
-    } catch { /* silent */ } finally {
+    } catch { setAnalyzeError('AI analysis unavailable — fill in manually') } finally {
       setAnalyzing(false)
     }
   }
@@ -172,7 +173,7 @@ export default function ItemFormPage() {
           ...(ai.pattern  ? { pattern: ai.pattern }   : {}),
           ...(ai.subcategory ? { subcategory: ai.subcategory } : {}),
         }))
-      } catch { /* silently skip on analysis failure */ }
+      } catch { setAnalyzeError('AI analysis unavailable — fill in manually') }
     }
     analyze()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -260,6 +261,7 @@ export default function ItemFormPage() {
             <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
             <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
             {analyzing && <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>// analyzing with AI…</div>}
+            {analyzeError && <div style={{ fontFamily: MONO, fontSize: 9, color: ACCENT, marginTop: 4 }}>{analyzeError}</div>}
           </>
         )}
       </button>
