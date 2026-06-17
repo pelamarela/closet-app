@@ -35,10 +35,13 @@ Personal wardrobe web app for Špela. Single-user, mobile-first.
 
 The correct workflow for any change:
 ```bash
-git add <files>
+git add -A
+git status          # ALWAYS verify — confirm every changed file is staged before committing
 git commit -m "..."
 git push origin claude/magical-newton-GpRpx
 ```
+
+**CRITICAL: Always use `git add -A` and always run `git status` after staging to confirm nothing is left out before committing.** Never enumerate files manually — partial commits leave changes in local-only state and break the live site when auto-deploy picks up the incomplete GitHub version. This has caused production outages before.
 
 If auto-deploy ever stops working, the likely cause is `sourceless: true` on the Vercel project (set when `vercel --prod` is run manually). Fix by running:
 ```bash
