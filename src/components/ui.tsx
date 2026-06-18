@@ -50,41 +50,46 @@ export function Icon({ name, size = 20, stroke = 1.5 }: {
   }
 }
 
+const TOPBAR_H = 44
+
 export function TopBar({ title, meta }: {
   title: React.ReactNode
   meta?: React.ReactNode
 }) {
   const navigate = useNavigate()
   return (
-    <div style={{ position: 'sticky', top: 'var(--safe-t)', zIndex: 15, background: '#F7F6F5' }}>
-      <div style={{
-        padding: '4px 20px 0',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
+    <>
+      <div style={{ position: 'fixed', top: 'var(--safe-t)', left: 0, right: 0, zIndex: 15, background: '#F7F6F5' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
-          color: INK, minWidth: 0,
+          padding: '4px 20px 0',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
-          </button>
-          {title}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
+            color: INK, minWidth: 0,
+          }}>
+            <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
+            </button>
+            {title}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+            {meta && (
+              <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
+            )}
+            <button
+              onClick={() => navigate('/settings')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
+            >
+              <Icon name="user" size={18} stroke={1.5} />
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-          {meta && (
-            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
-          )}
-          <button
-            onClick={() => navigate('/settings')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 0, display: 'flex', alignItems: 'center' }}
-          >
-            <Icon name="user" size={18} stroke={1.5} />
-          </button>
-        </div>
+        <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
       </div>
-      <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
-    </div>
+      <div style={{ height: TOPBAR_H }} />
+    </>
   )
 }
 
@@ -97,35 +102,38 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
 }) {
   const navigate = useNavigate()
   return (
-    <div style={{ position: 'sticky', top: 'var(--safe-t)', zIndex: 15, background: '#F7F6F5' }}>
-      <div style={{
-        padding: '4px 20px 0',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
-          </button>
-          <button
-            onClick={back ? (onBack ?? (() => navigate(-1))) : undefined}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
-              color: INK, background: 'none', border: 'none',
-              cursor: back ? 'pointer' : 'default', padding: 0,
-            }}
-          >
-            {back && <Icon name="back" size={16} stroke={1.6} />}
-            {title}
-          </button>
+    <>
+      <div style={{ position: 'fixed', top: 'var(--safe-t)', left: 0, right: 0, zIndex: 15, background: '#F7F6F5' }}>
+        <div style={{
+          padding: '4px 20px 0',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <img src="/logo.png" style={{ width: 18, height: 18, display: 'block' }} alt="home" />
+            </button>
+            <button
+              onClick={back ? (onBack ?? (() => navigate(-1))) : undefined}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
+                color: INK, background: 'none', border: 'none',
+                cursor: back ? 'pointer' : 'default', padding: 0,
+              }}
+            >
+              {back && <Icon name="back" size={16} stroke={1.6} />}
+              {title}
+            </button>
+          </div>
+          {meta && !right && (
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
+          )}
+          {right}
         </div>
-        {meta && !right && (
-          <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.55)' }}>{meta}</div>
-        )}
-        {right}
+        <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
       </div>
-      <div style={{ borderTop: RULE, margin: '12px 20px 0' }} />
-    </div>
+      <div style={{ height: TOPBAR_H }} />
+    </>
   )
 }
 
