@@ -56,7 +56,7 @@ export function TopBar({ title, meta }: {
 }) {
   const navigate = useNavigate()
   return (
-    <div>
+    <div style={{ position: 'sticky', top: 'var(--safe-t)', zIndex: 15, background: '#F7F6F5' }}>
       <div style={{
         padding: '4px 20px 0',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -97,7 +97,7 @@ export function AppBar({ title, back = false, onBack, right, meta }: {
 }) {
   const navigate = useNavigate()
   return (
-    <div>
+    <div style={{ position: 'sticky', top: 'var(--safe-t)', zIndex: 15, background: '#F7F6F5' }}>
       <div style={{
         padding: '4px 20px 0',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -220,7 +220,7 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
         background: v.bg, color: v.color, border: v.border,
         borderRadius: 4, cursor: disabled ? 'default' : 'pointer',
         fontFamily: UI, fontSize: 13, fontWeight: 600,
-        letterSpacing: '-0.005em',
+        letterSpacing: '-0.005em', whiteSpace: 'nowrap',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         opacity: disabled ? 0.4 : 1,
         WebkitTapHighlightColor: 'transparent',

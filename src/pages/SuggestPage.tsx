@@ -324,7 +324,7 @@ export default function SuggestPage() {
 
     const ActionButtons = (
       <>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading}>
             {loading ? '…' : 'Regen'}
           </UButton>
@@ -344,7 +344,7 @@ export default function SuggestPage() {
     )
 
     return (
-      <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
+      <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
         <AppBar
           title="Brief"
           back
@@ -376,7 +376,7 @@ export default function SuggestPage() {
             <div style={{ padding: '20px 20px 0' }}>{ReasoningBlock}</div>
             <div style={{ padding: '12px 20px 0' }}>{FeedbackRow}</div>
             <div style={{ padding: '20px 20px 0' }}>{PiecesList}</div>
-            <FixedBar zIndex={10}>{ActionButtons}</FixedBar>
+            <FixedBar zIndex={10} column>{ActionButtons}</FixedBar>
           </>
         )}
       </div>

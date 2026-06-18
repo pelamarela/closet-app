@@ -241,7 +241,7 @@ export default function LogOutfitPage() {
           </div>
           <div style={{ padding: '20px 20px 0' }}>{ItemGrid}</div>
           <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
-          <FixedBar>{SaveBar}</FixedBar>
+          <FixedBar column>{SaveBar}</FixedBar>
         </>
       )}
     </div>
