@@ -4,6 +4,7 @@ import { compressImage } from '../lib/imageUtils'
 import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import RatingPicker from '../components/RatingPicker'
 import { SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import type { Category } from '../types/database'
@@ -76,6 +77,7 @@ export default function BatchUploadPage() {
   const navigate = useNavigate()
   const { addItem } = useItemMutations()
   const { items: existingItems } = useItems()
+  const { isDesktop } = useBreakpoint()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [stage, setStage] = useState<Stage>('pick')
@@ -324,8 +326,127 @@ export default function BatchUploadPage() {
   const draft = drafts[current]
   const progress = ((current + 1) / drafts.length) * 100
 
+  const PhotoPanel = (
+    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', borderRadius: 3, overflow: 'hidden', border: RULE }}>
+      <img src={draft.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+  )
+
+  const FormPanel = (
+    <>
+      <SectionLabel right="required *">attributes</SectionLabel>
+
+      {/* Name */}
+      <div style={{ padding: '12px 0', borderBottom: RULE }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>name <span style={{ color: '#9C5544' }}>*</span></span>
+          {draft.isDuplicate && (
+            <span style={{ background: '#9C5544', color: '#fff', fontFamily: MONO, fontSize: 8, padding: '2px 6px', letterSpacing: '0.06em' }}>
+              already in closet
+            </span>
+          )}
+        </div>
+        <input
+          type="text"
+          value={draft.name}
+          onChange={e => update('name', e.target.value)}
+          placeholder="e.g. Black linen blazer"
+          autoFocus
+          style={{
+            width: '100%', fontFamily: UI, fontSize: 15, fontWeight: 500,
+            color: draft.name ? INK : 'rgba(0,0,0,0.35)',
+            background: 'none', border: 'none', outline: 'none', padding: 0,
+          }}
+        />
+      </div>
+
+      {/* Category */}
+      <div style={{ padding: '12px 0', borderBottom: RULE }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+          category <span style={{ color: '#9C5544' }}>*</span>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {CATEGORIES.map(c => (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => update('category', c.value)}
+              style={{
+                padding: '3px 10px', borderRadius: 2, cursor: 'pointer',
+                border: `1px solid ${draft.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
+                background: draft.category === c.value ? INK : 'transparent',
+                color: draft.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
+                fontFamily: MONO, fontSize: 10, letterSpacing: '0.04em',
+              }}
+            >{c.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <RatingPicker value={draft.warmth} onChange={v => update('warmth', v)} label="Warmth" hint="1 = light · 5 = heavy" />
+      <RatingPicker value={draft.formality} onChange={v => update('formality', v)} label="Formality" hint="1 = casual · 5 = formal" />
+
+      {([
+        ['color',       'white, navy, black…',      draft.color],
+        ['brand',       'e.g. Toteme',               draft.brand],
+        ['material',    'cotton, wool, silk…',       draft.material],
+        ['pattern',     'solid, stripe, floral…',    draft.pattern],
+        ['subcategory', 'e.g. blazer, midi skirt…',  draft.subcategory],
+      ] as [keyof Draft, string, string][]).map(([field, placeholder, value]) => (
+        <div key={field} style={{ padding: '12px 0', borderBottom: RULE }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            {field}
+          </div>
+          <input
+            type="text"
+            value={value}
+            onChange={e => update(field, e.target.value)}
+            placeholder={placeholder}
+            style={{
+              width: '100%', fontFamily: MONO, fontSize: 12, fontWeight: 500,
+              color: value ? INK : 'rgba(0,0,0,0.35)',
+              background: 'none', border: 'none', outline: 'none', padding: 0,
+            }}
+          />
+        </div>
+      ))}
+
+      {error && (
+        <div style={{ padding: '12px 0', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+      )}
+    </>
+  )
+
+  const NavButtons = (
+    <>
+      {current > 0 ? (
+        <UButton variant="ghost" onClick={() => setCurrent(c => c - 1)} style={{ flex: 1 }}>
+          ← Back
+        </UButton>
+      ) : (
+        <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1 }}>
+          Skip
+        </UButton>
+      )}
+      {draft.isDuplicate && current < drafts.length - 1 && (
+        <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1, color: '#9C5544' }}>
+          Skip duplicate
+        </UButton>
+      )}
+      {current < drafts.length - 1 ? (
+        <UButton onClick={() => canAdvance && setCurrent(c => c + 1)} disabled={!canAdvance} style={{ flex: 1.6 }}>
+          Next →
+        </UButton>
+      ) : (
+        <UButton onClick={handleSaveAll} disabled={!canAdvance} style={{ flex: 1.6 }}>
+          Save all {drafts.length} items
+        </UButton>
+      )}
+    </>
+  )
+
   return (
-    <div style={{ paddingBottom: 100 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
       {/* Header */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -346,129 +467,30 @@ export default function BatchUploadPage() {
         <div style={{ height: 2, background: 'rgba(0,0,0,0.08)', marginTop: 12, borderRadius: 1 }}>
           <div style={{ height: '100%', background: INK, width: `${progress}%`, transition: 'width 0.2s', borderRadius: 1 }} />
         </div>
-        {/* AI badge */}
         <div style={{ marginTop: 8, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.06em' }}>
           // pre-filled by AI · review and correct
         </div>
       </div>
 
-      {/* Photo */}
-      <div style={{ padding: '12px 20px 0' }}>
-        <div style={{ width: '100%', aspectRatio: '4/3', borderRadius: 3, overflow: 'hidden', border: RULE }}>
-          <img src={draft.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        </div>
-      </div>
-
-      {/* Fields */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <SectionLabel right="required *">attributes</SectionLabel>
-
-        {/* Name */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>name <span style={{ color: '#9C5544' }}>*</span></span>
-            {draft.isDuplicate && (
-              <span style={{ background: '#9C5544', color: '#fff', fontFamily: MONO, fontSize: 8, padding: '2px 6px', letterSpacing: '0.06em' }}>
-                already in closet
-              </span>
-            )}
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 0, margin: '16px 20px 0', alignItems: 'start' }}>
+          <div style={{ paddingRight: 24, position: 'sticky', top: 'var(--safe-t, 0)' }}>
+            {PhotoPanel}
           </div>
-          <input
-            type="text"
-            value={draft.name}
-            onChange={e => update('name', e.target.value)}
-            placeholder="e.g. Black linen blazer"
-            autoFocus
-            style={{
-              width: '100%', fontFamily: UI, fontSize: 15, fontWeight: 500,
-              color: draft.name ? INK : 'rgba(0,0,0,0.35)',
-              background: 'none', border: 'none', outline: 'none', padding: 0,
-            }}
-          />
-        </div>
-
-        {/* Category */}
-        <div style={{ padding: '12px 0', borderBottom: RULE }}>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-            category <span style={{ color: '#9C5544' }}>*</span>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {CATEGORIES.map(c => (
-              <button
-                key={c.value}
-                type="button"
-                onClick={() => update('category', c.value)}
-                style={{
-                  padding: '3px 10px', borderRadius: 2, cursor: 'pointer',
-                  border: `1px solid ${draft.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
-                  background: draft.category === c.value ? INK : 'transparent',
-                  color: draft.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
-                  fontFamily: MONO, fontSize: 10, letterSpacing: '0.04em',
-                }}
-              >{c.label}</button>
-            ))}
-          </div>
-        </div>
-
-        <RatingPicker value={draft.warmth} onChange={v => update('warmth', v)} label="Warmth" hint="1 = light · 5 = heavy" />
-        <RatingPicker value={draft.formality} onChange={v => update('formality', v)} label="Formality" hint="1 = casual · 5 = formal" />
-
-        {([
-          ['color',       'white, navy, black…',      draft.color],
-          ['brand',       'e.g. Toteme',               draft.brand],
-          ['material',    'cotton, wool, silk…',       draft.material],
-          ['pattern',     'solid, stripe, floral…',    draft.pattern],
-          ['subcategory', 'e.g. blazer, midi skirt…',  draft.subcategory],
-        ] as [keyof Draft, string, string][]).map(([field, placeholder, value]) => (
-          <div key={field} style={{ padding: '12px 0', borderBottom: RULE }}>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-              {field}
+          <div>
+            {FormPanel}
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              {NavButtons}
             </div>
-            <input
-              type="text"
-              value={value}
-              onChange={e => update(field, e.target.value)}
-              placeholder={placeholder}
-              style={{
-                width: '100%', fontFamily: MONO, fontSize: 12, fontWeight: 500,
-                color: value ? INK : 'rgba(0,0,0,0.35)',
-                background: 'none', border: 'none', outline: 'none', padding: 0,
-              }}
-            />
           </div>
-        ))}
-
-        {error && (
-          <div style={{ padding: '12px 0', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <FixedBar>
-        {current > 0 ? (
-          <UButton variant="ghost" onClick={() => setCurrent(c => c - 1)} style={{ flex: 1 }}>
-            ← Back
-          </UButton>
-        ) : (
-          <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1 }}>
-            Skip
-          </UButton>
-        )}
-        {draft.isDuplicate && current < drafts.length - 1 && (
-          <UButton variant="ghost" onClick={handleSkip} style={{ flex: 1, color: '#9C5544' }}>
-            Skip duplicate
-          </UButton>
-        )}
-        {current < drafts.length - 1 ? (
-          <UButton onClick={() => canAdvance && setCurrent(c => c + 1)} disabled={!canAdvance} style={{ flex: 1.6 }}>
-            Next →
-          </UButton>
-        ) : (
-          <UButton onClick={handleSaveAll} disabled={!canAdvance} style={{ flex: 1.6 }}>
-            Save all {drafts.length} items
-          </UButton>
-        )}
-      </FixedBar>
+        </div>
+      ) : (
+        <>
+          <div style={{ padding: '12px 20px 0' }}>{PhotoPanel}</div>
+          <div style={{ padding: '16px 20px 0' }}>{FormPanel}</div>
+          <FixedBar>{NavButtons}</FixedBar>
+        </>
+      )}
     </div>
   )
 }

@@ -311,8 +311,22 @@ export default function ItemFormPage() {
     </>
   )
 
+  const SaveButtons = (
+    <>
+      <UButton variant="ghost" onClick={() => navigate('/wardrobe')} style={{ flex: 1 }}>
+        Cancel
+      </UButton>
+      <UButton
+        onClick={() => handleSubmit()} disabled={saving || !form.name.trim()}
+        style={{ flex: 1.6 }}
+      >
+        {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}
+      </UButton>
+    </>
+  )
+
   return (
-    <div style={{ paddingBottom: 100 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
       {/* Header */}
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -354,40 +368,34 @@ export default function ItemFormPage() {
         </div>
 
         {isDesktop ? (
-          /* Desktop: 2-column */
           <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 0, margin: '16px 20px 0', alignItems: 'start' }}>
-            <div style={{ paddingRight: 24, position: 'sticky', top: 0 }}>
+            <div style={{ paddingRight: 24, position: 'sticky', top: 'var(--safe-t, 0)' }}>
               {PhotoUploader}
             </div>
             <div>
               {FormFields}
+              {error && (
+                <div style={{ padding: '12px 0', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+              )}
+              <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+                {SaveButtons}
+              </div>
             </div>
           </div>
         ) : (
-          /* Mobile: stacked */
           <>
             <div style={{ padding: '16px 20px 0' }}>{PhotoUploader}</div>
             <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
+            {error && (
+              <div style={{ padding: '12px 20px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
+            )}
           </>
-        )}
-
-        {error && (
-          <div style={{ padding: '12px 20px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
         )}
       </form>
 
-      {/* Footer */}
-      <FixedBar>
-        <UButton variant="ghost" onClick={() => navigate('/wardrobe')} style={{ flex: 1 }}>
-          Cancel
-        </UButton>
-        <UButton
-          onClick={() => handleSubmit()} disabled={saving || !form.name.trim()}
-          style={{ flex: 1.6 }}
-        >
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}
-        </UButton>
-      </FixedBar>
+      {!isDesktop && (
+        <FixedBar>{SaveButtons}</FixedBar>
+      )}
     </div>
   )
 }
