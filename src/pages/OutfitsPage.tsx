@@ -178,8 +178,12 @@ export default function OutfitsPage() {
                 position: 'relative', zIndex: 1,
               }}>{String(day).padStart(2, '0')}</div>
               {hasOutfit && (
-                <div style={{ position: 'absolute', left: 4, right: 4, bottom: 4, top: 18, overflow: 'hidden' }}>
-                  <OutfitThumb outfit={dayOutfits[0]} small />
+                <div style={{ position: 'absolute', left: 4, right: 4, bottom: 4, top: 18, overflow: 'hidden', display: 'flex', gap: 1 }}>
+                  {dayOutfits.slice(0, 3).map(o => (
+                    <div key={o.id} style={{ flex: 1, height: '100%' }}>
+                      <OutfitThumb outfit={o} small />
+                    </div>
+                  ))}
                 </div>
               )}
               {!hasOutfit && !isToday && day <= now.getDate() && viewYear === now.getFullYear() && viewMonth === now.getMonth() && (
