@@ -10,7 +10,7 @@ import FixedBar from '../components/FixedBar'
 import OccasionPicker from '../components/OccasionPicker'
 import SelectableItemGrid from '../components/SelectableItemGrid'
 
-const OCCASION_PRESETS = ['casual', 'work', 'date night', 'weekend', 'formal', 'gym']
+const OCCASION_PRESETS = ['casual', 'work', 'errands', 'weekend', 'brunch', 'date night', 'dinner', 'party', 'formal', 'travel', 'gym', 'event']
 
 function today() { return new Date().toISOString().slice(0, 10) }
 
@@ -126,7 +126,7 @@ export default function LogOutfitPage() {
       {/* Occasion */}
       <div style={{ marginBottom: 20 }}>
         <SectionLabel>occasion</SectionLabel>
-        <OccasionPicker value={occasion} onChange={setOccasion} presets={OCCASION_PRESETS} showCustomInput={false} />
+        <OccasionPicker value={occasion} onChange={setOccasion} presets={OCCASION_PRESETS} />
       </div>
 
       {/* Rating */}
