@@ -27,10 +27,10 @@ export default function WardrobePage() {
   const [filter, setFilter] = useState<'all' | Category>('all')
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [confirmArchive, setConfirmArchive] = useState(false)
+  const [archiving, setArchiving] = useState(false)
   const { isDesktop } = useBreakpoint()
-  const { deleteItems } = useItemMutations()
+  const { archiveItems } = useItemMutations()
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -39,13 +39,13 @@ export default function WardrobePage() {
   const exitSelectMode = () => {
     setSelectMode(false)
     setSelectedIds(new Set())
-    setConfirmDelete(false)
+    setConfirmArchive(false)
   }
 
-  const handleDelete = async () => {
-    setDeleting(true)
-    await deleteItems(Array.from(selectedIds))
-    setDeleting(false)
+  const handleArchive = async () => {
+    setArchiving(true)
+    await archiveItems(Array.from(selectedIds))
+    setArchiving(false)
     exitSelectMode()
   }
 
@@ -181,14 +181,14 @@ export default function WardrobePage() {
       {/* Fixed action bar */}
       <FixedBar>
         {selectMode ? (
-          confirmDelete ? (
+          confirmArchive ? (
             <>
               <div style={{ flex: 1, fontFamily: MONO, fontSize: 10, color: ACCENT, display: 'flex', alignItems: 'center' }}>
-                delete {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}? can't undo.
+                archive {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}?
               </div>
-              <UButton variant="ghost" onClick={() => setConfirmDelete(false)} style={{ flex: 0.7 }}>Cancel</UButton>
-              <UButton variant="accent" icon="trash" disabled={deleting} onClick={handleDelete} style={{ flex: 1 }}>
-                {deleting ? 'Deleting…' : 'Confirm'}
+              <UButton variant="ghost" onClick={() => setConfirmArchive(false)} style={{ flex: 0.7 }}>Cancel</UButton>
+              <UButton variant="accent" disabled={archiving} onClick={handleArchive} style={{ flex: 1 }}>
+                {archiving ? 'Archiving…' : 'Confirm'}
               </UButton>
             </>
           ) : (
@@ -197,12 +197,12 @@ export default function WardrobePage() {
                 Select all
               </UButton>
               <UButton
-                variant="accent" icon="trash"
+                variant="accent"
                 disabled={selectedIds.size === 0}
-                onClick={() => setConfirmDelete(true)}
+                onClick={() => setConfirmArchive(true)}
                 style={{ flex: 1.4 }}
               >
-                Delete {selectedIds.size > 0 ? selectedIds.size : ''}
+                Archive {selectedIds.size > 0 ? selectedIds.size : ''}
               </UButton>
             </>
           )

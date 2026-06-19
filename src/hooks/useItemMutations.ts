@@ -68,10 +68,15 @@ export function useItemMutations() {
     if (error) throw error
   }
 
+  const archiveItems = async (ids: string[]): Promise<void> => {
+    const { error } = await supabase.from('items').update({ status: 'archived' as const }).in('id', ids)
+    if (error) throw error
+  }
+
   const deleteItems = async (ids: string[]): Promise<void> => {
     const { error } = await supabase.from('items').delete().in('id', ids)
     if (error) throw error
   }
 
-  return { addItem, updateItem, archiveItem, restoreItem, deleteItems }
+  return { addItem, updateItem, archiveItem, archiveItems, restoreItem, deleteItems }
 }
