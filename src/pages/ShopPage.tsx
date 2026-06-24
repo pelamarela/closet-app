@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { TopBar, AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCENT, CREAM } from '../components/ui'
+import { TopBar, AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCENT, CREAM, BG } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
 import FixedBar from '../components/FixedBar'
 import TextBlock from '../components/TextBlock'
@@ -148,6 +148,7 @@ export default function ShopPage() {
               display: 'flex', flexDirection: 'column',
               borderTop: RULE, borderRight: RULE, borderBottom: RULE,
               overflow: 'hidden',
+              background: BG,
             }}>
             {/* Verdict block */}
             <div style={{ background: verdict.bg, padding: '14px 12px', flexShrink: 0 }}>
@@ -239,7 +240,7 @@ export default function ShopPage() {
                 <img src={imagePreview} alt="Item" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               )}
             </div>
-            <div style={{ minWidth: 0, borderLeft: RULE, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ minWidth: 0, borderLeft: RULE, display: 'flex', flexDirection: 'column', background: BG }}>
               <div style={{ background: verdict.bg, padding: '10px 12px', flexShrink: 0 }}>
                 <div style={{ fontFamily: MONO, fontSize: 8, color: verdict.color, opacity: 0.6, letterSpacing: '0.08em', marginBottom: 3 }}>verdict</div>
                 <div style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: verdict.color, letterSpacing: '0.04em' }}>{verdict.label}</div>
