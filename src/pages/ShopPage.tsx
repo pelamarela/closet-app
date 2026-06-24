@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { setSingleFile } from '../lib/batchState'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
@@ -9,7 +10,6 @@ import { TopBar, AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCEN
 import { catLabel } from '../lib/categoryLabel'
 import FixedBar from '../components/FixedBar'
 import TextBlock from '../components/TextBlock'
-import AddItemButton from '../components/AddItemButton'
 
 type PairingItem = { id: string; name: string; reason: string }
 
@@ -32,6 +32,7 @@ const VERDICT_CONFIG = {
 
 export default function ShopPage() {
 
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { items } = useItems()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -359,9 +360,16 @@ export default function ShopPage() {
             <UButton variant="ghost" style={{ flex: 1 }} icon="camera" onClick={reset}>
               Analyze another
             </UButton>
-            <AddItemButton style={{ flex: 1.4 }} beforeNavigate={() => { if (imageFile) setSingleFile(imageFile) }}>
+            <UButton
+              icon="hanger"
+              style={{ flex: 1.4 }}
+              onClick={() => {
+                if (imageFile) setSingleFile(imageFile)
+                navigate('/wardrobe/new')
+              }}
+            >
               Add to closet
-            </AddItemButton>
+            </UButton>
           </div>
         </FixedBar>
       </div>
