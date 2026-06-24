@@ -118,7 +118,7 @@ export default function ShopPage() {
     const verdict = VERDICT_CONFIG[result.verdict]
 
     return (
-      <div style={{ paddingBottom: 100 }}>
+      <div style={{ paddingBottom: 100, maxWidth: '100vw', overflowX: 'hidden' }}>
         <AppBar
           title="Shop"
           back
@@ -128,13 +128,15 @@ export default function ShopPage() {
 
         {/* Hero: image + compact verdict + bullets (+ pairing on desktop) */}
         {isDesktop ? (
+          <div style={{ padding: '16px 20px 0' }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: '40% 60%',
             gap: 0,
-            margin: '16px 20px 0',
             alignItems: 'stretch',
             overflow: 'hidden',
+            width: '100%',
+            boxSizing: 'border-box',
           }}>
             <div style={{ minWidth: 0, aspectRatio: '3/4', border: RULE, overflow: 'hidden' }}>
               {imagePreview && (
@@ -227,9 +229,11 @@ export default function ShopPage() {
             )}
           </div>
           </div>
+          </div>
         ) : (
           /* Mobile: 30/70 split */
-          <div style={{ display: 'grid', gridTemplateColumns: '30% 70%', margin: '16px 20px 0', border: RULE, overflow: 'hidden', alignItems: 'stretch' }}>
+          <div style={{ padding: '16px 20px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '30% 70%', border: RULE, overflow: 'hidden', alignItems: 'stretch', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ minWidth: 0, overflow: 'hidden' }}>
               {imagePreview && (
                 <img src={imagePreview} alt="Item" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -262,6 +266,7 @@ export default function ShopPage() {
                 ))}
               </div>
             </div>
+          </div>
           </div>
         )}
 
