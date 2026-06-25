@@ -209,7 +209,7 @@ export default function BatchUploadPage() {
         await addItem(
           {
             name: draft.name.trim(), category: draft.category,
-            warmth: draft.warmth, formality: draft.formality,
+            warmth: draft.warmth, formality: draft.formality, sport: false,
             subcategory: draft.subcategory, color: draft.color,
             pattern: draft.pattern, material: draft.material, brand: draft.brand,
           },
