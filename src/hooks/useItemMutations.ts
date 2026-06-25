@@ -32,6 +32,7 @@ export function useItemMutations() {
       material: toNull(data.material),
       warmth: data.warmth,
       formality: data.formality,
+      sport: data.sport ?? false,
       brand: toNull(data.brand),
       image_url,
       status: 'active',
@@ -50,6 +51,7 @@ export function useItemMutations() {
       material: toNull(data.material),
       warmth: data.warmth,
       formality: data.formality,
+      sport: data.sport ?? false,
       brand: toNull(data.brand),
     }
     if (imageFile) patch.image_url = await uploadImage(imageFile)

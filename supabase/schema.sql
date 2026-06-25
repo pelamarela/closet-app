@@ -17,6 +17,7 @@ create table if not exists public.items (
   material    text,
   warmth      int  not null check (warmth between 1 and 5),
   formality   int  not null check (formality between 1 and 5),
+  sport       boolean not null default false,
   brand       text,
   image_url   text,
   status      text not null default 'active' check (status in ('active','archived')),

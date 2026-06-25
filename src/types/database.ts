@@ -12,6 +12,7 @@ export type Item = {
   material: string | null
   warmth: number
   formality: number
+  sport: boolean
   brand: string | null
   image_url: string | null
   status: ItemStatus
@@ -24,6 +25,7 @@ export type ItemInsert = {
   category: Category
   warmth: number
   formality: number
+  sport?: boolean | null
   status: ItemStatus
   subcategory?: string | null
   color?: string | null
@@ -42,6 +44,7 @@ export type ItemUpdate = {
   material?: string | null
   warmth?: number
   formality?: number
+  sport?: boolean | null
   brand?: string | null
   image_url?: string | null
   status?: ItemStatus

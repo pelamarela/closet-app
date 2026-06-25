@@ -128,8 +128,8 @@ export default function SuggestPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           occasion: occasion.trim(), weather,
-          items: items.map(({ id, name, category, subcategory, color, warmth, formality }) =>
-            ({ id, name, category, subcategory, color, warmth, formality })),
+          items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+            ({ id, name, category, subcategory, color, warmth, formality, sport })),
           style_profile: profileData?.description ?? '',
           recent_outfits,
           feedback_history,

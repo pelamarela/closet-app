@@ -23,7 +23,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
 
 const EMPTY: ItemFormData = {
   name: '', category: 'top', subcategory: '', color: '',
-  pattern: '', material: '', warmth: 3, formality: 3, brand: '',
+  pattern: '', material: '', warmth: 3, formality: 3, sport: false, brand: '',
 }
 
 function Field({
@@ -133,7 +133,7 @@ export default function ItemFormPage() {
           name: data.name, category: data.category as Category,
           subcategory: data.subcategory ?? '', color: data.color ?? '',
           pattern: data.pattern ?? '', material: data.material ?? '',
-          warmth: data.warmth, formality: data.formality, brand: data.brand ?? '',
+          warmth: data.warmth, formality: data.formality, sport: data.sport ?? false, brand: data.brand ?? '',
         })
         if (data.image_url) {
           const { data: s } = await supabase.storage
@@ -303,6 +303,32 @@ export default function ItemFormPage() {
       </div>
       <RatingPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} label="Warmth" hint="1 = light · 5 = heavy" />
       <RatingPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} label="Formality" hint="1 = casual · 5 = formal" />
+      <div style={{ padding: '12px 0', borderBottom: RULE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
+            sport / gym only
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.35)' }}>
+            excluded from everyday outfit suggestions
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
+          style={{
+            width: 40, height: 22, borderRadius: 11,
+            background: form.sport ? INK : 'rgba(0,0,0,0.12)',
+            border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0,
+            transition: 'background 0.15s',
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: form.sport ? 21 : 3,
+            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+            transition: 'left 0.15s',
+          }} />
+        </button>
+      </div>
       <Field label="color" value={form.color} onChange={set('color')} placeholder="white, navy, black…" mono />
       <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" mono />
       <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" mono />

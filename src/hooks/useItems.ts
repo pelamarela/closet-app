@@ -16,6 +16,7 @@ export interface ItemFormData {
   material: string
   warmth: number
   formality: number
+  sport: boolean
   brand: string
 }
 

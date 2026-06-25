@@ -23,7 +23,7 @@ const isOnePiece = (cat: string) => cat === 'one-piece'
 
 type Item = {
   id: string; name: string; category: string; subcategory?: string | null
-  color?: string | null; warmth: number; formality: number
+  color?: string | null; warmth: number; formality: number; sport?: boolean
 }
 type RecentOutfit = { date: string; occasion?: string | null; item_names: string[] }
 type FeedbackEntry = { item_names: string[]; feedback: 'up' | 'down'; occasion?: string | null }
@@ -45,10 +45,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const [wMin, wMax] = warmthRange(weather.temp_c)
   const fRange = formalityRange(occasion)
+  const isSportOccasion = /sport|gym|workout|fitness|exercise|running/.test(occasion.toLowerCase())
 
   const filtered = items.filter(item => {
     if (item.warmth < wMin || item.warmth > wMax) return false
     if (fRange && (item.formality < fRange[0] || item.formality > fRange[1])) return false
+    if (item.sport && !isSportOccasion) return false
     return true
   })
 
@@ -57,7 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const hasShoes = cats.includes('shoes')
     return hasShoes && (cats.some(isOnePiece) || (cats.includes('top') && cats.includes('bottom')))
   }
-  const candidates = canForm(filtered) ? filtered : items
+  const nonSport = isSportOccasion ? items : items.filter(i => !i.sport)
+  const candidates = canForm(filtered) ? filtered : nonSport
 
   // Hard-exclude previously shown core items (tops/bottoms/one-pieces) so Claude
   // is forced to explore the rest of the wardrobe on each regen.
