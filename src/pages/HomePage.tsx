@@ -94,7 +94,7 @@ export default function HomePage() {
   }
 
   const TodayHeroBlock = (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', height: isDesktop ? '100%' : undefined }}>
       <SectionLabel>today</SectionLabel>
       {loading ? (
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
@@ -104,6 +104,7 @@ export default function HomePage() {
           style={{
             width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
             display: 'flex', alignItems: isDesktop ? 'stretch' : 'center', gap: 16,
+            flex: isDesktop ? 1 : undefined, minHeight: 0,
           }}
         >
           <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
@@ -134,7 +135,7 @@ export default function HomePage() {
           You haven't<br />logged today.
         </div>
       )}
-    </>
+    </div>
   )
 
   const TodaysPickBlock = !loading && !todayOutfit && items.length > 0 ? (
@@ -356,23 +357,25 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero, today's pick, weather/stats on the left; Recent flows independently on the right (desktop) */}
+      {/* Today hero + Recent — one aligned row on desktop, shared row height */}
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: 32, margin: '24px 20px 0', alignItems: 'start' }}>
-          <div>
-            {TodayHeroBlock}
-            {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
-            <div style={{ marginTop: 28 }}>{WeatherStatsBlock}</div>
-          </div>
-          <div>{RecentBlock}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: 32, margin: '24px 20px 0' }}>
+          <div>{TodayHeroBlock}</div>
+          <div style={{ paddingRight: 16 }}>{RecentBlock}</div>
         </div>
       ) : (
-        <>
-          <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
-          {TodaysPickBlock && <div style={{ margin: '20px 20px 0' }}>{TodaysPickBlock}</div>}
-          <div style={{ margin: '28px 20px 0' }}>{WeatherStatsBlock}</div>
-          {RecentBlock && <div style={{ padding: '24px 20px 0' }}>{RecentBlock}</div>}
-        </>
+        <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
+      )}
+
+      {/* Today's pick — full width */}
+      {TodaysPickBlock && <div style={{ margin: '20px 20px 0' }}>{TodaysPickBlock}</div>}
+
+      {/* Weather + stats — full width */}
+      <div style={{ margin: '28px 20px 0' }}>{WeatherStatsBlock}</div>
+
+      {/* Recent — mobile only; shown alongside Today hero on desktop above */}
+      {!isDesktop && RecentBlock && (
+        <div style={{ padding: '24px 20px 0' }}>{RecentBlock}</div>
       )}
 
       <FixedBar><QuickActions /></FixedBar>
