@@ -93,6 +93,78 @@ export default function HomePage() {
     setSuggestLoading(false)
   }
 
+  const TodayHeroBlock = (
+    <>
+      <SectionLabel>today</SectionLabel>
+      {loading ? (
+        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
+      ) : todayOutfit ? (
+        <button
+          onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
+          style={{
+            width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}
+        >
+          <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
+            <ItemCollage
+              items={todayOutfit.item_ids
+                .map(id => items.find(i => i.id === id))
+                .filter((i): i is NonNullable<typeof i> => !!i)}
+              aspectRatio="1/1"
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: UI, fontSize: 26, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
+              {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 6 }}>
+              {todayOutfit.item_ids.length} pieces · tap to view ›
+            </div>
+          </div>
+        </button>
+      ) : (
+        <div style={{ fontFamily: UI, fontSize: 38, lineHeight: 1.02, fontWeight: 500, letterSpacing: '-0.025em' }}>
+          You haven't<br />logged today.
+        </div>
+      )}
+    </>
+  )
+
+  const RecentBlock = recent.length > 0 ? (
+    <>
+      <SectionLabel right={<span onClick={() => navigate('/outfits')} style={{ cursor: 'pointer' }}>{outfits.length} total ›</span>}>recent</SectionLabel>
+      {recent.map((o, i) => (
+        <button
+          key={o.id}
+          onClick={() => navigate(`/outfits/${o.id}`)}
+          style={{
+            width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 12,
+            paddingTop: 10, paddingBottom: 10,
+            borderTop: i === 0 ? RULE : 'none',
+            borderBottom: RULE,
+          }}
+        >
+          <div style={{
+            width: 34, height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0,
+            background: (() => { const [a,b] = outfitPalette(o.id); return `repeating-linear-gradient(135deg, ${a} 0 10px, ${b} 10px 20px)`; })(),
+          }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
+              {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
+              {o.date_worn} · {o.item_ids.length} pieces
+              {o.weather ? ` · ${o.weather.temp_c}°` : ''}
+            </div>
+          </div>
+          <Icon name="forward" size={14} stroke={1.2} />
+        </button>
+      ))}
+    </>
+  ) : null
+
   return (
     <div style={{ paddingBottom: 160 }}>
       <TopBar
@@ -185,42 +257,15 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero */}
-      <div style={{ padding: '24px 20px 0' }}>
-        <SectionLabel>today</SectionLabel>
-        {loading ? (
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
-        ) : todayOutfit ? (
-          <button
-            onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
-            style={{
-              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 16,
-            }}
-          >
-            <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
-              <ItemCollage
-                items={todayOutfit.item_ids
-                  .map(id => items.find(i => i.id === id))
-                  .filter((i): i is NonNullable<typeof i> => !!i)}
-                aspectRatio="1/1"
-              />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: UI, fontSize: 26, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
-                {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 6 }}>
-                {todayOutfit.item_ids.length} pieces · tap to view ›
-              </div>
-            </div>
-          </button>
-        ) : (
-          <div style={{ fontFamily: UI, fontSize: 38, lineHeight: 1.02, fontWeight: 500, letterSpacing: '-0.025em' }}>
-            You haven't<br />logged today.
-          </div>
-        )}
-      </div>
+      {/* Today hero (+ Recent alongside it on desktop, 70/30) */}
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: 32, margin: '24px 20px 0', alignItems: 'start' }}>
+          <div>{TodayHeroBlock}</div>
+          {RecentBlock && <div>{RecentBlock}</div>}
+        </div>
+      ) : (
+        <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
+      )}
 
       {/* Today's pick — AI suggestion widget */}
       {!loading && !todayOutfit && items.length > 0 && (
@@ -319,39 +364,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Recent log */}
-      {recent.length > 0 && (
-        <div style={{ padding: '24px 20px 0' }}>
-          <SectionLabel right={<span onClick={() => navigate('/outfits')} style={{ cursor: 'pointer' }}>{outfits.length} total ›</span>}>recent</SectionLabel>
-          {recent.map((o, i) => (
-            <button
-              key={o.id}
-              onClick={() => navigate(`/outfits/${o.id}`)}
-              style={{
-                width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 12,
-                paddingTop: 10, paddingBottom: 10,
-                borderTop: i === 0 ? RULE : 'none',
-                borderBottom: RULE,
-              }}
-            >
-              <div style={{
-                width: 34, height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0,
-                background: (() => { const [a,b] = outfitPalette(o.id); return `repeating-linear-gradient(135deg, ${a} 0 10px, ${b} 10px 20px)`; })(),
-              }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
-                  {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
-                </div>
-                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-                  {o.date_worn} · {o.item_ids.length} pieces
-                  {o.weather ? ` · ${o.weather.temp_c}°` : ''}
-                </div>
-              </div>
-              <Icon name="forward" size={14} stroke={1.2} />
-            </button>
-          ))}
-        </div>
+      {/* Recent log — shown here on mobile; alongside Today hero on desktop */}
+      {!isDesktop && RecentBlock && (
+        <div style={{ padding: '24px 20px 0' }}>{RecentBlock}</div>
       )}
 
       <FixedBar><QuickActions /></FixedBar>
