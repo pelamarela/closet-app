@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
-import { AppBar, SectionLabel, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import TextBlock from '../components/TextBlock'
 
 export default function SettingsPage() {
@@ -23,15 +23,24 @@ export default function SettingsPage() {
       .then(({ data }) => { if (data) setProfile(data.description) })
   }, [user])
 
-  function Row({ k, v, last }: { k: string; v: React.ReactNode; last?: boolean }) {
+  function NavRow({ label, value, onClick, last }: { label: string; value?: string; onClick: () => void; last?: boolean }) {
     return (
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '11px 0', borderBottom: last ? 'none' : RULE,
-      }}>
-        <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k}</span>
-        <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 500, color: INK, display: 'flex', alignItems: 'center', gap: 6 }}>{v}</span>
-      </div>
+      <button
+        onClick={onClick}
+        style={{
+          width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
+          borderBottom: last ? 'none' : RULE,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          cursor: 'pointer',
+          fontFamily: MONO, fontSize: 11, color: INK,
+        }}
+      >
+        {label}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {value && <span style={{ color: 'rgba(0,0,0,0.5)' }}>{value}</span>}
+          <Icon name="forward" size={14} stroke={1.2} />
+        </span>
+      </button>
     )
   }
 
@@ -39,7 +48,7 @@ export default function SettingsPage() {
     <div style={{ paddingBottom: 40 }}>
       <AppBar
         title="Settings"
-        meta="signed in"
+        meta={<MonoTag>v2.1.0</MonoTag>}
       />
 
       {/* Owner block */}
@@ -81,44 +90,14 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Storage */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel>storage</SectionLabel>
-        <div style={{ borderTop: RULE }}>
-          <Row k="items"   v={`${items.length} / unlimited`} />
-          <Row k="outfits" v={`${outfits.length} / unlimited`} last />
-        </div>
-      </div>
-
       {/* Wardrobe */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel>wardrobe</SectionLabel>
         <div style={{ borderTop: RULE }}>
-          <button
-            onClick={() => navigate('/settings/archived')}
-            style={{
-              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              cursor: 'pointer',
-              fontFamily: MONO, fontSize: 11, color: INK,
-              borderBottom: RULE,
-            }}
-          >
-            Archived items
-            <Icon name="forward" size={14} stroke={1.2} />
-          </button>
-          <button
-            onClick={() => navigate('/settings/stats')}
-            style={{
-              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              cursor: 'pointer',
-              fontFamily: MONO, fontSize: 11, color: INK,
-            }}
-          >
-            Statistics
-            <Icon name="forward" size={14} stroke={1.2} />
-          </button>
+          <NavRow label="Items" value={`${items.length}`} onClick={() => navigate('/wardrobe')} />
+          <NavRow label="Outfits" value={`${outfits.length}`} onClick={() => navigate('/outfits')} />
+          <NavRow label="Statistics" onClick={() => navigate('/settings/stats')} />
+          <NavRow label="Archived" onClick={() => navigate('/settings/archived')} last />
         </div>
       </div>
 
@@ -138,42 +117,6 @@ export default function SettingsPage() {
             Email me
             <Icon name="forward" size={14} stroke={1.2} />
           </a>
-        </div>
-      </div>
-
-      {/* Sync */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel>account</SectionLabel>
-        <div style={{ borderTop: RULE }}>
-          <Row k="provider" v="supabase auth" />
-          <Row k="version"  v="v 2.1.0" last />
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel>navigate</SectionLabel>
-        <div style={{ borderTop: RULE }}>
-          {[
-            ['Wardrobe', '/wardrobe'],
-            ['Calendar', '/outfits'],
-            ['Suggestions', '/suggest'],
-          ].map(([label, path], i) => (
-            <button
-              key={path}
-              onClick={() => navigate(path)}
-              style={{
-                width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
-                borderBottom: i < 2 ? RULE : 'none',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                cursor: 'pointer',
-                fontFamily: MONO, fontSize: 11, color: INK,
-              }}
-            >
-              {label}
-              <Icon name="forward" size={14} stroke={1.2} />
-            </button>
-          ))}
         </div>
       </div>
 
