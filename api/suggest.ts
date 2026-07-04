@@ -135,9 +135,30 @@ Rules:
 Respond with JSON only, no markdown fences:
 {"suggestions":[{"item_ids":["id1","id2"],"reasoning":"..."}]}`
 
+  const responseSchema = {
+    type: 'object',
+    properties: {
+      suggestions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            item_ids: { type: 'array', items: { type: 'string' } },
+            reasoning: { type: 'string' },
+          },
+          required: ['item_ids', 'reasoning'],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ['suggestions'],
+    additionalProperties: false,
+  }
+
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
+    output_config: { format: { type: 'json_schema', schema: responseSchema } },
     messages: [{ role: 'user', content: prompt }],
   })
 

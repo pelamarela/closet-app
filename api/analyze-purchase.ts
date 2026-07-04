@@ -77,11 +77,40 @@ Rules:
 - outfit_ideas: 2-3 complete looks using this new piece + existing wardrobe items by name
 - Be honest — if it doesn't work, say so clearly`
 
+  const responseSchema = {
+    type: 'object',
+    properties: {
+      verdict: { type: 'string', enum: ['buy', 'maybe', 'skip'] },
+      style_match: { type: 'integer' },
+      pros: { type: 'array', items: { type: 'string' } },
+      concerns: { type: 'array', items: { type: 'string' } },
+      style_analysis: { type: 'string' },
+      closet_compatibility: { type: 'string' },
+      pairing_items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            reason: { type: 'string' },
+          },
+          required: ['id', 'name', 'reason'],
+          additionalProperties: false,
+        },
+      },
+      outfit_ideas: { type: 'array', items: { type: 'string' } },
+    },
+    required: ['verdict', 'style_match', 'pros', 'concerns', 'style_analysis', 'closet_compatibility', 'pairing_items', 'outfit_ideas'],
+    additionalProperties: false,
+  }
+
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-5',
       max_tokens: 1024,
       thinking: { type: 'disabled' },
+      output_config: { format: { type: 'json_schema', schema: responseSchema } },
       messages: [{
         role: 'user',
         content: [

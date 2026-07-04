@@ -13,11 +13,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!image_base64) return res.status(400).json({ error: 'image_base64 required' })
 
+  const responseSchema = {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      category: { type: 'string', enum: ['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'] },
+      color: { type: 'string' },
+      subcategory: { type: 'string' },
+      warmth: { type: 'integer' },
+      formality: { type: 'integer' },
+      brand: { type: 'string' },
+      material: { type: 'string' },
+    },
+    required: ['name', 'category', 'color', 'subcategory', 'warmth', 'formality', 'brand', 'material'],
+    additionalProperties: false,
+  }
+
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
       temperature: 0,
+      output_config: { format: { type: 'json_schema', schema: responseSchema } },
       messages: [{
         role: 'user',
         content: [
