@@ -9,6 +9,8 @@ import type { Outfit, Item } from '../types/database'
 import ItemCollage from '../components/ItemCollage'
 import PieceRow from '../components/PieceRow'
 import Spinner from '../components/Spinner'
+import FixedBar from '../components/FixedBar'
+import LogOutfitButton from '../components/LogOutfitButton'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
 
@@ -78,6 +80,16 @@ export default function OutfitDetailPage() {
     catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'Delete failed') }
   }
 
+  const handleRepeat = () => {
+    navigate('/outfits/new', {
+      state: {
+        preselectedIds: items.map(i => i.id),
+        occasion: outfit?.occasion ?? '',
+        date: new Date().toISOString().slice(0, 10),
+      },
+    })
+  }
+
   if (loading) return <Spinner />
 
   if (!outfit) return <div style={{ padding: '20px', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>Not found.</div>
@@ -136,7 +148,7 @@ export default function OutfitDetailPage() {
   ) : null
 
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
       {deleteError && (
         <div style={{ padding: '8px 20px', fontFamily: MONO, fontSize: 10, color: ACCENT, background: 'rgba(156,85,68,0.07)' }}>
           {deleteError}
@@ -188,6 +200,9 @@ export default function OutfitDetailPage() {
           <div style={{ minWidth: 0 }}>
             {TitleBlock}
             {PiecesList}
+            <div style={{ marginTop: 24 }}>
+              <LogOutfitButton full onClick={handleRepeat}>Repeat outfit</LogOutfitButton>
+            </div>
           </div>
         </div>
       ) : (
@@ -210,6 +225,9 @@ export default function OutfitDetailPage() {
               </div>
             </div>
           )}
+          <FixedBar>
+            <LogOutfitButton full onClick={handleRepeat}>Repeat outfit</LogOutfitButton>
+          </FixedBar>
         </>
       )}
     </div>
