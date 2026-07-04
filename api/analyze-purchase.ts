@@ -105,10 +105,12 @@ Rules:
     const validIds = new Set(items.map(i => i.id))
     parsed.pairing_items = (parsed.pairing_items ?? []).filter(p => validIds.has(p.id))
 
-    // Guard against the model omitting fields or returning an out-of-enum verdict
+    // Derive verdict from style_match directly (per the prompt's own rule) instead of
+    // trusting the model's separate verdict field, so the label always matches the score.
+    const styleMatch = typeof parsed.style_match === 'number' ? parsed.style_match : 0
     const safe: AnalysisResult = {
-      verdict: (['buy', 'maybe', 'skip'] as const).includes(parsed.verdict) ? parsed.verdict : 'maybe',
-      style_match: typeof parsed.style_match === 'number' ? parsed.style_match : 0,
+      verdict: styleMatch >= 80 ? 'buy' : styleMatch >= 50 ? 'maybe' : 'skip',
+      style_match: styleMatch,
       pros: parsed.pros ?? [],
       concerns: parsed.concerns ?? [],
       style_analysis: parsed.style_analysis ?? '',
