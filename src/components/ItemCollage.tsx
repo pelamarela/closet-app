@@ -77,8 +77,8 @@ export default function ItemCollage({ items, aspectRatio = '5/4', fill = false }
 
   return (
     <div style={{
-      width: '100%', border: RULE, borderRadius: 3, overflow: 'hidden',
-      ...(fill ? { height: '100%' } : { aspectRatio }),
+      border: RULE, borderRadius: 3, overflow: 'hidden',
+      ...(fill ? { position: 'absolute', inset: 0 } : { width: '100%', aspectRatio }),
     }}>
       {renderInner()}
     </div>

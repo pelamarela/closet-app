@@ -107,7 +107,7 @@ export default function HomePage() {
             flex: isDesktop ? 1 : undefined, minHeight: 0,
           }}
         >
-          <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
+          <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0, position: isDesktop ? 'relative' : undefined }}>
             <ItemCollage
               items={todayOutfit.item_ids
                 .map(id => items.find(i => i.id === id))
