@@ -42,7 +42,11 @@
       "Read(//Users/spelaanzeljcgacnik/.config/vercel/**)",
       "Read(//Users/spelaanzeljcgacnik/**)",
       "Bash(grep -E \"\\\\.\\(tsx|ts|json|css\\)$\")",
-      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(lsof -ti:5173)",
+      "Bash(xargs kill -9)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(kill %1)"
     ]
   }
 }

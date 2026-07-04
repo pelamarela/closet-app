@@ -101,11 +101,43 @@ export default function SettingsPage() {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               cursor: 'pointer',
               fontFamily: MONO, fontSize: 11, color: INK,
+              borderBottom: RULE,
             }}
           >
             Archived items
             <Icon name="forward" size={14} stroke={1.2} />
           </button>
+          <button
+            onClick={() => navigate('/settings/stats')}
+            style={{
+              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              cursor: 'pointer',
+              fontFamily: MONO, fontSize: 11, color: INK,
+            }}
+          >
+            Statistics
+            <Icon name="forward" size={14} stroke={1.2} />
+          </button>
+        </div>
+      </div>
+
+      {/* Support */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <SectionLabel>support</SectionLabel>
+        <div style={{ borderTop: RULE }}>
+          <a
+            href="mailto:spela.anzeljc26@gmail.com?subject=Closet%20app%20support"
+            style={{
+              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              cursor: 'pointer', textDecoration: 'none',
+              fontFamily: MONO, fontSize: 11, color: INK,
+            }}
+          >
+            Email support
+            <Icon name="forward" size={14} stroke={1.2} />
+          </a>
         </div>
       </div>
 
