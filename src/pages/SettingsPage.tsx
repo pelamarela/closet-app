@@ -127,7 +127,7 @@ export default function SettingsPage() {
         <SectionLabel>support</SectionLabel>
         <div style={{ borderTop: RULE }}>
           <a
-            href="mailto:spela.anzeljc26@gmail.com?subject=Closet%20app%20support"
+            href="mailto:spela@pelamarela.com?subject=Closet%20app%20support"
             style={{
               width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -135,7 +135,7 @@ export default function SettingsPage() {
               fontFamily: MONO, fontSize: 11, color: INK,
             }}
           >
-            Email support
+            Email me
             <Icon name="forward" size={14} stroke={1.2} />
           </a>
         </div>
