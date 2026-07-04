@@ -111,13 +111,24 @@ export default function HomePage() {
             onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
             style={{
               width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 14,
             }}
           >
-            <div style={{ fontFamily: UI, fontSize: 32, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
-              {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
+            <div style={{ width: 64, flexShrink: 0 }}>
+              <ItemCollage
+                items={todayOutfit.item_ids
+                  .map(id => items.find(i => i.id === id))
+                  .filter((i): i is NonNullable<typeof i> => !!i)}
+                aspectRatio="3/4"
+              />
             </div>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>
-              {todayOutfit.item_ids.length} pieces · tap to view ›
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: UI, fontSize: 28, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
+                {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>
+                {todayOutfit.item_ids.length} pieces · tap to view ›
+              </div>
             </div>
           </button>
         ) : (
