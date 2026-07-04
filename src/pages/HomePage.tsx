@@ -6,6 +6,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getOccasionPresets } from '../lib/occasionPresets'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCENT, outfitTitle } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
 import QuickActions from '../components/QuickActions'
@@ -27,6 +28,7 @@ export default function HomePage() {
   const { user } = useAuth()
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
+  const { isDesktop } = useBreakpoint()
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [suggestion, setSuggestion] = useState<TodaySuggestion | null>(null)
   const [suggestOccasion, setSuggestOccasion] = useState<string | null>(null)
@@ -196,7 +198,7 @@ export default function HomePage() {
               display: 'flex', alignItems: 'center', gap: 16,
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
               <ItemCollage
                 items={todayOutfit.item_ids
                   .map(id => items.find(i => i.id === id))
