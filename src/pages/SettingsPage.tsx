@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
+import { useConstants } from '../hooks/useConstants'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import TextBlock from '../components/TextBlock'
@@ -13,6 +14,7 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const { items } = useItems()
   const { outfits } = useOutfits()
+  const { constants } = useConstants()
   const { isDesktop } = useBreakpoint()
   const [profile, setProfile] = useState<string | null>(null)
 
@@ -85,6 +87,14 @@ export default function SettingsPage() {
     </div>
   )
 
+  const ConstantsBlock = (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ borderTop: RULE }}>
+        <NavRow label="Constants" value={`${constants.length}`} onClick={() => navigate('/settings/constants')} last />
+      </div>
+    </div>
+  )
+
   const WardrobeBlock = (
     <div>
       <SectionLabel>wardrobe</SectionLabel>
@@ -144,6 +154,7 @@ export default function SettingsPage() {
           <div>
             {OwnerBlock}
             {StyleProfileBlock}
+            {ConstantsBlock}
           </div>
           <div>
             {WardrobeBlock}
@@ -155,6 +166,7 @@ export default function SettingsPage() {
         <>
           <div style={{ padding: '18px 20px 0' }}>{OwnerBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{StyleProfileBlock}</div>
+          <div style={{ padding: '0 20px 0' }}>{ConstantsBlock}</div>
           <div style={{ padding: '20px 20px 0' }}>{WardrobeBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{SupportBlock}</div>
           <div style={{ padding: '28px 20px 0' }}>{SignOutButton}</div>

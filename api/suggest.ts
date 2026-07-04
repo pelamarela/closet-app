@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
+import { colorSeasonBlock } from './_lib/colorSeasons'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -34,13 +35,19 @@ type RequestBody = {
   feedback_history?: FeedbackEntry[]
   previously_shown?: string[][]
   anchor_item?: AnchorItem
+  color_season?: string | null
+  use_color_season?: boolean
+  constants?: string[]
 }
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item } = req.body as RequestBody
+  const {
+    occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item,
+    color_season, use_color_season, constants,
+  } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
   const [wMin, wMax] = warmthRange(weather.temp_c)
@@ -105,12 +112,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nANCHOR ITEM: The user wants to wear "${anchor_item.name}"${anchor_item.color ? ` (${anchor_item.color})` : ''} — ${anchor_item.category}${anchor_item.subcategory ? `/${anchor_item.subcategory}` : ''} · ID:${anchor_item.id}\nYou MUST include this item (ID:${anchor_item.id}) in every outfit. Your job is to suggest complementary pieces that work specifically with this item — consider its colour, formality, and silhouette when choosing what to pair it with.\n`
     : ''
 
+  const colorBlock = use_color_season !== false ? colorSeasonBlock(color_season) : ''
+
+  const constantsBlock = constants?.length
+    ? `\nALWAYS-WORN PIECES (already part of every look — don't need to be chosen or replaced, but you may still add complementary wardrobe pieces on top): ${constants.join(', ')}\n`
+    : ''
+
   const prompt = `You are a personal stylist. Suggest 1–3 outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
 STYLE NOTES: ${style_profile || 'No style profile set'}
-${anchorBlock}
+${colorBlock}${constantsBlock}${anchorBlock}
 AVAILABLE ITEMS:
 ${itemList}
 
@@ -129,7 +142,7 @@ Rules:
 - Never combine a one-piece with a separate top or bottom
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
-- Vary the suggestions — don't repeat the same item across all outfits${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}
+- Vary the suggestions — don't repeat the same item across all outfits${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
 Respond with JSON only, no markdown fences:

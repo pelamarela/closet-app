@@ -63,7 +63,9 @@ export default function HomePage() {
     setSuggestLoading(true); setSuggestError(null)
     try {
       const { data: profileData } = await supabase
-        .from('style_profile').select('description').eq('user_id', user.id).single()
+        .from('style_profile').select('description, color_season').eq('user_id', user.id).single()
+      const { data: constantsData } = await supabase
+        .from('constants').select('description').eq('user_id', user.id)
 
       const recent_outfits = outfits.slice(0, 7).map(o => ({
         date: o.date_worn, occasion: o.occasion,
@@ -78,6 +80,8 @@ export default function HomePage() {
           items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
             ({ id, name, category, subcategory, color, warmth, formality, sport })),
           style_profile: profileData?.description ?? '',
+          color_season: profileData?.color_season ?? null,
+          constants: (constantsData ?? []).map(c => c.description),
           recent_outfits,
         }),
       })

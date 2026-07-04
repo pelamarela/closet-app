@@ -78,11 +78,26 @@ export type OutfitIdea = {
 
 export type OutfitIdeaWithItems = OutfitIdea & { item_ids: string[] }
 
+export type ColorSeason =
+  | 'bright-spring' | 'true-spring' | 'light-spring'
+  | 'light-summer' | 'true-summer' | 'soft-summer'
+  | 'soft-autumn' | 'true-autumn' | 'deep-autumn'
+  | 'deep-winter' | 'true-winter' | 'bright-winter'
+
 export type StyleProfile = {
   id: string
   user_id: string
   description: string
+  color_season: ColorSeason | null
   updated_at: string
+}
+
+export type Constant = {
+  id: string
+  user_id: string
+  description: string
+  image_url: string | null
+  created_at: string
 }
 
 export type Database = {
@@ -128,6 +143,12 @@ export type Database = {
         Row: { id: string; user_id: string; occasion: string | null; item_ids: string[]; feedback: 'up' | 'down'; created_at: string }
         Insert: { id: string; user_id: string; occasion?: string | null; item_ids: string[]; feedback: 'up' | 'down' }
         Update: { feedback?: 'up' | 'down' }
+        Relationships: []
+      }
+      constants: {
+        Row: Constant
+        Insert: Omit<Constant, 'id' | 'created_at'>
+        Update: Partial<Omit<Constant, 'id' | 'user_id' | 'created_at'>>
         Relationships: []
       }
     }

@@ -19,6 +19,7 @@ import IdeaDetailPage from './pages/IdeaDetailPage'
 import IdeaEditPage from './pages/IdeaEditPage'
 import ArchivedPage from './pages/ArchivedPage'
 import StatsPage from './pages/StatsPage'
+import ConstantsPage from './pages/ConstantsPage'
 
 function ProtectedRoutes() {
   const { session, loading } = useAuth()
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
             <Route path="/settings/archived" element={<ArchivedPage />} />
             <Route path="/settings/stats" element={<StatsPage />} />
+            <Route path="/settings/constants" element={<ConstantsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -6,6 +6,8 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { AppBar, SectionLabel, UButton, MonoTag, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import FixedBar from '../components/FixedBar'
+import { COLOR_SEASONS, COLOR_SEASON_MAP } from '../lib/colorSeasons'
+import type { ColorSeason } from '../types/database'
 
 const PROMPTS = [
   'What occasions do you dress for most?',
@@ -15,24 +17,31 @@ const PROMPTS = [
   'Quirks — always cold, run hot, prefer flats…',
 ]
 
+const SEASON_GROUPS = ['Spring', 'Summer', 'Autumn', 'Winter']
+
 export default function StyleProfileEditorPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [text, setText] = useState('')
   const [original, setOriginal] = useState('')
+  const [colorSeason, setColorSeason] = useState<ColorSeason | null>(null)
+  const [originalColorSeason, setOriginalColorSeason] = useState<ColorSeason | null>(null)
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const { items } = useItems()
   const { outfits } = useOutfits()
 
-  const isDirty = text !== original
+  const isDirty = text !== original || colorSeason !== originalColorSeason
 
   useEffect(() => {
     if (!user) return
-    supabase.from('style_profile').select('description').eq('user_id', user.id).single()
+    supabase.from('style_profile').select('description, color_season').eq('user_id', user.id).single()
       .then(({ data }) => {
-        if (data) { setText(data.description); setOriginal(data.description) }
+        if (data) {
+          setText(data.description); setOriginal(data.description)
+          setColorSeason(data.color_season); setOriginalColorSeason(data.color_season)
+        }
       })
   }, [user])
 
@@ -60,10 +69,11 @@ export default function StyleProfileEditorPage() {
     if (!user) return
     setSaving(true)
     await supabase.from('style_profile').upsert(
-      { user_id: user.id, description: text },
+      { user_id: user.id, description: text, color_season: colorSeason },
       { onConflict: 'user_id' }
     )
     setOriginal(text)
+    setOriginalColorSeason(colorSeason)
     setSaving(false)
     navigate('/settings')
   }
@@ -138,6 +148,37 @@ export default function StyleProfileEditorPage() {
         </div>
       </div>
 
+      {/* Color season */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <SectionLabel right="used by shop · optional in suggest">color profile</SectionLabel>
+        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginBottom: 10 }}>
+          your seasonal color analysis, if you know it — helps judge whether a color works for you
+        </div>
+        {SEASON_GROUPS.map(group => (
+          <div key={group} style={{ marginBottom: 8 }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              {group}
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {COLOR_SEASONS.filter(s => s.group === group).map(s => (
+                <button
+                  key={s.value}
+                  onClick={() => setColorSeason(prev => prev === s.value ? null : s.value)}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  <MonoTag filled={colorSeason === s.value}>{s.label}</MonoTag>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        {colorSeason && (
+          <div style={{ fontFamily: UI, fontSize: 11.5, color: 'rgba(0,0,0,0.6)', lineHeight: 1.5, marginTop: 10 }}>
+            {COLOR_SEASON_MAP[colorSeason].palette}
+          </div>
+        )}
+      </div>
+
       {/* Prompts */}
       <div style={{ padding: '20px 20px 0' }}>
         <SectionLabel>try answering</SectionLabel>
@@ -156,6 +197,7 @@ export default function StyleProfileEditorPage() {
         <SectionLabel>this affects</SectionLabel>
         <div style={{ display: 'flex', gap: 6 }}>
           <MonoTag accent>suggest</MonoTag>
+          <MonoTag accent>shop</MonoTag>
         </div>
       </div>
 

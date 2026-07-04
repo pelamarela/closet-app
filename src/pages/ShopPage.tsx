@@ -82,7 +82,7 @@ export default function ShopPage() {
 
     try {
       const { data: profileData } = await supabase
-        .from('style_profile').select('description').eq('user_id', user!.id).single()
+        .from('style_profile').select('description, color_season').eq('user_id', user!.id).single()
 
       // Strip data URL prefix to get raw base64
       const base64 = imagePreview.split(',')[1]
@@ -95,6 +95,7 @@ export default function ShopPage() {
           image_base64: base64,
           media_type: mediaType,
           style_profile: profileData?.description ?? '',
+          color_season: profileData?.color_season ?? null,
           items: items.map(({ id, name, category, subcategory, color }) =>
             ({ id, name, category, subcategory, color })),
         }),

@@ -34,6 +34,9 @@ export default function SuggestPage() {
   const [weatherError, setWeatherError] = useState<string | null>(null)
   const [avoidRecent, setAvoidRecent] = useState(true)
   const [coldLayer, setColdLayer] = useState(true)
+  const [useColorSeason, setUseColorSeason] = useState(true)
+  const [colorSeason, setColorSeason] = useState<string | null>(null)
+  const [constants, setConstants] = useState<string[]>([])
   const [profile, setProfile] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [selectedOption, setSelectedOption] = useState(0)
@@ -64,8 +67,10 @@ export default function SuggestPage() {
   useEffect(() => { fetchWeather() }, [])
   useEffect(() => {
     if (!user) return
-    supabase.from('style_profile').select('description').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data) setProfile(data.description) })
+    supabase.from('style_profile').select('description, color_season').eq('user_id', user.id).single()
+      .then(({ data }) => { if (data) { setProfile(data.description); setColorSeason(data.color_season) } })
+    supabase.from('constants').select('description').eq('user_id', user.id)
+      .then(({ data }) => setConstants((data ?? []).map(c => c.description)))
   }, [user])
 
   const handleSuggest = async () => {
@@ -77,7 +82,7 @@ export default function SuggestPage() {
     setPreviousSuggestions(alreadyShown)
 
     const { data: profileData } = await supabase
-      .from('style_profile').select('description').eq('user_id', user!.id).single()
+      .from('style_profile').select('description, color_season').eq('user_id', user!.id).single()
 
     const recent_outfits = outfits.slice(0, 7).map(o => ({
       date: o.date_worn, occasion: o.occasion,
@@ -108,6 +113,9 @@ export default function SuggestPage() {
           items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
             ({ id, name, category, subcategory, color, warmth, formality, sport })),
           style_profile: profileData?.description ?? '',
+          color_season: profileData?.color_season ?? null,
+          use_color_season: useColorSeason,
+          constants,
           recent_outfits,
           feedback_history,
           previously_shown: alreadyShown,
@@ -494,6 +502,7 @@ export default function SuggestPage() {
         {([
           ['avoid worn this week', avoidRecent, () => setAvoidRecent(v => !v)],
           ['use cold-layer rule (+1)', coldLayer, () => setColdLayer(v => !v)],
+          ...(colorSeason ? [['factor in color season', useColorSeason, () => setUseColorSeason(v => !v)] as [string, boolean, () => void]] : []),
         ] as [string, boolean, () => void][]).map(([label, on, toggle], i) => (
           <div key={i} style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',

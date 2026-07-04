@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
+import { colorSeasonBlock } from './_lib/colorSeasons'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -27,11 +28,12 @@ type AnalysisResult = {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { image_base64, media_type, items, style_profile } = req.body as {
+  const { image_base64, media_type, items, style_profile, color_season } = req.body as {
     image_base64: string
     media_type?: string
     items: WardrobeItem[]
     style_profile: string
+    color_season?: string | null
   }
 
   if (!image_base64) return res.status(400).json({ error: 'image_base64 required' })
@@ -46,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 STYLE PROFILE:
 ${style_profile || 'No style profile provided — use what you can infer from the wardrobe.'}
-
+${colorSeasonBlock(color_season)}
 EXISTING WARDROBE (${items.length} items):
 ${itemList}
 
@@ -69,7 +71,7 @@ Return ONLY a JSON object with exactly these fields:
 }
 
 Rules:
-- style_match: score 0-100 based on three specific questions: (1) Does this item match her style profile — her aesthetic, colours, silhouettes? (2) How many items in her existing wardrobe does it actually pair with — concretely count them? (3) Does it fill a genuine gap or duplicate something she already has? A low answer on any of these should pull the score down significantly. Do not default to a high number — if the wardrobe context is thin or the item is a poor fit, score accordingly.
+- style_match: score 0-100 based on three specific questions: (1) Does this item match her style profile — her aesthetic, colours, silhouettes? (2) How many items in her existing wardrobe does it actually pair with — concretely count them? (3) Does it fill a genuine gap or duplicate something she already has? A low answer on any of these should pull the score down significantly. Do not default to a high number — if the wardrobe context is thin or the item is a poor fit, score accordingly.${color_season ? '\n- If a color season is provided, weigh whether the item\'s color sits within that palette — a clear mismatch (e.g. a muted-palette client considering a neon/icy-bright piece) should pull style_match down and be named as a concern; mention the color-season fit explicitly in style_analysis.' : ''}
 - verdict is derived from style_match: 80+ = "buy", 50-79 = "maybe", below 50 = "skip"
 - pros: 3-5 short bullets (≤5 words each) — why it works: style, versatility, gap it fills
 - concerns: 0-3 short bullets (≤5 words each) — honest issues; empty array [] if none
