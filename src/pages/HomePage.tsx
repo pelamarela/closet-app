@@ -1,13 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, SectionLabel, Icon, MONO, UI, RULE, outfitTitle } from '../components/ui'
+import { getOccasionPresets } from '../lib/occasionPresets'
+import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCENT, outfitTitle } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
 import QuickActions from '../components/QuickActions'
 import FixedBar from '../components/FixedBar'
 import AddItemButton from '../components/AddItemButton'
+import LogOutfitButton from '../components/LogOutfitButton'
+import ItemCollage from '../components/ItemCollage'
+
+type TodaySuggestion = { item_ids: string[]; reasoning: string }
 
 const DOW = ['sun','mon','tue','wed','thu','fri','sat'] // indexed by getDay() — Sun=0
 
@@ -17,11 +24,17 @@ function todayStr() {
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
   const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [suggestion, setSuggestion] = useState<TodaySuggestion | null>(null)
+  const [suggestOccasion, setSuggestOccasion] = useState<string | null>(null)
+  const [suggestLoading, setSuggestLoading] = useState(false)
+  const [suggestError, setSuggestError] = useState<string | null>(null)
 
   const today = todayStr()
+  const topOccasion = useMemo(() => getOccasionPresets(outfits)[0] ?? 'casual', [outfits])
   const now = new Date()
   const dateLabel = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} · ${DOW[now.getDay()]}`
 
@@ -42,6 +55,41 @@ export default function HomePage() {
       .then(setWeather)
       .catch(() => {})
   }, [])
+
+  const handleSuggestToday = async () => {
+    if (!user || !weather) return
+    setSuggestLoading(true); setSuggestError(null)
+    try {
+      const { data: profileData } = await supabase
+        .from('style_profile').select('description').eq('user_id', user.id).single()
+
+      const recent_outfits = outfits.slice(0, 7).map(o => ({
+        date: o.date_worn, occasion: o.occasion,
+        item_names: o.item_ids.map(id => items.find(i => i.id === id)?.name ?? '').filter(Boolean),
+      }))
+
+      const res = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          occasion: topOccasion, weather,
+          items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+            ({ id, name, category, subcategory, color, warmth, formality, sport })),
+          style_profile: profileData?.description ?? '',
+          recent_outfits,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')
+      const incoming: TodaySuggestion[] = data.suggestions ?? []
+      if (incoming.length === 0) throw new Error('No valid outfits found — try Suggest for more options.')
+      setSuggestion(incoming[0])
+      setSuggestOccasion(topOccasion)
+    } catch (e) {
+      setSuggestError(e instanceof Error ? e.message : 'Something went wrong')
+    }
+    setSuggestLoading(false)
+  }
 
   return (
     <div style={{ paddingBottom: 160 }}>
@@ -78,6 +126,65 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Today's pick — AI suggestion widget */}
+      {!loading && !todayOutfit && items.length > 0 && (
+        <div style={{ margin: '20px 20px 0', border: RULE, borderRadius: 4, padding: 16 }}>
+          {!suggestion ? (
+            <>
+              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                today's pick
+              </div>
+              <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, color: INK, marginTop: 6, letterSpacing: '-0.01em' }}>
+                What should you wear{weather ? ` at ${weather.temp_c}°` : ''}?
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>
+                based on your "{topOccasion}" days
+              </div>
+              {suggestError && (
+                <div style={{ fontFamily: MONO, fontSize: 9.5, color: ACCENT, marginTop: 8 }}>{suggestError}</div>
+              )}
+              <div style={{ marginTop: 12 }}>
+                <UButton full icon="spark" disabled={suggestLoading || !weather} onClick={handleSuggestToday}>
+                  {suggestLoading ? 'Thinking…' : 'Suggest an outfit'}
+                </UButton>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                today's pick · {suggestOccasion}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <ItemCollage
+                  items={suggestion.item_ids
+                    .map(id => items.find(i => i.id === id))
+                    .filter((i): i is NonNullable<typeof i> => !!i)}
+                  aspectRatio="16/7"
+                />
+              </div>
+              <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 10, fontStyle: 'italic' }}>
+                "{suggestion.reasoning}"
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <LogOutfitButton
+                  style={{ flex: 1.6 }}
+                  onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
+                >
+                  Log this outfit
+                </LogOutfitButton>
+                <UButton
+                  variant="ghost"
+                  style={{ flex: 1 }}
+                  onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
+                >
+                  More
+                </UButton>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Weather + stats */}
       <div style={{

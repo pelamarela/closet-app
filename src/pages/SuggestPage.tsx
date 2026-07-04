@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
@@ -7,29 +7,26 @@ import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
+import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import FixedBar from '../components/FixedBar'
 import TextBlock from '../components/TextBlock'
 import LogOutfitButton from '../components/LogOutfitButton'
 
-const TIME_DEFAULTS: Record<'weekday' | 'friday' | 'weekend', string[]> = {
-  weekday: ['work', 'lunch', 'errands', 'dinner', 'casual', 'gym'],
-  friday:  ['dinner', 'drinks', 'work', 'casual', 'date', 'errands'],
-  weekend: ['weekend', 'brunch', 'casual', 'dinner', 'walk', 'errands'],
-}
-
 type Suggestion = { item_ids: string[]; reasoning: string }
 
 export default function SuggestPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const { items } = useItems()
   const { outfits } = useOutfits()
   const { isDesktop } = useBreakpoint()
+  const navState = location.state as { occasion?: string } | null
 
   const [view, setView] = useState<'input' | 'result'>('input')
-  const [occasion, setOccasion] = useState('')
+  const [occasion, setOccasion] = useState(navState?.occasion ?? '')
   const [anchorItemId, setAnchorItemId] = useState<string | null>(null)
   const [anchorFilterCat, setAnchorFilterCat] = useState<string>('all')
   const [weather, setWeather] = useState<WeatherData | null>(null)
@@ -46,27 +43,7 @@ export default function SuggestPage() {
   const [savedMsg, setSavedMsg] = useState(false)
   const [saveIdeaError, setSaveIdeaError] = useState<string | null>(null)
 
-  const occasionPresets = useMemo(() => {
-    const freq: Record<string, number> = {}
-    outfits.forEach(o => {
-      const k = o.occasion?.trim().toLowerCase()
-      if (k) freq[k] = (freq[k] ?? 0) + 1
-    })
-    const fromHistory = Object.entries(freq)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([k]) => k)
-    if (fromHistory.length >= 5) return fromHistory.slice(0, 6)
-    const dow = new Date().getDay()
-    const slot = dow === 0 || dow === 6 ? 'weekend' : dow === 5 ? 'friday' : 'weekday'
-    const seen = new Set(fromHistory)
-    const padded = [...fromHistory]
-    for (const d of TIME_DEFAULTS[slot]) {
-      if (!seen.has(d)) { padded.push(d); seen.add(d) }
-      if (padded.length >= 6) break
-    }
-    return padded
-  }, [outfits])
+  const occasionPresets = useMemo(() => getOccasionPresets(outfits), [outfits])
 
   const [feedback, setFeedback] = useState<('up' | 'down' | null)[]>([])
   const [feedbackIds, setFeedbackIds] = useState<string[]>([])
