@@ -105,7 +105,19 @@ Rules:
     const validIds = new Set(items.map(i => i.id))
     parsed.pairing_items = (parsed.pairing_items ?? []).filter(p => validIds.has(p.id))
 
-    return res.status(200).json(parsed)
+    // Guard against the model omitting fields or returning an out-of-enum verdict
+    const safe: AnalysisResult = {
+      verdict: (['buy', 'maybe', 'skip'] as const).includes(parsed.verdict) ? parsed.verdict : 'maybe',
+      style_match: typeof parsed.style_match === 'number' ? parsed.style_match : 0,
+      pros: parsed.pros ?? [],
+      concerns: parsed.concerns ?? [],
+      style_analysis: parsed.style_analysis ?? '',
+      closet_compatibility: parsed.closet_compatibility ?? '',
+      pairing_items: parsed.pairing_items,
+      outfit_ideas: parsed.outfit_ideas ?? [],
+    }
+
+    return res.status(200).json(safe)
   } catch (err) {
     console.error('analyze-purchase error:', err)
     return res.status(500).json({ error: err instanceof Error ? err.message : 'Analysis failed' })

@@ -115,7 +115,8 @@ export default function ShopPage() {
 
   // ── Result view ──────────────────────────────────────────────────────────────
   if (view === 'result' && result) {
-    const verdict = VERDICT_CONFIG[result.verdict]
+    const verdict = VERDICT_CONFIG[result.verdict] ?? VERDICT_CONFIG.maybe
+    const outfitIdeas = result.outfit_ideas ?? []
 
     return (
       <div style={{ paddingBottom: 100, maxWidth: '100vw', overflowX: 'hidden' }}>
@@ -318,11 +319,11 @@ export default function ShopPage() {
         )}
 
         {/* Outfit ideas */}
-        {result.outfit_ideas.length > 0 && (
+        {outfitIdeas.length > 0 && (
           <div style={{ padding: '16px 20px 0' }}>
-            <SectionLabel right={`${result.outfit_ideas.length} looks`}>outfit ideas</SectionLabel>
+            <SectionLabel right={`${outfitIdeas.length} looks`}>outfit ideas</SectionLabel>
             <div style={{ borderTop: RULE }}>
-              {result.outfit_ideas.map((idea, i) => {
+              {outfitIdeas.map((idea, i) => {
                 const saved = savedIdeas.has(i)
                 return (
                   <div key={i} style={{ padding: '10px 0', borderBottom: RULE }}>
