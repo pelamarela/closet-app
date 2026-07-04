@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, MonoTag, MONO, UI, INK, RULE, outfitTitle } from '../components/ui'
+import { AppBar, SectionLabel, MONO, UI, INK, RULE, outfitTitle } from '../components/ui'
 
 const SEASONS = ['winter', 'spring', 'summer', 'fall'] as const
 type Season = typeof SEASONS[number]
@@ -18,6 +18,28 @@ function seasonOf(dateWorn: string): Season {
 
 function titleCase(s: string) {
   return s.slice(0, 1).toUpperCase() + s.slice(1)
+}
+
+function Dropdown({ value, onChange, options }: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        fontFamily: MONO, fontSize: 10, fontWeight: 600, color: INK,
+        textTransform: 'uppercase', letterSpacing: '0.06em',
+        background: '#fff', border: RULE, borderRadius: 4,
+        padding: '6px 8px', cursor: 'pointer',
+        WebkitAppearance: 'none' as const, appearance: 'none' as const,
+      }}
+    >
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  )
 }
 
 function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: number; onClick: () => void }) {
@@ -53,7 +75,7 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
 function OutfitCollage({ itemIds, items }: { itemIds: string[]; items: ItemWithSignedUrl[] }) {
   const thumbItems = itemIds.slice(0, 4).map(id => items.find(i => i.id === id)).filter(Boolean) as ItemWithSignedUrl[]
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, width: 64, height: 78, flexShrink: 0 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, width: 56, height: 68, flexShrink: 0 }}>
       {thumbItems.length === 0 ? (
         <div style={{ gridColumn: '1/-1', gridRow: '1/-1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)', borderRadius: 2 }} />
       ) : thumbItems.map((item, i) => (
@@ -96,7 +118,11 @@ export default function StatsPage() {
     return result
   }, [outfits, items])
 
-  const topCategories = useMemo(() => {
+  const availableSeasons = SEASONS.filter(s => bySeasonTopItems[s].length > 0)
+  const [season, setSeason] = useState<Season | null>(null)
+  const activeSeason = (season && bySeasonTopItems[season].length > 0) ? season : availableSeasons[0]
+
+  const byCategory = useMemo(() => {
     const groups: Record<string, typeof outfits> = {}
     for (const o of outfits) {
       const key = (o.occasion?.trim() || 'uncategorized').toLowerCase()
@@ -112,13 +138,15 @@ export default function StatsPage() {
           if (existing) existing.count += 1
           else comboCounts.set(key, { item_ids: o.item_ids, count: 1, outfitId: o.id })
         }
-        const topCombo = [...comboCounts.values()].sort((a, b) => b.count - a.count)[0]
-        return { category, count: list.length, topCombo }
+        const topCombos = [...comboCounts.values()].sort((a, b) => b.count - a.count).slice(0, 5)
+        return { category, count: list.length, topCombos }
       })
-      .filter(c => c.topCombo)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 3)
   }, [outfits])
+
+  const [category, setCategory] = useState<string | null>(null)
+  const activeCategory = (category && byCategory.some(c => c.category === category)) ? category : byCategory[0]?.category
+  const activeCategoryData = byCategory.find(c => c.category === activeCategory)
 
   const hasData = outfits.length > 0
 
@@ -141,51 +169,69 @@ export default function StatsPage() {
           alignItems: 'start',
         }}>
           <div>
-            <SectionLabel>most worn by season</SectionLabel>
-            {SEASONS.filter(s => bySeasonTopItems[s].length > 0).map(season => (
-              <div key={season} style={{ marginBottom: 22 }}>
-                <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-                  {season}
-                </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
-                  gap: 12,
-                }}>
-                  {bySeasonTopItems[season].map(({ item, count }) => (
-                    <ItemThumb key={item.id} item={item} count={count} onClick={() => navigate(`/wardrobe/${item.id}`)} />
-                  ))}
-                </div>
+            <SectionLabel right={
+              activeSeason && (
+                <Dropdown
+                  value={activeSeason}
+                  onChange={v => setSeason(v as Season)}
+                  options={availableSeasons.map(s => ({ value: s, label: titleCase(s) }))}
+                />
+              )
+            }>most worn by season</SectionLabel>
+            {activeSeason && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
+                gap: 12, marginTop: 4,
+              }}>
+                {bySeasonTopItems[activeSeason].map(({ item, count }) => (
+                  <ItemThumb key={item.id} item={item} count={count} onClick={() => navigate(`/wardrobe/${item.id}`)} />
+                ))}
               </div>
-            ))}
+            )}
           </div>
 
-          <div style={{ marginTop: isDesktop ? 0 : 4 }}>
-            <SectionLabel>most worn by category</SectionLabel>
-            <div style={{ borderTop: RULE }}>
-              {topCategories.map(({ category, count, topCombo }) => (
-                <button
-                  key={category}
-                  onClick={() => navigate(`/outfits/${topCombo!.outfitId}`)}
-                  style={{
-                    width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
-                    display: 'flex', gap: 14, alignItems: 'center',
-                    padding: '14px 0', borderBottom: RULE,
-                  }}
-                >
-                  <OutfitCollage itemIds={topCombo!.item_ids} items={items} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <MonoTag accent>{titleCase(category)}</MonoTag>
-                    <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK, letterSpacing: '-0.005em', marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {outfitTitle(topCombo!.item_ids, items, 'outfit')}
-                    </div>
-                    <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 3 }}>
-                      {count} logged · worn {topCombo!.count}× together
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div style={{ marginTop: isDesktop ? 0 : 28 }}>
+            <SectionLabel right={
+              activeCategory && (
+                <Dropdown
+                  value={activeCategory}
+                  onChange={setCategory}
+                  options={byCategory.map(c => ({ value: c.category, label: titleCase(c.category) }))}
+                />
+              )
+            }>most worn by category</SectionLabel>
+            {activeCategoryData && (
+              <>
+                <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.45)', marginTop: 4, marginBottom: 8 }}>
+                  {activeCategoryData.count} outfits logged in {activeCategoryData.category}
+                </div>
+                <div style={{ borderTop: RULE }}>
+                  {activeCategoryData.topCombos.map((combo, i) => (
+                    <button
+                      key={combo.item_ids.join(',')}
+                      onClick={() => navigate(`/outfits/${combo.outfitId}`)}
+                      style={{
+                        width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
+                        display: 'flex', gap: 12, alignItems: 'center',
+                        padding: '12px 0', borderBottom: RULE,
+                      }}
+                    >
+                      <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>0{i + 1}</span>
+                      <OutfitCollage itemIds={combo.item_ids} items={items} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK, letterSpacing: '-0.005em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {outfitTitle(combo.item_ids, items, 'outfit')}
+                        </div>
+                        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 3 }}>
+                          worn {combo.count}× together
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
