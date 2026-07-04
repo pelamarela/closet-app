@@ -193,16 +193,18 @@ export default function HomePage() {
             onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
             style={{
               width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', gap: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
             }}
           >
-            <ItemCollage
-              items={todayOutfit.item_ids
-                .map(id => items.find(i => i.id === id))
-                .filter((i): i is NonNullable<typeof i> => !!i)}
-              aspectRatio="2/1"
-            />
-            <div style={{ minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <ItemCollage
+                items={todayOutfit.item_ids
+                  .map(id => items.find(i => i.id === id))
+                  .filter((i): i is NonNullable<typeof i> => !!i)}
+                aspectRatio="1/1"
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: UI, fontSize: 26, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
                 {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
               </div>
