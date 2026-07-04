@@ -11,6 +11,7 @@ export type CollageItem = {
 type Props = {
   items: CollageItem[]
   aspectRatio?: string
+  fill?: boolean
 }
 
 const SMALL_CAT = new Set(['shoes', 'accessory'])
@@ -27,7 +28,7 @@ function Cell({ item, pos = 'center', style }: { item: CollageItem; pos?: string
   )
 }
 
-export default function ItemCollage({ items, aspectRatio = '5/4' }: Props) {
+export default function ItemCollage({ items, aspectRatio = '5/4', fill = false }: Props) {
   const main = items.filter(i => !SMALL_CAT.has(i.category))
   const small = items.filter(i => SMALL_CAT.has(i.category))
   const m = main.length, s = small.length, total = m + s
@@ -75,7 +76,10 @@ export default function ItemCollage({ items, aspectRatio = '5/4' }: Props) {
   }
 
   return (
-    <div style={{ width: '100%', aspectRatio, border: RULE, borderRadius: 3, overflow: 'hidden' }}>
+    <div style={{
+      width: '100%', border: RULE, borderRadius: 3, overflow: 'hidden',
+      ...(fill ? { height: '100%' } : { aspectRatio }),
+    }}>
       {renderInner()}
     </div>
   )

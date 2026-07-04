@@ -103,7 +103,7 @@ export default function HomePage() {
           onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
           style={{
             width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 16,
+            display: 'flex', alignItems: isDesktop ? 'stretch' : 'center', gap: 16,
           }}
         >
           <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
@@ -112,9 +112,15 @@ export default function HomePage() {
                 .map(id => items.find(i => i.id === id))
                 .filter((i): i is NonNullable<typeof i> => !!i)}
               aspectRatio="1/1"
+              fill={isDesktop}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
+            {todayOutfit.occasion && (
+              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                {todayOutfit.occasion}
+              </div>
+            )}
             <div style={{ fontFamily: UI, fontSize: 26, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
               {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
             </div>
@@ -129,6 +135,99 @@ export default function HomePage() {
         </div>
       )}
     </>
+  )
+
+  const TodaysPickBlock = !loading && !todayOutfit && items.length > 0 ? (
+    <div style={{ border: RULE, borderRadius: 4, padding: 16 }}>
+      {!suggestion ? (
+        <>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            today's pick
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, color: INK, marginTop: 6, letterSpacing: '-0.01em' }}>
+            What should you wear{weather ? ` at ${weather.temp_c}°` : ''}?
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>
+            based on your "{topOccasion}" days
+          </div>
+          {suggestError && (
+            <div style={{ fontFamily: MONO, fontSize: 9.5, color: ACCENT, marginTop: 8 }}>{suggestError}</div>
+          )}
+          <div style={{ marginTop: 12 }}>
+            <UButton full icon="spark" disabled={suggestLoading || !weather} onClick={handleSuggestToday}>
+              {suggestLoading ? 'Thinking…' : 'Suggest an outfit'}
+            </UButton>
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            today's pick · {suggestOccasion}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <ItemCollage
+              items={suggestion.item_ids
+                .map(id => items.find(i => i.id === id))
+                .filter((i): i is NonNullable<typeof i> => !!i)}
+              aspectRatio="16/7"
+            />
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 10, fontStyle: 'italic' }}>
+            "{suggestion.reasoning}"
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <LogOutfitButton
+              style={{ flex: 1.6 }}
+              onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
+            >
+              Log this outfit
+            </LogOutfitButton>
+            <UButton
+              variant="ghost"
+              style={{ flex: 1 }}
+              onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
+            >
+              More
+            </UButton>
+          </div>
+        </>
+      )}
+    </div>
+  ) : null
+
+  const WeatherStatsBlock = (
+    <div style={{ border: RULE, borderRadius: 4, display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+      <div style={{ padding: 14, borderRight: RULE }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>weather</div>
+        {weather ? (
+          <>
+            <div style={{ fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.02em', marginTop: 6, lineHeight: 1 }}>
+              {weather.temp_c}°
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
+              {weather.conditions}
+            </div>
+          </>
+        ) : (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 6 }}>—</div>
+        )}
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>this month</div>
+        <div style={{
+          fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.02em', marginTop: 6, lineHeight: 1,
+          display: 'flex', alignItems: 'baseline', gap: 6,
+        }}>
+          {monthOutfits.length}
+          <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>outfits</span>
+        </div>
+        {prevMonthCount > 0 && (
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
+            {monthDelta >= 0 ? '+' : ''}{monthDelta} vs last month
+          </div>
+        )}
+      </div>
+    </div>
   )
 
   const RecentBlock = recent.length > 0 ? (
@@ -257,116 +356,23 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero (+ Recent alongside it on desktop, 70/30) */}
+      {/* Today hero, today's pick, weather/stats on the left; Recent flows independently on the right (desktop) */}
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: 32, margin: '24px 20px 0', alignItems: 'start' }}>
-          <div>{TodayHeroBlock}</div>
-          {RecentBlock && <div>{RecentBlock}</div>}
+          <div>
+            {TodayHeroBlock}
+            {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
+            <div style={{ marginTop: 28 }}>{WeatherStatsBlock}</div>
+          </div>
+          <div>{RecentBlock}</div>
         </div>
       ) : (
-        <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
-      )}
-
-      {/* Today's pick — AI suggestion widget */}
-      {!loading && !todayOutfit && items.length > 0 && (
-        <div style={{ margin: '20px 20px 0', border: RULE, borderRadius: 4, padding: 16 }}>
-          {!suggestion ? (
-            <>
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                today's pick
-              </div>
-              <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 500, color: INK, marginTop: 6, letterSpacing: '-0.01em' }}>
-                What should you wear{weather ? ` at ${weather.temp_c}°` : ''}?
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>
-                based on your "{topOccasion}" days
-              </div>
-              {suggestError && (
-                <div style={{ fontFamily: MONO, fontSize: 9.5, color: ACCENT, marginTop: 8 }}>{suggestError}</div>
-              )}
-              <div style={{ marginTop: 12 }}>
-                <UButton full icon="spark" disabled={suggestLoading || !weather} onClick={handleSuggestToday}>
-                  {suggestLoading ? 'Thinking…' : 'Suggest an outfit'}
-                </UButton>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                today's pick · {suggestOccasion}
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <ItemCollage
-                  items={suggestion.item_ids
-                    .map(id => items.find(i => i.id === id))
-                    .filter((i): i is NonNullable<typeof i> => !!i)}
-                  aspectRatio="16/7"
-                />
-              </div>
-              <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 10, fontStyle: 'italic' }}>
-                "{suggestion.reasoning}"
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <LogOutfitButton
-                  style={{ flex: 1.6 }}
-                  onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
-                >
-                  Log this outfit
-                </LogOutfitButton>
-                <UButton
-                  variant="ghost"
-                  style={{ flex: 1 }}
-                  onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
-                >
-                  More
-                </UButton>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Weather + stats */}
-      <div style={{
-        margin: '28px 20px 0',
-        border: RULE, borderRadius: 4,
-        display: 'grid', gridTemplateColumns: '1fr 1fr',
-      }}>
-        <div style={{ padding: 14, borderRight: RULE }}>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>weather</div>
-          {weather ? (
-            <>
-              <div style={{ fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.02em', marginTop: 6, lineHeight: 1 }}>
-                {weather.temp_c}°
-              </div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
-                {weather.conditions}
-              </div>
-            </>
-          ) : (
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 6 }}>—</div>
-          )}
-        </div>
-        <div style={{ padding: 14 }}>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>this month</div>
-          <div style={{
-            fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.02em', marginTop: 6, lineHeight: 1,
-            display: 'flex', alignItems: 'baseline', gap: 6,
-          }}>
-            {monthOutfits.length}
-            <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>outfits</span>
-          </div>
-          {prevMonthCount > 0 && (
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
-              {monthDelta >= 0 ? '+' : ''}{monthDelta} vs last month
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent log — shown here on mobile; alongside Today hero on desktop */}
-      {!isDesktop && RecentBlock && (
-        <div style={{ padding: '24px 20px 0' }}>{RecentBlock}</div>
+        <>
+          <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
+          {TodaysPickBlock && <div style={{ margin: '20px 20px 0' }}>{TodaysPickBlock}</div>}
+          <div style={{ margin: '28px 20px 0' }}>{WeatherStatsBlock}</div>
+          {RecentBlock && <div style={{ padding: '24px 20px 0' }}>{RecentBlock}</div>}
+        </>
       )}
 
       <FixedBar><QuickActions /></FixedBar>
