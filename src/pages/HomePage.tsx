@@ -119,7 +119,7 @@ export default function HomePage() {
                 items={todayOutfit.item_ids
                   .map(id => items.find(i => i.id === id))
                   .filter((i): i is NonNullable<typeof i> => !!i)}
-                aspectRatio="3/4"
+                aspectRatio="1/1"
               />
             </div>
             <div style={{ minWidth: 0 }}>
