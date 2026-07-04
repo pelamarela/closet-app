@@ -36,6 +36,7 @@ ${outfitSummaries}`,
     }],
   })
 
-  const profile = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+  const textBlock = message.content.find(b => b.type === 'text')
+  const profile = textBlock ? textBlock.text.trim() : ''
   return res.json({ profile })
 }

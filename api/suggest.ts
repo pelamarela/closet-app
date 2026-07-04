@@ -141,7 +141,8 @@ Respond with JSON only, no markdown fences:
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+  const textBlock = message.content.find(b => b.type === 'text')
+  const raw = textBlock ? textBlock.text : ''
   const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
   let suggestions: Suggestion[] = []

@@ -81,6 +81,7 @@ Rules:
     const response = await client.messages.create({
       model: 'claude-sonnet-5',
       max_tokens: 1024,
+      thinking: { type: 'disabled' },
       messages: [{
         role: 'user',
         content: [
@@ -97,7 +98,8 @@ Rules:
       }],
     })
 
-    const raw = response.content[0].type === 'text' ? response.content[0].text.trim() : '{}'
+    const textBlock = response.content.find(b => b.type === 'text')
+    const raw = textBlock ? textBlock.text.trim() : '{}'
     const clean = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed: AnalysisResult = JSON.parse(clean)
 

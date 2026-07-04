@@ -51,7 +51,8 @@ Use "outerwear" for jackets and coats.`,
       }],
     })
 
-    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : '{}'
+    const textBlock = response.content.find(b => b.type === 'text')
+    const text = textBlock ? textBlock.text.trim() : '{}'
     // Strip markdown code fences if Claude adds them
     const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed = JSON.parse(clean)
