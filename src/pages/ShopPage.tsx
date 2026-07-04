@@ -51,13 +51,21 @@ export default function ShopPage() {
 
   const itemMap = new Map(items.map(i => [i.id, i]))
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) { setError('Please upload an image file.'); return }
-    setImageFile(file)
     setError(null)
-    const reader = new FileReader()
-    reader.onload = e => setImagePreview(e.target?.result as string)
-    reader.readAsDataURL(file)
+    try {
+      // Normalize to JPEG client-side — phone photos (HEIC/HEIF etc.) aren't in
+      // Anthropic's supported image types and fail with an opaque API error.
+      const { compressImage } = await import('../lib/imageUtils')
+      const compressed = await compressImage(file)
+      setImageFile(compressed)
+      const reader = new FileReader()
+      reader.onload = e => setImagePreview(e.target?.result as string)
+      reader.readAsDataURL(compressed)
+    } catch {
+      setError('Could not process this image. Try a different photo.')
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
