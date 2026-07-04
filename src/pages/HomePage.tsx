@@ -359,9 +359,9 @@ export default function HomePage() {
 
       {/* Today hero + Recent — one aligned row on desktop, shared row height */}
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '70% 30%', gap: 32, margin: '24px 20px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0' }}>
           <div>{TodayHeroBlock}</div>
-          <div style={{ paddingRight: 16 }}>{RecentBlock}</div>
+          <div>{RecentBlock}</div>
         </div>
       ) : (
         <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
