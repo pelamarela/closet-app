@@ -111,22 +111,20 @@ export default function HomePage() {
             onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
             style={{
               width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 14,
+              display: 'flex', flexDirection: 'column', gap: 12,
             }}
           >
-            <div style={{ width: 64, flexShrink: 0 }}>
-              <ItemCollage
-                items={todayOutfit.item_ids
-                  .map(id => items.find(i => i.id === id))
-                  .filter((i): i is NonNullable<typeof i> => !!i)}
-                aspectRatio="1/1"
-              />
-            </div>
+            <ItemCollage
+              items={todayOutfit.item_ids
+                .map(id => items.find(i => i.id === id))
+                .filter((i): i is NonNullable<typeof i> => !!i)}
+              aspectRatio="2/1"
+            />
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: UI, fontSize: 28, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
+              <div style={{ fontFamily: UI, fontSize: 26, lineHeight: 1.05, fontWeight: 500, letterSpacing: '-0.025em' }}>
                 {outfitTitle(todayOutfit.item_ids, items, todayOutfit.occasion || 'Outfit logged.')}
               </div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 6 }}>
                 {todayOutfit.item_ids.length} pieces · tap to view ›
               </div>
             </div>
@@ -270,13 +268,89 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Empty state CTA */}
-      {!loading && items.length === 0 && (
-        <div style={{ padding: '32px 20px 0', textAlign: 'center' }}>
-          <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>
+      {/* Onboarding checklist — fades once wardrobe + logging history are established */}
+      {!loading && (items.length === 0 || outfits.length < 5) && (
+        <div style={{ padding: '32px 20px 0' }}>
+          <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
             // start here
           </div>
-          <AddItemButton>Add your first item</AddItemButton>
+          <div style={{ fontFamily: UI, fontSize: 20, fontWeight: 500, letterSpacing: '-0.02em', marginBottom: 16 }}>
+            {items.length === 0 ? 'Your closet is empty.' : "Let's get you dialed in."}
+          </div>
+
+          <div style={{ borderTop: RULE }}>
+            {/* Step 1 — upload pieces */}
+            <div style={{ padding: '14px 0', borderBottom: RULE, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 20, height: 20, flexShrink: 0, borderRadius: '50%',
+                border: items.length > 0 ? 'none' : '1px solid rgba(0,0,0,0.25)',
+                background: items.length > 0 ? INK : 'none',
+                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: MONO, fontSize: 9.5,
+              }}>
+                {items.length > 0 ? <Icon name="check" size={11} stroke={2.2} /> : '01'}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', color: INK }}>
+                  Upload your pieces
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 3 }}>
+                  {items.length > 0 ? `${items.length} added · the more you add, the better suggestions get` : 'The more you add, the better suggestions get'}
+                </div>
+                {items.length === 0 && (
+                  <div style={{ marginTop: 10 }}><AddItemButton>Add your first item</AddItemButton></div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 2 — log outfits */}
+            <div style={{ padding: '14px 0', borderBottom: RULE, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 20, height: 20, flexShrink: 0, borderRadius: '50%',
+                border: outfits.length >= 5 ? 'none' : '1px solid rgba(0,0,0,0.25)',
+                background: outfits.length >= 5 ? INK : 'none',
+                color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: MONO, fontSize: 9.5,
+              }}>
+                {outfits.length >= 5 ? <Icon name="check" size={11} stroke={2.2} /> : '02'}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', color: INK }}>
+                  Log a few outfits
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 3 }}>
+                  {outfits.length}/5 logged · at least 5–10 for accurate suggestions
+                </div>
+                {items.length > 0 && outfits.length < 5 && (
+                  <div style={{ marginTop: 10 }}>
+                    <LogOutfitButton>Log an outfit</LogOutfitButton>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 3 — try suggest/shop */}
+            <div style={{ padding: '14px 0', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 20, height: 20, flexShrink: 0, borderRadius: '50%',
+                border: '1px solid rgba(0,0,0,0.25)',
+                color: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: MONO, fontSize: 9.5,
+              }}>03</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', color: INK }}>
+                  Try Suggest or Shop
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 3 }}>
+                  See what the AI puts together once you've got data to work with
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <UButton variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/suggest')}>Suggest</UButton>
+                  <UButton variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/shop')}>Shop</UButton>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
