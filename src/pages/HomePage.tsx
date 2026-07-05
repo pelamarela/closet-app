@@ -98,7 +98,7 @@ export default function HomePage() {
   }
 
   const TodayHeroBlock = (
-    <div style={{ display: 'flex', flexDirection: 'column', height: isDesktop ? '100%' : undefined }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: isDesktop && todayOutfit ? '100%' : undefined }}>
       <SectionLabel>today</SectionLabel>
       {loading ? (
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
