@@ -169,32 +169,65 @@ export default function HomePage() {
           <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             today's pick · {suggestOccasion}
           </div>
-          <div style={{ marginTop: 10 }}>
-            <ItemCollage
-              items={suggestion.item_ids
-                .map(id => items.find(i => i.id === id))
-                .filter((i): i is NonNullable<typeof i> => !!i)}
-              aspectRatio="16/7"
-            />
+          <div style={{
+            marginTop: 10, display: 'flex',
+            alignItems: isDesktop ? 'stretch' : undefined,
+            gap: isDesktop ? 20 : 0,
+          }}>
+            <div style={{ flex: isDesktop ? '0 0 25%' : 1, minWidth: 0, position: isDesktop ? 'relative' : undefined }}>
+              <ItemCollage
+                items={suggestion.item_ids
+                  .map(id => items.find(i => i.id === id))
+                  .filter((i): i is NonNullable<typeof i> => !!i)}
+                aspectRatio="16/7"
+                fill={isDesktop}
+              />
+            </div>
+            {isDesktop && (
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', fontStyle: 'italic' }}>
+                  "{suggestion.reasoning}"
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <LogOutfitButton
+                    style={{ flex: 1.6 }}
+                    onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
+                  >
+                    Log this outfit
+                  </LogOutfitButton>
+                  <UButton
+                    variant="ghost"
+                    style={{ flex: 1 }}
+                    onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
+                  >
+                    More
+                  </UButton>
+                </div>
+              </div>
+            )}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 10, fontStyle: 'italic' }}>
-            "{suggestion.reasoning}"
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <LogOutfitButton
-              style={{ flex: 1.6 }}
-              onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
-            >
-              Log this outfit
-            </LogOutfitButton>
-            <UButton
-              variant="ghost"
-              style={{ flex: 1 }}
-              onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
-            >
-              More
-            </UButton>
-          </div>
+          {!isDesktop && (
+            <>
+              <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', marginTop: 10, fontStyle: 'italic' }}>
+                "{suggestion.reasoning}"
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <LogOutfitButton
+                  style={{ flex: 1.6 }}
+                  onClick={() => navigate('/outfits/new', { state: { preselectedIds: suggestion.item_ids, occasion: suggestOccasion ?? '', date: today } })}
+                >
+                  Log this outfit
+                </LogOutfitButton>
+                <UButton
+                  variant="ghost"
+                  style={{ flex: 1 }}
+                  onClick={() => navigate('/suggest', { state: { occasion: suggestOccasion ?? '' } })}
+                >
+                  More
+                </UButton>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
