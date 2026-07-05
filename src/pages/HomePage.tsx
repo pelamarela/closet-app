@@ -171,20 +171,19 @@ export default function HomePage() {
           </div>
           <div style={{
             marginTop: 10, display: 'flex',
-            alignItems: isDesktop ? 'stretch' : undefined,
+            alignItems: isDesktop ? 'flex-start' : undefined,
             gap: isDesktop ? 20 : 0,
           }}>
-            <div style={{ flex: isDesktop ? '0 0 25%' : 1, minWidth: 0, position: isDesktop ? 'relative' : undefined }}>
+            <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0 }}>
               <ItemCollage
                 items={suggestion.item_ids
                   .map(id => items.find(i => i.id === id))
                   .filter((i): i is NonNullable<typeof i> => !!i)}
-                aspectRatio="16/7"
-                fill={isDesktop}
+                aspectRatio={isDesktop ? '1/1' : '16/7'}
               />
             </div>
             {isDesktop && (
-              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontFamily: UI, fontSize: 12.5, color: 'rgba(0,0,0,0.65)', fontStyle: 'italic' }}>
                   "{suggestion.reasoning}"
                 </div>
