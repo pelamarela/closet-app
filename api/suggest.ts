@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
-import { colorSeasonBlock } from './_lib/colorSeasons'
+import { colorSeasonBlock } from './lib/colorSeasons'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -168,12 +168,18 @@ Respond with JSON only, no markdown fences:
     additionalProperties: false,
   }
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
-    output_config: { format: { type: 'json_schema', schema: responseSchema } },
-    messages: [{ role: 'user', content: prompt }],
-  })
+  let message
+  try {
+    message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      output_config: { format: { type: 'json_schema', schema: responseSchema } },
+      messages: [{ role: 'user', content: prompt }],
+    })
+  } catch (err) {
+    console.error('suggest error:', err)
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'Suggestion failed' })
+  }
 
   const textBlock = message.content.find(b => b.type === 'text')
   const raw = textBlock ? textBlock.text : ''
