@@ -393,18 +393,21 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero + Recent — one aligned row on desktop, shared row height */}
+      {/* Today hero (+ today's pick below it) + Recent — one aligned row on desktop, shared row height */}
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0' }}>
-          <div>{TodayHeroBlock}</div>
+          <div>
+            {TodayHeroBlock}
+            {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
+          </div>
           <div>{RecentBlock}</div>
         </div>
       ) : (
-        <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
+        <>
+          <div style={{ padding: '24px 20px 0' }}>{TodayHeroBlock}</div>
+          {TodaysPickBlock && <div style={{ margin: '20px 20px 0' }}>{TodaysPickBlock}</div>}
+        </>
       )}
-
-      {/* Today's pick — full width */}
-      {TodaysPickBlock && <div style={{ margin: '20px 20px 0' }}>{TodaysPickBlock}</div>}
 
       {/* Weather + stats — full width */}
       <div style={{ margin: '28px 20px 0' }}>{WeatherStatsBlock}</div>
