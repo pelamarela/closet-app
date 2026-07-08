@@ -238,13 +238,13 @@ export default function LogOutfitPage() {
           {/* Left: item picker — scrolls independently */}
           <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             {ItemGrid}
-            {FragranceGrid}
           </div>
-          {/* Right: form fields + save — fully visible, no scroll needed */}
+          {/* Right: fragrance + form fields + save — fully visible, no scroll needed */}
           <div style={{ minWidth: 0, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em', marginBottom: 20 }}>
               {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
             </div>
+            {FragranceGrid}
             {FormFields}
             {SaveBar}
           </div>
