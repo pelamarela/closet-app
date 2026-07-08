@@ -4,7 +4,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE } from '../components/ui'
+import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BG } from '../components/ui'
 import Spinner from '../components/Spinner'
 import FixedBar from '../components/FixedBar'
 import OccasionPicker from '../components/OccasionPicker'
@@ -110,7 +110,7 @@ export default function LogOutfitPage() {
   )
 
   const FragranceGrid = fragranceItems.length > 0 ? (
-    <div style={{ flexShrink: 0, maxHeight: '30%', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}`, overflowY: 'auto' }}>
+    <div style={{ flexShrink: 0, maxHeight: '30%', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}`, overflowY: 'auto', background: BG }}>
       <SelectableItemGrid
         items={fragranceItems}
         selected={selectedIds}
@@ -239,8 +239,8 @@ export default function LogOutfitPage() {
           alignItems: 'start',
         }}>
           {/* Left: item picker (scrolls within its own capped area) + fragrance (always visible below) */}
-          <div style={{ minWidth: 0, minHeight: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <div style={{ minWidth: 0, minHeight: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column', background: BG }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: BG }}>
               {ItemGrid}
             </div>
             {FragranceGrid}
