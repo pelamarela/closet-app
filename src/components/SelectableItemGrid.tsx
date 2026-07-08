@@ -1,5 +1,5 @@
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { SectionLabel, Icon, MONO, INK, RULE } from './ui'
+import { SectionLabel, Icon, MONO, INK, RULE, BG } from './ui'
 import { catLabel } from '../lib/categoryLabel'
 import type { Category } from '../types/database'
 
@@ -37,22 +37,24 @@ export default function SelectableItemGrid({
 
   return (
     <>
-      <SectionLabel right={selected.size > 0 ? `${selected.size} selected` : undefined}>{label}</SectionLabel>
-      {!hideFilters && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-          {CATS.map(cat => (
-            <button key={cat} onClick={() => onFilterCat?.(cat)} style={{
-              fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
-              border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
-              background: filterCat === cat ? INK : 'transparent',
-              color: filterCat === cat ? '#fff' : INK,
-              borderRadius: 2, cursor: 'pointer',
-            }}>
-              {cat === 'all' ? 'all' : catLabel(cat)}
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ position: 'sticky', top: 0, zIndex: 1, background: BG, paddingBottom: hideFilters ? 8 : 0 }}>
+        <SectionLabel right={selected.size > 0 ? `${selected.size} selected` : undefined}>{label}</SectionLabel>
+        {!hideFilters && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+            {CATS.map(cat => (
+              <button key={cat} onClick={() => onFilterCat?.(cat)} style={{
+                fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
+                border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
+                background: filterCat === cat ? INK : 'transparent',
+                color: filterCat === cat ? '#fff' : INK,
+                borderRadius: 2, cursor: 'pointer',
+              }}>
+                {cat === 'all' ? 'all' : catLabel(cat)}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       <div style={scrollable && !isDesktop ? { maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' } : {}}>
         <div style={{
           display: 'grid',
