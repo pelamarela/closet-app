@@ -118,6 +118,7 @@ export default function LogOutfitPage() {
         initialSelected={initialSelectedIds}
         hideFilters
         label="fragrance"
+        scrollable
       />
     </div>
   ) : null
@@ -183,28 +184,30 @@ export default function LogOutfitPage() {
         />
       </div>
 
-      {/* Photo */}
-      <div style={{ marginBottom: 20 }}>
-        <SectionLabel right="optional">photo</SectionLabel>
-        <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)',
-            background: 'none', cursor: 'pointer', padding: '28px 0',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-            fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)',
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-          }}
-        >
-          {imageFile ? (
-            <span style={{ color: INK, textTransform: 'none', letterSpacing: 0 }}>{imageFile.name} ✓</span>
-          ) : (
-            <><Icon name="camera" size={18} stroke={1.4} />tap to add photo</>
-          )}
-        </button>
-      </div>
     </>
+  )
+
+  const PhotoField = (
+    <div style={{ marginBottom: 20 }}>
+      <SectionLabel right="optional">photo</SectionLabel>
+      <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        style={{
+          width: '100%', border: '1.5px dashed rgba(0,0,0,0.22)',
+          background: 'none', cursor: 'pointer', padding: '28px 0',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+          fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)',
+          textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}
+      >
+        {imageFile ? (
+          <span style={{ color: INK, textTransform: 'none', letterSpacing: 0 }}>{imageFile.name} ✓</span>
+        ) : (
+          <><Icon name="camera" size={18} stroke={1.4} />tap to add photo</>
+        )}
+      </button>
+    </div>
   )
 
   const SaveBar = (
@@ -248,6 +251,7 @@ export default function LogOutfitPage() {
               {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
             </div>
             {FormFields}
+            {PhotoField}
             {SaveBar}
           </div>
         </div>
@@ -258,8 +262,8 @@ export default function LogOutfitPage() {
               {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
             </div>
           </div>
-          <div style={{ padding: '20px 20px 0' }}>{ItemGrid}{FragranceGrid}</div>
-          <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
+          <div style={{ padding: '20px 20px 0' }}>{ItemGrid}</div>
+          <div style={{ padding: '20px 20px 0' }}>{FormFields}{FragranceGrid}{PhotoField}</div>
           <FixedBar column>{SaveBar}</FixedBar>
         </>
       )}
