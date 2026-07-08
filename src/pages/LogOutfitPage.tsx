@@ -110,7 +110,7 @@ export default function LogOutfitPage() {
   )
 
   const FragranceGrid = fragranceItems.length > 0 ? (
-    <div style={{ flexShrink: 0, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}` }}>
+    <div style={{ flexShrink: 0, maxHeight: '30%', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}`, overflowY: 'auto' }}>
       <SelectableItemGrid
         items={fragranceItems}
         selected={selectedIds}
