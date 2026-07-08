@@ -37,7 +37,7 @@ export default function SelectableItemGrid({
 
   return (
     <>
-      <div style={{ position: 'sticky', top: 0, zIndex: 1, background: BG, paddingBottom: hideFilters ? 8 : 0 }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 1, background: BG, paddingBottom: hideFilters ? 12 : 0 }}>
         <SectionLabel right={selected.size > 0 ? `${selected.size} selected` : undefined}>{label}</SectionLabel>
         {!hideFilters && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
