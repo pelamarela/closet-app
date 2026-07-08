@@ -15,19 +15,21 @@ type Props = {
   selected: Set<string>
   onToggle: (id: string) => void
   initialSelected?: Set<string>
-  filterCat: string
-  onFilterCat: (cat: string) => void
+  filterCat?: string
+  onFilterCat?: (cat: string) => void
   scrollable?: boolean
+  hideFilters?: boolean
+  label?: string
 }
 
 const CATS = ['all', 'top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'] as const
 
 export default function SelectableItemGrid({
-  items, selected, onToggle, initialSelected, filterCat, onFilterCat, scrollable,
+  items, selected, onToggle, initialSelected, filterCat, onFilterCat, scrollable, hideFilters, label = 'items',
 }: Props) {
   const { isDesktop } = useBreakpoint()
   const filtered = items
-    .filter(item => filterCat === 'all' || item.category === (filterCat as Category))
+    .filter(item => hideFilters || filterCat === 'all' || item.category === (filterCat as Category))
     .sort((a, b) => {
       if (!initialSelected) return 0
       return Number(!initialSelected.has(a.id)) - Number(!initialSelected.has(b.id))
@@ -35,20 +37,22 @@ export default function SelectableItemGrid({
 
   return (
     <>
-      <SectionLabel right={selected.size > 0 ? `${selected.size} selected` : undefined}>items</SectionLabel>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-        {CATS.map(cat => (
-          <button key={cat} onClick={() => onFilterCat(cat)} style={{
-            fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
-            border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
-            background: filterCat === cat ? INK : 'transparent',
-            color: filterCat === cat ? '#fff' : INK,
-            borderRadius: 2, cursor: 'pointer',
-          }}>
-            {cat === 'all' ? 'all' : catLabel(cat)}
-          </button>
-        ))}
-      </div>
+      <SectionLabel right={selected.size > 0 ? `${selected.size} selected` : undefined}>{label}</SectionLabel>
+      {!hideFilters && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {CATS.map(cat => (
+            <button key={cat} onClick={() => onFilterCat?.(cat)} style={{
+              fontFamily: MONO, fontSize: 9.5, letterSpacing: '0.04em', padding: '3px 8px',
+              border: `1px solid ${filterCat === cat ? INK : 'rgba(0,0,0,0.15)'}`,
+              background: filterCat === cat ? INK : 'transparent',
+              color: filterCat === cat ? '#fff' : INK,
+              borderRadius: 2, cursor: 'pointer',
+            }}>
+              {cat === 'all' ? 'all' : catLabel(cat)}
+            </button>
+          ))}
+        </div>
+      )}
       <div style={scrollable && !isDesktop ? { maxHeight: '38vh', overflowY: 'auto', overflowX: 'hidden' } : {}}>
         <div style={{
           display: 'grid',

@@ -110,7 +110,7 @@ export default function SuggestPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           occasion: occasion.trim(), weather,
-          items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+          items: items.filter(i => i.category !== 'fragrance').map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
             ({ id, name, category, subcategory, color, warmth, formality, sport })),
           style_profile: profileData?.description ?? '',
           color_season: profileData?.color_season ?? null,
@@ -412,7 +412,7 @@ export default function SuggestPage() {
       </div>
       <div style={isDesktop ? {} : { maxHeight: 260, overflowY: 'auto', overflowX: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isDesktop ? 8 : 6}, minmax(0, 1fr))`, gap: 6 }}>
-          {items.filter(item => anchorFilterCat === 'all' || item.category === anchorFilterCat).map(item => {
+          {items.filter(item => item.category !== 'fragrance' && (anchorFilterCat === 'all' || item.category === anchorFilterCat)).map(item => {
             const selected = anchorItemId === item.id
             return (
               <button

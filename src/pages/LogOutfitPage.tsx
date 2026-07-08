@@ -86,15 +86,18 @@ export default function LogOutfitPage() {
 
   // ── Shared pieces ────────────────────────────────────────────────────────────
 
+  const clothingItems = items.filter(i => i.category !== 'fragrance')
+  const fragranceItems = items.filter(i => i.category === 'fragrance')
+
   const ItemGrid = (
     <div>
       {itemsLoading ? (
         <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>loading…</div>
-      ) : items.length === 0 ? (
+      ) : clothingItems.length === 0 ? (
         <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', padding: '16px 0' }}>no items in wardrobe yet</div>
       ) : (
         <SelectableItemGrid
-          items={items}
+          items={clothingItems}
           selected={selectedIds}
           onToggle={toggleItem}
           initialSelected={initialSelectedIds}
@@ -105,6 +108,19 @@ export default function LogOutfitPage() {
       )}
     </div>
   )
+
+  const FragranceGrid = fragranceItems.length > 0 ? (
+    <div style={{ marginTop: 20 }}>
+      <SelectableItemGrid
+        items={fragranceItems}
+        selected={selectedIds}
+        onToggle={toggleItem}
+        initialSelected={initialSelectedIds}
+        hideFilters
+        label="fragrance"
+      />
+    </div>
+  ) : null
 
   const FormFields = (
     <>
@@ -222,6 +238,7 @@ export default function LogOutfitPage() {
           {/* Left: item picker — scrolls independently */}
           <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             {ItemGrid}
+            {FragranceGrid}
           </div>
           {/* Right: form fields + save — fully visible, no scroll needed */}
           <div style={{ minWidth: 0, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
@@ -239,7 +256,7 @@ export default function LogOutfitPage() {
               {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
             </div>
           </div>
-          <div style={{ padding: '20px 20px 0' }}>{ItemGrid}</div>
+          <div style={{ padding: '20px 20px 0' }}>{ItemGrid}{FragranceGrid}</div>
           <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
           <FixedBar column>{SaveBar}</FixedBar>
         </>

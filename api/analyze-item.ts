@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     type: 'object',
     properties: {
       name: { type: 'string' },
-      category: { type: 'string', enum: ['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'] },
+      category: { type: 'string', enum: ['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory', 'fragrance'] },
       color: { type: 'string' },
       subcategory: { type: 'string' },
       warmth: { type: 'integer' },
@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             text: `Analyze this clothing item photo. Return ONLY a JSON object — no markdown, no explanation — with exactly these fields:
 {
   "name": "descriptive name, e.g. Black Linen Blazer or Adidas Samba White",
-  "category": "top | bottom | one-piece | outerwear | shoes | accessory",
+  "category": "top | bottom | one-piece | outerwear | shoes | accessory | fragrance",
   "color": "primary color in 1-2 words, lowercase",
   "subcategory": "specific type e.g. blazer/midi skirt/sneaker/tote/jumpsuit/co-ord (for one-piece: specify dress/jumpsuit/co-ord)",
   "warmth": 1-5,
@@ -62,7 +62,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 Warmth: 1=very light/summer, 3=mid-season, 5=very heavy/winter.
 Formality: 1=gym/casual, 3=smart casual, 5=black tie.
 Use "one-piece" for dresses, jumpsuits, co-ords, and matching sets.
-Use "outerwear" for jackets and coats.`,
+Use "outerwear" for jackets and coats.
+Use "fragrance" for perfumes, colognes, eau de parfum/toilette bottles.`,
           },
         ],
       }],

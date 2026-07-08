@@ -19,6 +19,7 @@ const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'outerwear',  label: 'otw' },
   { value: 'shoes',      label: 'shoe' },
   { value: 'accessory',  label: 'acc' },
+  { value: 'fragrance',  label: 'frag' },
 ]
 
 export default function WardrobePage() {

@@ -19,6 +19,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'outerwear', label: 'otw' },
   { value: 'shoes', label: 'shoe' },
   { value: 'accessory',  label: 'acc' },
+  { value: 'fragrance',  label: 'frag' },
 ]
 
 const EMPTY: ItemFormData = {
@@ -83,7 +84,7 @@ export default function ItemFormPage() {
   }
   const COLORS = new Set(['red','blue','black','white','green','brown','grey','gray','yellow','pink','purple','orange','beige','navy','cream','nude','camel','tan','ivory','khaki','olive','burgundy'])
   const parseColor = (name: string) => name.toLowerCase().split(' ').find(w => COLORS.has(w)) ?? ''
-  const VALID_CATS = new Set(['top','bottom','one-piece','outerwear','shoes','accessory'])
+  const VALID_CATS = new Set(['top','bottom','one-piece','outerwear','shoes','accessory','fragrance'])
   const toCategory = (raw: string): Category => VALID_CATS.has(raw) ? raw as Category : 'top'
 
   const analyzePhoto = async (file: File) => {
