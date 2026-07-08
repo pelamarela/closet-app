@@ -98,10 +98,13 @@ export default function OutfitDetailPage() {
   const d = new Date(dateStr + 'T00:00:00')
   const dow = ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]
 
+  const clothingItems = items.filter(i => i.category !== 'fragrance')
+  const fragranceItems = items.filter(i => i.category === 'fragrance')
+
   // ── Items collage ────────────────────────────────────────────────────────────
   const Collage = (
     <div style={{ position: 'relative' }}>
-      <ItemCollage items={items} />
+      <ItemCollage items={clothingItems} />
       {!outfitImageUrl && outfit.weather && (
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
           <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
@@ -140,10 +143,18 @@ export default function OutfitDetailPage() {
   // ── Pieces list ──────────────────────────────────────────────────────────────
   const PiecesList = items.length > 0 ? (
     <div style={{ marginTop: isDesktop ? 24 : 0 }}>
-      <SectionLabel>pieces ({items.length})</SectionLabel>
-      {items.map(item => (
+      <SectionLabel>pieces ({clothingItems.length})</SectionLabel>
+      {clothingItems.map(item => (
         <PieceRow key={item.id} item={item} right={`worn ${item.wearCount}×`} />
       ))}
+      {fragranceItems.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <SectionLabel>fragrance ({fragranceItems.length})</SectionLabel>
+          {fragranceItems.map(item => (
+            <PieceRow key={item.id} item={item} right={`worn ${item.wearCount}×`} />
+          ))}
+        </div>
+      )}
     </div>
   ) : null
 
