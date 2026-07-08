@@ -110,7 +110,7 @@ export default function LogOutfitPage() {
   )
 
   const FragranceGrid = fragranceItems.length > 0 ? (
-    <div style={{ marginTop: 20 }}>
+    <div style={{ flexShrink: 0, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${RULE}` }}>
       <SelectableItemGrid
         items={fragranceItems}
         selected={selectedIds}
@@ -235,16 +235,18 @@ export default function LogOutfitPage() {
           overflow: 'hidden',
           alignItems: 'start',
         }}>
-          {/* Left: item picker — scrolls independently */}
-          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
-            {ItemGrid}
+          {/* Left: item picker (scrolls within its own capped area) + fragrance (always visible below) */}
+          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              {ItemGrid}
+            </div>
+            {FragranceGrid}
           </div>
-          {/* Right: fragrance + form fields + save — fully visible, no scroll needed */}
+          {/* Right: form fields + save — fully visible, no scroll needed */}
           <div style={{ minWidth: 0, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em', marginBottom: 20 }}>
               {isEdit ? 'edit items · update context · save' : 'pick items · add context · save'}
             </div>
-            {FragranceGrid}
             {FormFields}
             {SaveBar}
           </div>
