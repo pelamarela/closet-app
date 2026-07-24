@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const { constants } = useConstants()
   const { isDesktop } = useBreakpoint()
   const [profile, setProfile] = useState<string | null>(null)
+  const [profileExpanded, setProfileExpanded] = useState(false)
 
   const initial = user?.email?.[0]?.toUpperCase() ?? '?'
   const email = user?.email ?? ''
@@ -24,7 +25,10 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!user) return
     supabase.from('style_profile').select('description').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data) setProfile(data.description) })
+      .then(({ data, error }) => {
+        if (error) { console.error('style_profile fetch failed:', error); return }
+        if (data) setProfile(data.description)
+      })
   }, [user])
 
   function NavRow({ label, value, onClick, last }: { label: string; value?: string; onClick: () => void; last?: boolean }) {
@@ -74,14 +78,31 @@ export default function SettingsPage() {
           edit ›
         </button>
       }>style profile</SectionLabel>
-      <TextBlock>
-        {profile
-          ? profile
-          : <span style={{ color: 'rgba(0,0,0,0.35)', fontStyle: 'italic' }}>No style profile yet — used by suggestions.</span>
-        }
-      </TextBlock>
+      <div style={{ position: 'relative' }}>
+        <TextBlock>
+          <div style={!profileExpanded ? { maxHeight: 78, overflow: 'hidden' } : undefined}>
+            {profile
+              ? profile
+              : <span style={{ color: 'rgba(0,0,0,0.35)', fontStyle: 'italic' }}>No style profile yet — used by suggestions.</span>
+            }
+          </div>
+        </TextBlock>
+        {profile && profile.length > 220 && !profileExpanded && (
+          <div style={{ position: 'absolute', bottom: 1, left: 1, right: 1, height: 32, background: 'linear-gradient(transparent, #fff)', pointerEvents: 'none' }} />
+        )}
+      </div>
       <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}>
-        <span>used by suggestions</span>
+        <span>
+          used by suggestions
+          {profile && profile.length > 220 && (
+            <button
+              onClick={() => setProfileExpanded(v => !v)}
+              style={{ background: 'none', border: 'none', padding: 0, marginLeft: 10, cursor: 'pointer', fontFamily: MONO, fontSize: 9, color: INK, textDecoration: 'underline' }}
+            >
+              {profileExpanded ? 'show less' : 'show more'}
+            </button>
+          )}
+        </span>
         {profile && <span>{profile.length} chars</span>}
       </div>
     </div>

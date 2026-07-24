@@ -27,6 +27,7 @@ export default function StyleProfileEditorPage() {
   const [colorSeason, setColorSeason] = useState<ColorSeason | null>(null)
   const [originalColorSeason, setOriginalColorSeason] = useState<ColorSeason | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const { items } = useItems()
@@ -37,7 +38,8 @@ export default function StyleProfileEditorPage() {
   useEffect(() => {
     if (!user) return
     supabase.from('style_profile').select('description, color_season').eq('user_id', user.id).single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { console.error('style_profile fetch failed:', error); return }
         if (data) {
           setText(data.description); setOriginal(data.description)
           setColorSeason(data.color_season); setOriginalColorSeason(data.color_season)
@@ -67,14 +69,15 @@ export default function StyleProfileEditorPage() {
 
   const save = async () => {
     if (!user) return
-    setSaving(true)
-    await supabase.from('style_profile').upsert(
+    setSaving(true); setSaveError(null)
+    const { error } = await supabase.from('style_profile').upsert(
       { user_id: user.id, description: text, color_season: colorSeason },
       { onConflict: 'user_id' }
     )
+    setSaving(false)
+    if (error) { console.error('style_profile save failed:', error); setSaveError(error.message); return }
     setOriginal(text)
     setOriginalColorSeason(colorSeason)
-    setSaving(false)
     navigate('/settings')
   }
 
@@ -200,6 +203,12 @@ export default function StyleProfileEditorPage() {
           <MonoTag accent>shop</MonoTag>
         </div>
       </div>
+
+      {saveError && (
+        <div style={{ padding: '14px 20px 0', fontFamily: MONO, fontSize: 9.5, color: ACCENT }}>
+          Save failed: {saveError}
+        </div>
+      )}
 
       {/* CTA */}
       <FixedBar zIndex={10}>
