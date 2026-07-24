@@ -10,13 +10,20 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError("Passwords don't match.")
+      return
+    }
+
+    setLoading(true)
 
     if (mode === 'signin') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -34,10 +41,10 @@ export default function LoginPage() {
         // Email confirmation is required — signUp() succeeds but doesn't return a
         // session until the user clicks the link in the confirmation email.
         setError('Account created — check your email to confirm it before signing in.')
-        setMode('signin')
+        setMode('signin'); setConfirmPassword('')
       } else {
         setError('Account created — you can now sign in.')
-        setMode('signin')
+        setMode('signin'); setConfirmPassword('')
       }
       setLoading(false)
     }
@@ -89,7 +96,7 @@ export default function LoginPage() {
           <button
             key={m}
             type="button"
-            onClick={() => { setMode(m); setError(null) }}
+            onClick={() => { setMode(m); setError(null); setConfirmPassword('') }}
             style={{
               flex: 1, height: 36,
               background: mode === m ? INK : 'transparent',
@@ -149,6 +156,32 @@ export default function LoginPage() {
           )}
         </div>
 
+        {/* Confirm password — signup only */}
+        {mode === 'signup' && (
+          <div style={{ padding: '12px 0', borderBottom: RULE, marginBottom: 18 }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              confirm password <span style={{ color: ACCENT }}>*</span>
+            </div>
+            <input
+              type="password"
+              required
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              style={{
+                width: '100%', background: 'none', border: 'none', outline: 'none',
+                fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK,
+                marginTop: 6, padding: 0,
+              }}
+            />
+            {confirmPassword.length > 0 && password !== confirmPassword && (
+              <div style={{ fontFamily: MONO, fontSize: 9, color: ACCENT, marginTop: 8 }}>
+                Passwords don't match.
+              </div>
+            )}
+          </div>
+        )}
+
         {error && (
           <div style={{
             fontFamily: MONO, fontSize: 10, marginBottom: 12,
@@ -160,7 +193,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (mode === 'signup' && password !== confirmPassword)}
           style={{
             width: '100%', height: 48, padding: '0 20px',
             background: INK, color: '#fff', border: 'none',
