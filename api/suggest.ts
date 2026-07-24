@@ -36,7 +36,11 @@ function warmthRange(tempC: number): [number, number] {
   return [1, 2]
 }
 
-function formalityRange(occasion: string): [number, number] | null {
+// Bootstrap default — only used until a user has logged enough outfits under a
+// given occasion for us to learn what that occasion actually means to *them*.
+// Keyword guesses are a poor proxy for that (e.g. "work" is casual for some people,
+// formal for others) so this must stay a fallback, never the primary signal.
+function genericFormalityRange(occasion: string): [number, number] | null {
   const o = occasion.toLowerCase()
   if (/casual|weekend|home|relax|sport|gym|errands/.test(o)) return [1, 2]
   if (/work|office|business|meeting|conference/.test(o))      return [3, 4]
@@ -51,6 +55,7 @@ type Item = {
   color?: string | null; warmth: number; formality: number; sport?: boolean
 }
 type RecentOutfit = { date: string; occasion?: string | null; item_names: string[] }
+type OccasionHistoryEntry = { date: string; item_names: string[] }
 type FeedbackEntry = { item_names: string[]; feedback: 'up' | 'down'; occasion?: string | null }
 type AnchorItem = { id: string; name: string; category: string; subcategory?: string | null; color?: string | null }
 type RequestBody = {
@@ -62,21 +67,107 @@ type RequestBody = {
   color_season?: string | null
   use_color_season?: boolean
   constants?: string[]
+  formality?: number | null
+  occasion_history?: OccasionHistoryEntry[]
 }
 type Suggestion = { item_ids: string[]; reasoning: string }
+
+// A user has logged "enough" outfits under this exact occasion for their own
+// history to outrank the generic keyword guess.
+const OCCASION_HISTORY_THRESHOLD = 3
+const FORMULA_THRESHOLD = 3
+
+function learnedFormalityRange(occasionHistory: OccasionHistoryEntry[], items: Item[]): [number, number] | null {
+  if (occasionHistory.length < OCCASION_HISTORY_THRESHOLD) return null
+  const formalityByName = new Map<string, number[]>()
+  for (const item of items) {
+    const key = item.name.trim().toLowerCase()
+    const arr = formalityByName.get(key) ?? []
+    arr.push(item.formality)
+    formalityByName.set(key, arr)
+  }
+  const samples: number[] = []
+  for (const entry of occasionHistory) {
+    for (const name of entry.item_names) {
+      const vals = formalityByName.get(name.trim().toLowerCase())
+      if (vals) samples.push(...vals)
+    }
+  }
+  if (!samples.length) return null
+  return [Math.max(1, Math.min(...samples) - 1), Math.min(5, Math.max(...samples) + 1)]
+}
+
+type FormalitySource = 'explicit' | 'learned' | 'generic' | 'none'
+
+function resolveFormalityRange(
+  occasion: string,
+  explicitFormality: number | null | undefined,
+  occasionHistory: OccasionHistoryEntry[],
+  items: Item[],
+): { range: [number, number] | null; source: FormalitySource } {
+  if (typeof explicitFormality === 'number') {
+    return { range: [Math.max(1, explicitFormality - 1), Math.min(5, explicitFormality + 1)], source: 'explicit' }
+  }
+  if (occasion) {
+    const learned = learnedFormalityRange(occasionHistory, items)
+    if (learned) return { range: learned, source: 'learned' }
+    const generic = genericFormalityRange(occasion)
+    if (generic) return { range: generic, source: 'generic' }
+  }
+  return { range: null, source: 'none' }
+}
+
+// Combinations the user already wears often and confidently for this occasion —
+// surfaced as a known fact instead of asking Claude to re-infer the pattern from
+// raw history on every call.
+function detectFormulas(feedback: FeedbackEntry[], occasion: string): { item_names: string[]; count: number }[] {
+  const occasionKey = occasion.trim().toLowerCase()
+  const groups = new Map<string, { item_names: string[]; count: number }>()
+  for (const f of feedback) {
+    if (f.feedback !== 'up' || !f.item_names.length) continue
+    if (occasionKey && (f.occasion ?? '').trim().toLowerCase() !== occasionKey) continue
+    const key = [...f.item_names].map(n => n.toLowerCase()).sort().join('||')
+    const g = groups.get(key) ?? { item_names: f.item_names, count: 0 }
+    g.count++
+    groups.set(key, g)
+  }
+  return [...groups.values()].filter(g => g.count >= FORMULA_THRESHOLD)
+}
+
+// Higher formality → longer no-repeat window (a repeated formal outfit is more
+// likely to be noticed); low/no formality signal → short window.
+function repeatWindowDays(range: [number, number] | null): number {
+  if (!range) return 14
+  const mid = (range[0] + range[1]) / 2
+  return Math.round(7 + mid * 7)
+}
+
+function findRepeat(occasionHistory: OccasionHistoryEntry[], candidateNames: string[], windowDays: number): string | null {
+  if (!occasionHistory.length || !candidateNames.length) return null
+  const cutoff = Date.now() - windowDays * 86400000
+  const candidateSet = new Set(candidateNames)
+  for (const entry of occasionHistory) {
+    const t = new Date(entry.date).getTime()
+    if (Number.isNaN(t) || t < cutoff) continue
+    const set = new Set(entry.item_names)
+    if (set.size === candidateSet.size && [...set].every(n => candidateSet.has(n))) return entry.date
+  }
+  return null
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const {
     occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item,
-    color_season, use_color_season, constants,
+    color_season, use_color_season, constants, formality, occasion_history,
   } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
+  const occasionHistory = occasion_history ?? []
   const [wMin, wMax] = warmthRange(weather.temp_c)
-  const fRange = formalityRange(occasion)
-  const isSportOccasion = /sport|gym|workout|fitness|exercise|running/.test(occasion.toLowerCase())
+  const { range: fRange, source: formalitySource } = resolveFormalityRange(occasion ?? '', formality, occasionHistory, items)
+  const isSportOccasion = /sport|gym|workout|fitness|exercise|running/.test((occasion ?? '').toLowerCase())
 
   const filtered = items.filter(item => {
     if (item.warmth < wMin || item.warmth > wMax) return false
@@ -142,12 +233,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nALWAYS-WORN PIECES (already part of every look — don't need to be chosen or replaced, but you may still add complementary wardrobe pieces on top): ${constants.join(', ')}\n`
     : ''
 
+  const formalityNote = formalitySource === 'learned'
+    ? `\nFORMALITY: Based on ${occasionHistory.length} outfits this person has actually logged for "${occasion}", that occasion sits at formality ${fRange![0]}–${fRange![1]} for them specifically — trust this over any generic assumption about what "${occasion}" is supposed to look like.\n`
+    : formalitySource === 'explicit'
+      ? `\nFORMALITY: The user explicitly asked for formality level ${formality} out of 5 for this request.\n`
+      : formalitySource === 'generic' && fRange
+        ? `\nFORMALITY: No logged history yet for "${occasion}" — using a general default range (${fRange[0]}–${fRange[1]}) as a starting point, not a fixed assumption.\n`
+        : ''
+
+  const formulas = detectFormulas(feedback_history ?? [], occasion ?? '')
+  const formulaBlock = formulas.length
+    ? `\nKNOWN FORMULA${formulas.length > 1 ? 'S' : ''} (combinations this person already wears often and confidently for this occasion — lead with one of these if the pieces are in the available list below):\n${formulas.map(f => `- ${f.item_names.join(', ')} (worn ${f.count}+ times, always thumbs up)`).join('\n')}\n`
+    : ''
+
+  const occasionHistoryBlock = occasion && occasionHistory.length
+    ? `\nPAST OUTFITS FOR "${occasion}":\n${occasionHistory.slice(0, 15).map(o => `${o.date}: ${o.item_names.join(', ')}`).join('\n')}\n`
+    : ''
+
+  const sparseBlock = pool.length < 5
+    ? `\nNote: only ${pool.length} wardrobe item(s) fit this occasion/weather/formality combination. If nothing here truly makes a good outfit, say so plainly in the reasoning and explain what's missing — don't force a mismatched combination just to fill the slot. Only use items from the list below; never suggest buying anything.\n`
+    : ''
+
   const prompt = `You are a personal stylist. Suggest 1–3 outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
 STYLE NOTES: ${style_profile || 'No style profile set'}
-${colorBlock}${constantsBlock}${anchorBlock}
+${colorBlock}${constantsBlock}${anchorBlock}${formalityNote}${formulaBlock}${occasionHistoryBlock}${sparseBlock}
 AVAILABLE ITEMS:
 ${itemList}
 
@@ -167,6 +279,7 @@ Rules:
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
+- Be concrete and honest in your reasoning: reference the actual colours/silhouette/material at play rather than generic praise; if nothing in the available items truly works for this occasion, say so plainly instead of forcing enthusiasm
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
 Respond with JSON only, no markdown fences:
@@ -242,5 +355,17 @@ Respond with JSON only, no markdown fences:
     .filter(s => isValidOutfit(s.item_ids))
     .filter(s => !anchor_item || s.item_ids.includes(anchor_item.id))
 
-  return res.json({ suggestions: safe })
+  // Belt-and-suspenders repeat check: even though the prompt already sees past
+  // outfits for this occasion, flag it explicitly if a suggestion still lands on
+  // an exact repeat within the formality-scaled window, rather than blocking it.
+  const windowDays = repeatWindowDays(fRange)
+  const withRepeatNotes = safe.map(s => {
+    if (!occasion) return s
+    const names = s.item_ids.map(id => idToItem.get(id)?.name).filter((n): n is string => !!n)
+    const repeatDate = findRepeat(occasionHistory, names, windowDays)
+    if (!repeatDate) return s
+    return { ...s, reasoning: `You wore this exact combination for "${occasion}" on ${repeatDate} — here it is again, but consider mixing it up if you want something fresh. ${s.reasoning}` }
+  })
+
+  return res.json({ suggestions: withRepeatNotes })
 }

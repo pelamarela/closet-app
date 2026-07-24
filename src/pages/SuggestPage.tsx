@@ -27,6 +27,7 @@ export default function SuggestPage() {
 
   const [view, setView] = useState<'input' | 'result'>('input')
   const [occasion, setOccasion] = useState(navState?.occasion ?? '')
+  const [chosenFormality, setChosenFormality] = useState<number | null>(null)
   const [anchorItemId, setAnchorItemId] = useState<string | null>(null)
   const [anchorFilterCat, setAnchorFilterCat] = useState<string>('all')
   const [weather, setWeather] = useState<WeatherData | null>(null)
@@ -74,7 +75,7 @@ export default function SuggestPage() {
   }, [user])
 
   const handleSuggest = async () => {
-    if (!occasion.trim()) { setError('Choose an occasion first.'); return }
+    if (!occasion.trim() && chosenFormality == null) { setError('Choose an occasion or a formality level.'); return }
     if (!weather) { setError('Weather data needed.'); return }
     setLoading(true); setError(null); setSuggestions([]); setSelectedOption(0)
     const t0 = Date.now()
@@ -88,6 +89,19 @@ export default function SuggestPage() {
       date: o.date_worn, occasion: o.occasion,
       item_names: o.item_ids.map(id => items.find(i => i.id === id)?.name ?? '').filter(Boolean),
     }))
+
+    // Full history for this exact occasion string (not just the last 7 outfits) — lets
+    // the server learn what this occasion actually means to this user, and check for
+    // real repeats, instead of guessing from the occasion's name.
+    const occasionKey = occasion.trim().toLowerCase()
+    const occasion_history = occasionKey
+      ? outfits
+          .filter(o => o.occasion?.trim().toLowerCase() === occasionKey)
+          .map(o => ({
+            date: o.date_worn,
+            item_names: o.item_ids.map(id => items.find(i => i.id === id)?.name ?? '').filter(Boolean),
+          }))
+      : []
 
     const { data: feedbackRows } = await supabase
       .from('suggestion_feedback')
@@ -118,6 +132,8 @@ export default function SuggestPage() {
           constants,
           recent_outfits,
           feedback_history,
+          formality: chosenFormality,
+          occasion_history,
           previously_shown: alreadyShown,
           anchor_item: anchorItem
             ? { id: anchorItem.id, name: anchorItem.name, category: anchorItem.category, subcategory: anchorItem.subcategory, color: anchorItem.color }
@@ -372,7 +388,7 @@ export default function SuggestPage() {
 
   const OccasionSection = (
     <div>
-      <SectionLabel right="required *">occasion</SectionLabel>
+      <SectionLabel right="occasion or formality *">occasion</SectionLabel>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {occasionPresets.map(o => (
           <button key={o} onClick={() => setOccasion(prev => prev === o ? '' : o)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
@@ -391,6 +407,28 @@ export default function SuggestPage() {
           borderBottom: RULE, padding: '6px 0',
         }}
       />
+    </div>
+  )
+
+  const FORMALITY_LABELS = ['Casual', 'Relaxed', 'Smart casual', 'Dressy', 'Formal']
+
+  const FormalitySection = (
+    <div>
+      <SectionLabel right="occasion or formality *">formality</SectionLabel>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {FORMALITY_LABELS.map((label, i) => {
+          const n = i + 1
+          return (
+            <button
+              key={n}
+              onClick={() => setChosenFormality(prev => prev === n ? null : n)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <MonoTag filled={chosenFormality === n}>{label}</MonoTag>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 
@@ -557,7 +595,7 @@ export default function SuggestPage() {
       )}
       <UButton
         full icon="spark"
-        disabled={loading || !occasion.trim() || !weather || items.length === 0}
+        disabled={loading || (!occasion.trim() && chosenFormality == null) || !weather || items.length === 0}
         onClick={handleSuggest}
       >
         {loading ? 'Getting suggestions…' : 'Suggest 3 outfits'}
@@ -592,6 +630,7 @@ export default function SuggestPage() {
               </div>
             </div>
             {OccasionSection}
+            {FormalitySection}
             {WeatherSection}
             {ConstraintsSection}
             {ProfileSection}
@@ -609,6 +648,7 @@ export default function SuggestPage() {
             </div>
           </div>
           <div style={{ padding: '20px 20px 0' }}>{OccasionSection}</div>
+          <div style={{ padding: '20px 20px 0' }}>{FormalitySection}</div>
           <div style={{ padding: '20px 20px 0' }}>{AnchorSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{WeatherSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{ConstraintsSection}</div>
