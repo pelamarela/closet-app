@@ -142,6 +142,11 @@ export default function LoginPage() {
               marginTop: 6, padding: 0,
             }}
           />
+          {mode === 'signup' && (
+            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', marginTop: 8 }}>
+              At least 8 characters, with uppercase, lowercase, a digit, and a symbol.
+            </div>
+          )}
         </div>
 
         {error && (
