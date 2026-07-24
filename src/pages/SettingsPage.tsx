@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useConstants } from '../hooks/useConstants'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH, ACCENT } from '../components/ui'
 import TextBlock from '../components/TextBlock'
 
 export default function SettingsPage() {
@@ -53,21 +53,34 @@ export default function SettingsPage() {
   }
 
   const OwnerBlock = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{
-        width: 56, height: 56, background: BLUSH,
-        color: INK, fontFamily: UI, fontSize: 22, fontWeight: 500,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>{initial}</div>
-      <div>
-        <div style={{ fontFamily: UI, fontSize: 18, fontWeight: 500, letterSpacing: '-0.015em' }}>
-          {email.split('@')[0]}
-        </div>
-        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 2 }}>
-          {email} · owner
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+        <div style={{
+          width: 56, height: 56, background: BLUSH,
+          color: INK, fontFamily: UI, fontSize: 22, fontWeight: 500,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>{initial}</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: UI, fontSize: 18, fontWeight: 500, letterSpacing: '-0.015em' }}>
+            {email.split('@')[0]}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {email}
+          </div>
         </div>
       </div>
+      <button
+        onClick={() => navigate('/settings/password')}
+        style={{
+          flexShrink: 0, background: ACCENT, color: '#fff', border: 'none',
+          borderRadius: 999, padding: '10px 18px', cursor: 'pointer',
+          fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.005em',
+          boxShadow: '0 2px 6px rgba(156,85,68,0.35)',
+        }}
+      >
+        change password
+      </button>
     </div>
   )
 
@@ -112,15 +125,6 @@ export default function SettingsPage() {
     <div style={{ marginTop: 20 }}>
       <div style={{ borderTop: RULE }}>
         <NavRow label="Constants" value={`${constants.length}`} onClick={() => navigate('/settings/constants')} last />
-      </div>
-    </div>
-  )
-
-  const AccountBlock = (
-    <div style={{ marginTop: 20 }}>
-      <SectionLabel>account</SectionLabel>
-      <div style={{ borderTop: RULE }}>
-        <NavRow label="Change password" onClick={() => navigate('/settings/password')} last />
       </div>
     </div>
   )
@@ -185,7 +189,6 @@ export default function SettingsPage() {
             {OwnerBlock}
             {StyleProfileBlock}
             {ConstantsBlock}
-            {AccountBlock}
           </div>
           <div>
             {WardrobeBlock}
@@ -198,7 +201,6 @@ export default function SettingsPage() {
           <div style={{ padding: '18px 20px 0' }}>{OwnerBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{StyleProfileBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{ConstantsBlock}</div>
-          <div style={{ padding: '0 20px 0' }}>{AccountBlock}</div>
           <div style={{ padding: '20px 20px 0' }}>{WardrobeBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{SupportBlock}</div>
           <div style={{ padding: '28px 20px 0' }}>{SignOutButton}</div>

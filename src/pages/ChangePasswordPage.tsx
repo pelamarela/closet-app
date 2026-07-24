@@ -10,6 +10,35 @@ const MIN_LENGTH = 8
 const STRONG_PASSWORD = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/
 const PASSWORD_HINT = `At least ${MIN_LENGTH} characters, with uppercase, lowercase, a digit, and a symbol.`
 
+// Hoisted out of the page component: defining this inline in the render body would give
+// it a new function identity on every render, so React would treat each re-render's
+// <Field> as a different component type and remount the underlying <input> — killing
+// focus and cutting off in-progress autofill (e.g. iOS's "suggest strong password")
+// after a single character.
+function Field({ label, value, onChange, autoComplete, type = 'password' }: {
+  label: string; value: string; onChange: (v: string) => void; autoComplete: string; type?: string
+}) {
+  return (
+    <div style={{ padding: '12px 0', borderBottom: RULE }}>
+      <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {label} <span style={{ color: ACCENT }}>*</span>
+      </div>
+      <input
+        type={type}
+        required
+        autoComplete={autoComplete}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          width: '100%', background: 'none', border: 'none', outline: 'none',
+          fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK,
+          marginTop: 6, padding: 0,
+        }}
+      />
+    </div>
+  )
+}
+
 export default function ChangePasswordPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -26,6 +55,8 @@ export default function ChangePasswordPage() {
   const passwordStrongEnough = newPassword.length >= MIN_LENGTH && STRONG_PASSWORD.test(newPassword)
   const isValid = currentPassword.length > 0 && passwordStrongEnough && newPassword === confirmPassword
     && (!needsNonce || nonce.trim().length > 0)
+
+  const setField = (setter: (v: string) => void) => (v: string) => { setter(v); setDone(false) }
 
   const save = async () => {
     if (!user?.email || !isValid) return
@@ -61,26 +92,6 @@ export default function ChangePasswordPage() {
     setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setNonce(''); setNeedsNonce(false)
   }
 
-  const Field = ({ label, value, onChange, autoComplete, type = 'password' }: { label: string; value: string; onChange: (v: string) => void; autoComplete: string; type?: string }) => (
-    <div style={{ padding: '12px 0', borderBottom: RULE }}>
-      <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-        {label} <span style={{ color: ACCENT }}>*</span>
-      </div>
-      <input
-        type={type}
-        required
-        autoComplete={autoComplete}
-        value={value}
-        onChange={e => { onChange(e.target.value); setDone(false) }}
-        style={{
-          width: '100%', background: 'none', border: 'none', outline: 'none',
-          fontFamily: MONO, fontSize: 16, fontWeight: 500, color: INK,
-          marginTop: 6, padding: 0,
-        }}
-      />
-    </div>
-  )
-
   return (
     <div style={{ paddingBottom: 100 }}>
       <AppBar title="Settings" back onBack={() => navigate('/settings')} meta={done ? 'saved' : undefined} />
@@ -94,17 +105,17 @@ export default function ChangePasswordPage() {
         </div>
       </div>
 
-      <div style={{ padding: '20px 20px 0' }}>
-        <Field label="current password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
-        <Field label="new password" value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
-        <Field label="confirm new password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+      <form onSubmit={e => { e.preventDefault(); save() }} style={{ padding: '20px 20px 0' }}>
+        <Field label="current password" value={currentPassword} onChange={setField(setCurrentPassword)} autoComplete="current-password" />
+        <Field label="new password" value={newPassword} onChange={setField(setNewPassword)} autoComplete="new-password" />
+        <Field label="confirm new password" value={confirmPassword} onChange={setField(setConfirmPassword)} autoComplete="new-password" />
         <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', marginTop: 8 }}>
           {PASSWORD_HINT}
         </div>
 
         {needsNonce && (
           <div style={{ marginTop: 14 }}>
-            <Field label="confirmation code" value={nonce} onChange={setNonce} autoComplete="one-time-code" type="text" />
+            <Field label="confirmation code" value={nonce} onChange={setField(setNonce)} autoComplete="one-time-code" type="text" />
           </div>
         )}
 
@@ -129,14 +140,16 @@ export default function ChangePasswordPage() {
             Password updated.
           </div>
         )}
-      </div>
 
-      <FixedBar zIndex={10}>
-        <UButton variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/settings')}>Cancel</UButton>
-        <UButton style={{ flex: 1.4 }} icon="check" disabled={saving || !isValid} onClick={save}>
-          {saving ? 'Saving…' : needsNonce ? 'Confirm & update' : 'Update password'}
-        </UButton>
-      </FixedBar>
+        {/* Submit button lives inside the form so Enter and password-manager "fill & submit"
+            affordances work, but stays visually pinned via FixedBar. */}
+        <FixedBar zIndex={10}>
+          <UButton type="button" variant="ghost" style={{ flex: 1 }} onClick={() => navigate('/settings')}>Cancel</UButton>
+          <UButton type="submit" style={{ flex: 1.4 }} icon="check" disabled={saving || !isValid}>
+            {saving ? 'Saving…' : needsNonce ? 'Confirm & update' : 'Update password'}
+          </UButton>
+        </FixedBar>
+      </form>
     </div>
   )
 }
