@@ -14,6 +14,7 @@ import ShopPage from './pages/ShopPage'
 import BatchUploadPage from './pages/BatchUploadPage'
 import SettingsPage from './pages/SettingsPage'
 import StyleProfileEditorPage from './pages/StyleProfileEditorPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 import IdeasPage from './pages/IdeasPage'
 import IdeaDetailPage from './pages/IdeaDetailPage'
 import IdeaEditPage from './pages/IdeaEditPage'
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
+            <Route path="/settings/password" element={<ChangePasswordPage />} />
             <Route path="/settings/archived" element={<ArchivedPage />} />
             <Route path="/settings/stats" element={<StatsPage />} />
             <Route path="/settings/constants" element={<ConstantsPage />} />

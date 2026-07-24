@@ -116,6 +116,15 @@ export default function SettingsPage() {
     </div>
   )
 
+  const AccountBlock = (
+    <div style={{ marginTop: 20 }}>
+      <SectionLabel>account</SectionLabel>
+      <div style={{ borderTop: RULE }}>
+        <NavRow label="Change password" onClick={() => navigate('/settings/password')} last />
+      </div>
+    </div>
+  )
+
   const WardrobeBlock = (
     <div>
       <SectionLabel>wardrobe</SectionLabel>
@@ -176,6 +185,7 @@ export default function SettingsPage() {
             {OwnerBlock}
             {StyleProfileBlock}
             {ConstantsBlock}
+            {AccountBlock}
           </div>
           <div>
             {WardrobeBlock}
@@ -188,6 +198,7 @@ export default function SettingsPage() {
           <div style={{ padding: '18px 20px 0' }}>{OwnerBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{StyleProfileBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{ConstantsBlock}</div>
+          <div style={{ padding: '0 20px 0' }}>{AccountBlock}</div>
           <div style={{ padding: '20px 20px 0' }}>{WardrobeBlock}</div>
           <div style={{ padding: '0 20px 0' }}>{SupportBlock}</div>
           <div style={{ padding: '28px 20px 0' }}>{SignOutButton}</div>
