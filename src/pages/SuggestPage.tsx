@@ -69,7 +69,10 @@ export default function SuggestPage() {
   useEffect(() => {
     if (!user) return
     supabase.from('style_profile').select('description, color_season').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data) { setProfile(data.description); setColorSeason(data.color_season) } })
+      .then(({ data, error }) => {
+        if (error) { console.error('style_profile fetch failed:', error); return }
+        if (data) { setProfile(data.description); setColorSeason(data.color_season) }
+      })
     supabase.from('constants').select('description').eq('user_id', user.id)
       .then(({ data }) => setConstants((data ?? []).map(c => c.description)))
   }, [user])
@@ -642,8 +645,8 @@ export default function SuggestPage() {
             </div>
             {OccasionSection}
             {FormalitySection}
-            {WeatherSection}
             {ConstraintsSection}
+            {WeatherSection}
             {ProfileSection}
             {SuggestButton}
           </div>
@@ -661,8 +664,8 @@ export default function SuggestPage() {
           <div style={{ padding: '20px 20px 0' }}>{OccasionSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{FormalitySection}</div>
           <div style={{ padding: '20px 20px 0' }}>{AnchorSection}</div>
-          <div style={{ padding: '20px 20px 0' }}>{WeatherSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{ConstraintsSection}</div>
+          <div style={{ padding: '20px 20px 0' }}>{WeatherSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{ProfileSection}</div>
           <FixedBar zIndex={10}>{SuggestButton}</FixedBar>
         </>
