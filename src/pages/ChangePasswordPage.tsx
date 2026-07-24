@@ -23,16 +23,12 @@ export default function ChangePasswordPage() {
     if (!user?.email || !isValid) return
     setSaving(true); setError(null)
 
-    // Reauthenticate with the current password first — updateUser() would otherwise
-    // let anyone with an open session change the password without proving they know it.
-    const { error: reauthError } = await supabase.auth.signInWithPassword({ email: user.email, password: currentPassword })
-    if (reauthError) {
-      setSaving(false)
-      setError('Current password is incorrect.')
-      return
-    }
-
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+    // current_password is validated server-side because "Require current password
+    // when updating" is enabled in the project's Auth settings.
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
+    })
     setSaving(false)
     if (updateError) { setError(updateError.message); return }
 
