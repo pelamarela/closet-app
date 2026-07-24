@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useConstants } from '../hooks/useConstants'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH, ACCENT } from '../components/ui'
+import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import TextBlock from '../components/TextBlock'
 
 export default function SettingsPage() {
@@ -72,14 +72,9 @@ export default function SettingsPage() {
       </div>
       <button
         onClick={() => navigate('/settings/password')}
-        style={{
-          flexShrink: 0, background: ACCENT, color: '#fff', border: 'none',
-          borderRadius: 999, padding: '10px 18px', cursor: 'pointer',
-          fontFamily: UI, fontSize: 13, fontWeight: 600, letterSpacing: '-0.005em',
-          boxShadow: '0 2px 6px rgba(156,85,68,0.35)',
-        }}
+        style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: 0 }}
       >
-        change password
+        change password ›
       </button>
     </div>
   )
