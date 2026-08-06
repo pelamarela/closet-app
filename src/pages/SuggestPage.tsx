@@ -327,7 +327,7 @@ export default function SuggestPage() {
     )
 
     const ActionButtons = (
-      <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading} loading={loading} loadingLabels={['Reshuffling', 'Restyling']}>
             Regen
@@ -344,7 +344,7 @@ export default function SuggestPage() {
         >
           {savedMsg ? 'Saved to ideas ✓' : saveIdeaError ? saveIdeaError : 'Save as idea'}
         </UButton>
-      </>
+      </div>
     )
 
     return (
@@ -369,7 +369,7 @@ export default function SuggestPage() {
             <div style={{ minWidth: 0 }}>
               {ReasoningBlock}
               {PiecesList}
-              <div style={{ marginTop: 24 }}>{ActionButtons}</div>
+              <div style={{ marginTop: 24, paddingBottom: 32 }}>{ActionButtons}</div>
             </div>
           </div>
         ) : (
