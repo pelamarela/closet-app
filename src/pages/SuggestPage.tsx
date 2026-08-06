@@ -669,7 +669,7 @@ export default function SuggestPage() {
           <div style={{ padding: '20px 20px 0' }}>{ConstraintsSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{WeatherSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{ProfileSection}</div>
-          <FixedBar zIndex={10}>{SuggestButton}</FixedBar>
+          <FixedBar zIndex={10} column>{SuggestButton}</FixedBar>
         </>
       )}
     </div>

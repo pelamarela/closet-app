@@ -267,7 +267,7 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
         background: v.bg, color: v.color, border: v.border,
         borderRadius: 4, cursor: disabled ? 'default' : 'pointer',
         fontFamily: UI, fontSize: 13, fontWeight: 600,
-        letterSpacing: '-0.005em', whiteSpace: 'nowrap',
+        letterSpacing: '-0.005em', whiteSpace: 'nowrap', overflow: 'hidden',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         opacity: disabled ? 0.4 : 1,
         WebkitTapHighlightColor: 'transparent',
@@ -276,7 +276,9 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
     >
       {loading ? (
         <>
-          {loadingLabels?.length && <CyclingLabel phrases={loadingLabels} />}
+          {loadingLabels?.length && (
+            <CyclingLabel phrases={loadingLabels} style={{ overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }} />
+          )}
           <BouncingDots color={v.color} />
         </>
       ) : (
