@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
@@ -72,18 +73,14 @@ export default function HomePage() {
         item_names: o.item_ids.map(id => items.find(i => i.id === id)?.name ?? '').filter(Boolean),
       }))
 
-      const res = await fetch('/api/suggest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          occasion: topOccasion, weather,
-          items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
-            ({ id, name, category, subcategory, color, warmth, formality, sport })),
-          style_profile: profileData?.description ?? '',
-          color_season: profileData?.color_season ?? null,
-          constants: (constantsData ?? []).map(c => c.description),
-          recent_outfits,
-        }),
+      const res = await apiFetch('/api/suggest', {
+        occasion: topOccasion, weather,
+        items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+          ({ id, name, category, subcategory, color, warmth, formality, sport })),
+        style_profile: profileData?.description ?? '',
+        color_season: profileData?.color_season ?? null,
+        constants: (constantsData ?? []).map(c => c.description),
+        recent_outfits,
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { compressImage } from '../lib/imageUtils'
+import { apiFetch } from '../lib/apiFetch'
 import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
@@ -55,11 +56,7 @@ async function analyzeImage(file: File): Promise<Partial<Draft>> {
   try {
     const compressed = await compressImage(file)
     const { data, media_type } = await toBase64(compressed)
-    const res = await fetch('/api/analyze-item', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image_base64: data, media_type }),
-    })
+    const res = await apiFetch('/api/analyze-item', { image_base64: data, media_type })
     if (!res.ok) throw new Error('API error')
     return await res.json()
   } catch {

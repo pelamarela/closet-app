@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiFetch'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
@@ -51,13 +52,9 @@ export default function StyleProfileEditorPage() {
     if (outfits.length < 5) { alert('Log at least 5 outfits first so AI has enough to work with.'); return }
     setGenerating(true); setGenerateError(null)
     try {
-      const res = await fetch('/api/generate-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          outfits: outfits.map(o => ({ date: o.date_worn, occasion: o.occasion, item_ids: o.item_ids })),
-          items: items.map(i => ({ id: i.id, name: i.name, category: i.category, color: i.color, brand: i.brand, subcategory: i.subcategory })),
-        }),
+      const res = await apiFetch('/api/generate-profile', {
+        outfits: outfits.map(o => ({ date: o.date_worn, occasion: o.occasion, item_ids: o.item_ids })),
+        items: items.map(i => ({ id: i.id, name: i.name, category: i.category, color: i.color, brand: i.brand, subcategory: i.subcategory })),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')

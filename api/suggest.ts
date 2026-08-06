@@ -1,11 +1,19 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
+import { createClient } from '@supabase/supabase-js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 // Vercel does not bundle cross-file imports for api/*.ts on this project
 // (ESM "type": "module" + per-file transpile, no dependency resolution) —
 // this must stay inlined rather than imported from a shared module.
+async function requireUser(req: VercelRequest): Promise<boolean> {
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) return false
+  const supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.VITE_SUPABASE_ANON_KEY!)
+  const { data, error } = await supabase.auth.getUser(authHeader.slice(7))
+  return !error && !!data.user
+}
 const COLOR_SEASON_PALETTES: Record<string, { label: string; palette: string }> = {
   'bright-spring': { label: 'Bright Spring', palette: 'Warm, clear, high-contrast — poppy red, marigold, grass green, turquoise, warm white. Avoid: muted or dusty tones, black.' },
   'true-spring':   { label: 'True Spring',   palette: 'Warm, fresh, medium-bright — coral, warm peach, golden yellow, leaf green, camel. Avoid: cool or ashy tones, stark black.' },
@@ -157,6 +165,7 @@ function findRepeat(occasionHistory: OccasionHistoryEntry[], candidateNames: str
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!(await requireUser(req))) return res.status(401).json({ error: 'Unauthorized' })
 
   const {
     occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item,

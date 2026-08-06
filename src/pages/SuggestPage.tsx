@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
@@ -122,26 +123,22 @@ export default function SuggestPage() {
     try {
       const anchorItem = anchorItemId ? items.find(i => i.id === anchorItemId) : null
 
-      const res = await fetch('/api/suggest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          occasion: occasion.trim(), weather,
-          items: items.filter(i => i.category !== 'fragrance').map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
-            ({ id, name, category, subcategory, color, warmth, formality, sport })),
-          style_profile: profileData?.description ?? '',
-          color_season: profileData?.color_season ?? null,
-          use_color_season: useColorSeason,
-          constants,
-          recent_outfits,
-          feedback_history,
-          formality: chosenFormality,
-          occasion_history,
-          previously_shown: alreadyShown,
-          anchor_item: anchorItem
-            ? { id: anchorItem.id, name: anchorItem.name, category: anchorItem.category, subcategory: anchorItem.subcategory, color: anchorItem.color }
-            : undefined,
-        }),
+      const res = await apiFetch('/api/suggest', {
+        occasion: occasion.trim(), weather,
+        items: items.filter(i => i.category !== 'fragrance').map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+          ({ id, name, category, subcategory, color, warmth, formality, sport })),
+        style_profile: profileData?.description ?? '',
+        color_season: profileData?.color_season ?? null,
+        use_color_season: useColorSeason,
+        constants,
+        recent_outfits,
+        feedback_history,
+        formality: chosenFormality,
+        occasion_history,
+        previously_shown: alreadyShown,
+        anchor_item: anchorItem
+          ? { id: anchorItem.id, name: anchorItem.name, category: anchorItem.category, subcategory: anchorItem.subcategory, color: anchorItem.color }
+          : undefined,
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')

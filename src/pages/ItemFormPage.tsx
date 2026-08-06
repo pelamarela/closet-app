@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
@@ -100,11 +101,7 @@ export default function ItemFormPage() {
         reader.onerror = reject
         reader.readAsDataURL(compressed)
       })
-      const res = await fetch('/api/analyze-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_base64: data, media_type: mediaType }),
-      })
+      const res = await apiFetch('/api/analyze-item', { image_base64: data, media_type: mediaType })
       if (!res.ok) return
       const ai = await res.json()
       const name = parseName(file)
@@ -158,11 +155,7 @@ export default function ItemFormPage() {
           reader.onerror = reject
           reader.readAsDataURL(compressed)
         })
-        const res = await fetch('/api/analyze-item', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image_base64: base64, media_type: 'image/jpeg' }),
-        })
+        const res = await apiFetch('/api/analyze-item', { image_base64: base64, media_type: 'image/jpeg' })
         if (!res.ok) return
         const ai = await res.json()
         setForm(f => ({

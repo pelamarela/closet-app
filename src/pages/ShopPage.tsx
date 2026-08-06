@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setSingleFile } from '../lib/batchState'
 import { supabase } from '../lib/supabase'
+import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
@@ -88,17 +89,13 @@ export default function ShopPage() {
       const base64 = imagePreview.split(',')[1]
       const mediaType = imageFile.type || 'image/jpeg'
 
-      const res = await fetch('/api/analyze-purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_base64: base64,
-          media_type: mediaType,
-          style_profile: profileData?.description ?? '',
-          color_season: profileData?.color_season ?? null,
-          items: items.map(({ id, name, category, subcategory, color }) =>
-            ({ id, name, category, subcategory, color })),
-        }),
+      const res = await apiFetch('/api/analyze-purchase', {
+        image_base64: base64,
+        media_type: mediaType,
+        style_profile: profileData?.description ?? '',
+        color_season: profileData?.color_season ?? null,
+        items: items.map(({ id, name, category, subcategory, color }) =>
+          ({ id, name, category, subcategory, color })),
       })
 
       const data = await res.json()

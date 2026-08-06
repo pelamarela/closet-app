@@ -1,7 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
+import { createClient } from '@supabase/supabase-js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+async function requireUser(req: VercelRequest): Promise<boolean> {
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) return false
+  const supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.VITE_SUPABASE_ANON_KEY!)
+  const { data, error } = await supabase.auth.getUser(authHeader.slice(7))
+  return !error && !!data.user
+}
 
 // Vercel does not bundle cross-file imports for api/*.ts on this project
 // (ESM "type": "module" + per-file transpile, no dependency resolution) —
@@ -51,6 +60,7 @@ type AnalysisResult = {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!(await requireUser(req))) return res.status(401).json({ error: 'Unauthorized' })
 
   const { image_base64, media_type, items, style_profile, color_season } = req.body as {
     image_base64: string
