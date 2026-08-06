@@ -6,7 +6,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useConstants } from '../hooks/useConstants'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, MonoTag, Icon, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
+import { AppBar, SectionLabel, MonoTag, Icon, UButton, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import TextBlock from '../components/TextBlock'
 
 export default function SettingsPage() {
@@ -157,18 +157,9 @@ export default function SettingsPage() {
   )
 
   const SignOutButton = (
-    <button
-      onClick={signOut}
-      style={{
-        width: '100%', height: 48, padding: '0 20px',
-        background: 'transparent', color: INK, border: '1px solid rgba(0,0,0,0.15)',
-        borderRadius: 4, cursor: 'pointer',
-        fontFamily: UI, fontSize: 13, fontWeight: 600,
-        WebkitTapHighlightColor: 'transparent',
-      }}
-    >
+    <UButton variant="ghost" full onClick={signOut}>
       Sign out
-    </button>
+    </UButton>
   )
 
   return (

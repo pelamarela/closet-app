@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { MONO, UI, INK, CREAM, RULE, ACCENT } from '../components/ui'
+import { MONO, UI, INK, CREAM, RULE, ACCENT, UButton } from '../components/ui'
 
 type Mode = 'signin' | 'signup'
 
@@ -191,21 +191,14 @@ export default function LoginPage() {
           }}>{error}</div>
         )}
 
-        <button
+        <UButton
           type="submit"
+          full
           disabled={loading || (mode === 'signup' && password !== confirmPassword)}
-          style={{
-            width: '100%', height: 48, padding: '0 20px',
-            background: INK, color: '#fff', border: 'none',
-            borderRadius: 4, cursor: loading ? 'default' : 'pointer',
-            fontFamily: UI, fontSize: 13, fontWeight: 600,
-            letterSpacing: '-0.005em',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            opacity: loading ? 0.6 : 1,
-          }}
+          loading={loading}
         >
-          {loading ? '…' : mode === 'signin' ? 'Sign in' : 'Create account'}
-        </button>
+          {mode === 'signin' ? 'Sign in' : 'Create account'}
+        </UButton>
       </form>
 
     </div>
