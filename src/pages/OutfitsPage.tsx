@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
-import { TopBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle } from '../components/ui'
+import { TopBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle, TOPBAR_H } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
 import Spinner from '../components/Spinner'
 import FixedBar from '../components/FixedBar'
@@ -263,16 +263,17 @@ export default function OutfitsPage() {
   )
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 160 }}>
+    <div style={{ paddingBottom: isDesktop ? 0 : 160 }}>
       <TopBar title="Calendar" />
 
       {isDesktop ? (
         <div style={{
+          position: 'fixed',
+          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+          bottom: 'var(--nav-h)',
+          left: 20, right: 20,
           display: 'grid', gridTemplateColumns: '70% 30%',
-          margin: '0 20px',
-          height: 'calc(100dvh - 56px - var(--nav-h))',
           overflow: 'hidden',
-          alignItems: 'start',
         }}>
           {/* Left: calendar */}
           <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 16, height: '100%', overflowY: 'auto' }}>

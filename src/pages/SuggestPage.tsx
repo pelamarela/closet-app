@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
-import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { TopBar, AppBar, SectionLabel, MonoTag, UButton, Icon, MONO, UI, INK, RULE, ACCENT, TOPBAR_H } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
@@ -620,16 +620,20 @@ export default function SuggestPage() {
   )
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
+    <div style={{ paddingBottom: isDesktop ? 0 : 100 }}>
       <TopBar title="Suggest" meta="hybrid · code + AI" />
 
       {isDesktop ? (
+        // Anchored directly to the viewport (not the normal document flow) using the
+        // same constants TopBar/bottom-nav use for their own real heights — no
+        // re-guessed pixel math to drift out of sync with them.
         <div style={{
+          position: 'fixed',
+          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+          bottom: 'var(--nav-h)',
+          left: 20, right: 20,
           display: 'grid', gridTemplateColumns: '55% 45%',
-          margin: '0 20px',
-          height: 'calc(100dvh - 56px - var(--nav-h))',
           overflow: 'hidden',
-          alignItems: 'start',
         }}>
           {/* Left: anchor item picker — scrolls independently */}
           <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>

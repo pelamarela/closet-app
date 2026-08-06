@@ -51,7 +51,7 @@ export function Icon({ name, size = 20, stroke = 1.5 }: {
   }
 }
 
-const TOPBAR_H = 44
+export const TOPBAR_H = 44
 
 export function TopBar({ title, meta }: {
   title: React.ReactNode

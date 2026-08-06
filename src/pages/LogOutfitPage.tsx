@@ -4,7 +4,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BG } from '../components/ui'
+import { AppBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, BG, TOPBAR_H } from '../components/ui'
 import Spinner from '../components/Spinner'
 import FixedBar from '../components/FixedBar'
 import OccasionPicker from '../components/OccasionPicker'
@@ -223,7 +223,7 @@ export default function LogOutfitPage() {
   )
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 180 }}>
+    <div style={{ paddingBottom: isDesktop ? 0 : 180 }}>
       <AppBar
         title={isEdit ? 'Edit outfit' : 'Log an outfit'}
         back
@@ -232,11 +232,12 @@ export default function LogOutfitPage() {
 
       {isDesktop ? (
         <div style={{
+          position: 'fixed',
+          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+          bottom: 'var(--nav-h)',
+          left: 20, right: 20,
           display: 'grid', gridTemplateColumns: '58% 42%',
-          margin: '0 20px',
-          height: 'calc(100dvh - 56px - var(--nav-h))',
           overflow: 'hidden',
-          alignItems: 'start',
         }}>
           {/* Left: item picker (scrolls within its own capped area) + fragrance (always visible below) */}
           <div style={{ minWidth: 0, minHeight: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column', background: BG }}>
