@@ -635,22 +635,26 @@ export default function SuggestPage() {
           <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             {AnchorSection}
           </div>
-          {/* Right: brief context + CTA — fully visible */}
-          <div style={{ minWidth: 0, paddingTop: 20, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                // what should i wear?
+          {/* Right: brief context (scrolls) + CTA (pinned, always above the fold) */}
+          <div style={{ minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ minWidth: 0, paddingTop: 20, flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  // what should i wear?
+                </div>
+                <div style={{ fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.1 }}>
+                  Set the brief.
+                </div>
               </div>
-              <div style={{ fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.1 }}>
-                Set the brief.
-              </div>
+              {OccasionSection}
+              {FormalitySection}
+              {ConstraintsSection}
+              {WeatherSection}
+              {ProfileSection}
             </div>
-            {OccasionSection}
-            {FormalitySection}
-            {ConstraintsSection}
-            {WeatherSection}
-            {ProfileSection}
-            {SuggestButton}
+            <div style={{ flexShrink: 0, paddingTop: 16, paddingBottom: 20 }}>
+              {SuggestButton}
+            </div>
           </div>
         </div>
       ) : (
