@@ -309,7 +309,7 @@ Respond with JSON only, no markdown fences:
   try {
     message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 2048,
       output_config: { format: { type: 'json_schema', schema: responseSchema } },
       messages: [{ role: 'user', content: prompt }],
     })

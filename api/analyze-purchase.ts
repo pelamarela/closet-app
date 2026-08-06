@@ -134,7 +134,7 @@ Rules:
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 1024,
+      max_tokens: 2048,
       thinking: { type: 'disabled' },
       output_config: { format: { type: 'json_schema', schema: responseSchema } },
       messages: [{
