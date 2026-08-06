@@ -225,12 +225,16 @@ const CYCLE_MS = 1600
 
 export function CyclingLabel({ phrases, style: extra }: { phrases: string[]; style?: React.CSSProperties }) {
   const [i, setI] = useState(0)
+  // Keyed on content, not the array reference, since callers pass a new
+  // inline array literal on every render.
+  const phrasesKey = phrases.join('|')
   useEffect(() => {
     setI(0)
     if (phrases.length < 2) return
     const id = setInterval(() => setI(v => (v + 1) % phrases.length), CYCLE_MS)
     return () => clearInterval(id)
-  }, [phrases.join('|')])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- phrasesKey already encodes phrases.length
+  }, [phrasesKey])
   return (
     <span key={i} style={{ animation: `label-fade ${CYCLE_MS}ms ease-in-out`, ...extra }}>
       {phrases[i]}

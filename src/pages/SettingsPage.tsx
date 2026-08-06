@@ -9,6 +9,27 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, MonoTag, Icon, UButton, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
 import TextBlock from '../components/TextBlock'
 
+function NavRow({ label, value, onClick, last }: { label: string; value?: string; onClick: () => void; last?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
+        borderBottom: last ? 'none' : RULE,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        cursor: 'pointer',
+        fontFamily: MONO, fontSize: 11, color: INK,
+      }}
+    >
+      {label}
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {value && <span style={{ color: 'rgba(0,0,0,0.5)' }}>{value}</span>}
+        <Icon name="forward" size={14} stroke={1.2} />
+      </span>
+    </button>
+  )
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
@@ -30,27 +51,6 @@ export default function SettingsPage() {
         if (data) setProfile(data.description)
       })
   }, [user])
-
-  function NavRow({ label, value, onClick, last }: { label: string; value?: string; onClick: () => void; last?: boolean }) {
-    return (
-      <button
-        onClick={onClick}
-        style={{
-          width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '11px 0',
-          borderBottom: last ? 'none' : RULE,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          cursor: 'pointer',
-          fontFamily: MONO, fontSize: 11, color: INK,
-        }}
-      >
-        {label}
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {value && <span style={{ color: 'rgba(0,0,0,0.5)' }}>{value}</span>}
-          <Icon name="forward" size={14} stroke={1.2} />
-        </span>
-      </button>
-    )
-  }
 
   const OwnerBlock = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap' }}>

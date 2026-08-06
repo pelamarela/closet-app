@@ -80,11 +80,6 @@ export default function BatchUploadPage() {
 
   const [stage, setStage] = useState<Stage>('pick')
 
-  // Consume files passed from WardrobePage via batchState
-  useEffect(() => {
-    const files = takeBatchFiles()
-    if (files.length) processFiles(files)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [current, setCurrent] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -174,7 +169,13 @@ export default function BatchUploadPage() {
     const dupeCount = enriched.filter(d => d.isDuplicate).length
     if (dupeCount > 0) setError(`${dupeCount} item${dupeCount > 1 ? 's' : ''} may already be in your closet — marked in red`)
     setStage('fill')
-  }, [])
+  }, [checkDuplicate, parseColor])
+
+  // Consume files passed from WardrobePage via batchState
+  useEffect(() => {
+    const files = takeBatchFiles()
+    if (files.length) processFiles(files)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,9 +216,8 @@ export default function BatchUploadPage() {
         )
         saved++
         setSavedCount(saved)
-      } catch (err) {
+      } catch {
         failed.push(draft.name)
-        setSavedCount(s => s) // trigger re-render for progress
       }
     }
 

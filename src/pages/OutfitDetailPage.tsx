@@ -13,6 +13,7 @@ import FixedBar from '../components/FixedBar'
 import LogOutfitButton from '../components/LogOutfitButton'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
+type RawOutfit = Outfit & { outfit_items: { item_id: string }[] }
 
 export default function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -33,16 +34,14 @@ export default function OutfitDetailPage() {
     async function load() {
       setLoading(true)
       const { data: raw } = await supabase
-        .from('outfits').select('*, outfit_items(item_id)').eq('id', id!).eq('user_id', user!.id).single()
+        .from('outfits').select('*, outfit_items(item_id)').eq('id', id!).eq('user_id', user!.id).single<RawOutfit>()
       if (!raw) { setLoading(false); return }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setOutfit(raw as any)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const itemIds: string[] = ((raw as any).outfit_items ?? []).map((oi: { item_id: string }) => oi.item_id)
+      setOutfit(raw)
+      const itemIds: string[] = (raw.outfit_items ?? []).map(oi => oi.item_id)
 
-      if ((raw as any).image_url) {
-        const { data: s } = await supabase.storage.from('item-photos').createSignedUrl((raw as any).image_url, 3600)
+      if (raw.image_url) {
+        const { data: s } = await supabase.storage.from('item-photos').createSignedUrl(raw.image_url, 3600)
         setOutfitImageUrl(s?.signedUrl ?? null)
       }
 

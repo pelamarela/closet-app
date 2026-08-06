@@ -61,7 +61,7 @@ export default function LogOutfitPage() {
   }, [editId, isEdit])
 
   const toggleItem = (id: string) =>
-    setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+    setSelectedIds(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
 
   const handleSave = async () => {
     if (selectedIds.size === 0) { setError('Select at least one item.'); return }

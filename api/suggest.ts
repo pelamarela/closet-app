@@ -331,7 +331,7 @@ Respond with JSON only, no markdown fences:
   const raw = textBlock ? textBlock.text : ''
   const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
-  let suggestions: Suggestion[] = []
+  let suggestions: Suggestion[]
   try {
     const parsed = JSON.parse(text)
     suggestions = parsed.suggestions ?? []

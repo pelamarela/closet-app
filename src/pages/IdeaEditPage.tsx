@@ -50,7 +50,7 @@ export default function IdeaEditPage() {
   }, [id])
 
   const toggleItem = (itemId: string) =>
-    setSelectedIds(s => { const n = new Set(s); n.has(itemId) ? n.delete(itemId) : n.add(itemId); return n })
+    setSelectedIds(s => { const n = new Set(s); if (n.has(itemId)) n.delete(itemId); else n.add(itemId); return n })
 
   const handleSave = async () => {
     if (selectedIds.size === 0) { setError('Select at least one item.'); return }

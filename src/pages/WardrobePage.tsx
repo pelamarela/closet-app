@@ -34,7 +34,7 @@ export default function WardrobePage() {
   const { archiveItems } = useItemMutations()
 
   const toggleSelect = useCallback((id: string) => {
-    setSelectedIds(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+    setSelectedIds(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
   }, [])
 
   const exitSelectMode = () => {
