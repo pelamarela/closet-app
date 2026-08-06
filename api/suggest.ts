@@ -263,7 +263,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nNote: only ${pool.length} wardrobe item(s) fit this occasion/weather/formality combination. If nothing here truly makes a good outfit, say so plainly in the reasoning and explain what's missing — don't force a mismatched combination just to fill the slot. Only use items from the list below; never suggest buying anything.\n`
     : ''
 
-  const prompt = `You are a personal stylist. Suggest 1–3 outfit combinations from the items listed.
+  const prompt = `You are a personal stylist. Suggest 2–3 outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
@@ -287,7 +287,8 @@ Rules:
 - Never combine a one-piece with a separate top or bottom
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
-- Vary the suggestions — don't repeat the same item across all outfits${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
+- Vary the suggestions — don't repeat the same item across all outfits
+- Always return at least 2 outfits if the available items can support two distinct valid combinations — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return a single outfit if the pool genuinely cannot form a second valid, distinct combination.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
 - Be concrete and honest in your reasoning: reference the actual colours/silhouette/material at play rather than generic praise; if nothing in the available items truly works for this occasion, say so plainly instead of forcing enthusiasm
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
@@ -299,6 +300,10 @@ Respond with JSON only, no markdown fences:
     properties: {
       suggestions: {
         type: 'array',
+        // Only require 2+ when the pool is large enough to plausibly support two
+        // distinct valid outfits — matches the sparseBlock threshold above, so we
+        // never force the model into fabricating an outfit that can't exist.
+        minItems: pool.length >= 5 ? 2 : 1,
         items: {
           type: 'object',
           properties: {
