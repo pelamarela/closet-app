@@ -263,7 +263,7 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
       disabled={disabled}
       style={{
         width: full ? '100%' : undefined,
-        height: 48, padding: '0 20px',
+        height: 48, minHeight: 48, flexShrink: 0, padding: '0 20px',
         background: v.bg, color: v.color, border: v.border,
         borderRadius: 4, cursor: disabled ? 'default' : 'pointer',
         fontFamily: UI, fontSize: 13, fontWeight: 600,
