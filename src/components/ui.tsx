@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export const MONO = '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace'
@@ -220,7 +221,24 @@ export function BouncingDots({ size = 4, gap = 4, color = 'currentColor' }: {
   )
 }
 
-export function UButton({ children, variant = 'primary', icon, full, onClick, disabled, loading, type = 'button', style: extra }: {
+const CYCLE_MS = 1600
+
+export function CyclingLabel({ phrases, style: extra }: { phrases: string[]; style?: React.CSSProperties }) {
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    setI(0)
+    if (phrases.length < 2) return
+    const id = setInterval(() => setI(v => (v + 1) % phrases.length), CYCLE_MS)
+    return () => clearInterval(id)
+  }, [phrases.join('|')])
+  return (
+    <span key={i} style={{ animation: `label-fade ${CYCLE_MS}ms ease-in-out`, ...extra }}>
+      {phrases[i]}
+    </span>
+  )
+}
+
+export function UButton({ children, variant = 'primary', icon, full, onClick, disabled, loading, loadingLabels, type = 'button', style: extra }: {
   children: React.ReactNode
   variant?: 'primary' | 'secondary' | 'ghost' | 'accent'
   icon?: string
@@ -228,6 +246,7 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
   onClick?: () => void
   disabled?: boolean
   loading?: boolean
+  loadingLabels?: string[]
   type?: 'button' | 'submit'
   style?: React.CSSProperties
 }) {
@@ -255,7 +274,12 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
         ...extra,
       }}
     >
-      {loading ? <BouncingDots color={v.color} /> : (
+      {loading ? (
+        <>
+          {loadingLabels?.length && <CyclingLabel phrases={loadingLabels} />}
+          <BouncingDots color={v.color} />
+        </>
+      ) : (
         <>
           {icon && <Icon name={icon} size={15} stroke={2} />}
           {children}

@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
-import { AppBar, SectionLabel, UButton, MonoTag, BouncingDots, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { AppBar, SectionLabel, UButton, MonoTag, BouncingDots, CyclingLabel, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import FixedBar from '../components/FixedBar'
 import { COLOR_SEASONS, COLOR_SEASON_MAP } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
@@ -114,7 +114,9 @@ export default function StyleProfileEditorPage() {
         >
           <div style={{ textAlign: 'left' }}>
             <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>
-              {generating ? 'Analysing your wardrobe…' : 'Generate from my outfits'}
+              {generating
+                ? <CyclingLabel phrases={['Reading your looks', 'Spotting patterns', 'Writing it up']} />
+                : 'Generate from my outfits'}
             </div>
             <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
               AI reads your outfit history and writes a profile

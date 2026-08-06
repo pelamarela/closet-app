@@ -495,6 +495,7 @@ export default function ShopPage() {
           full icon="spark"
           disabled={loading || !imagePreview}
           loading={loading}
+          loadingLabels={['Eyeing it up', 'Cross-checking your closet', 'Making the call']}
           onClick={handleAnalyze}
         >
           Analyze this piece

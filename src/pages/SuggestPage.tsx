@@ -329,7 +329,7 @@ export default function SuggestPage() {
     const ActionButtons = (
       <>
         <div style={{ display: 'flex', gap: 8 }}>
-          <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading} loading={loading}>
+          <UButton variant="ghost" style={{ flex: 1 }} icon="spark" onClick={handleSuggest} disabled={loading} loading={loading} loadingLabels={['Reshuffling', 'Restyling']}>
             Regen
           </UButton>
           <LogOutfitButton style={{ flex: 1.6 }} onClick={() => handleLog(currentSuggestion?.item_ids ?? [])}>
@@ -611,6 +611,7 @@ export default function SuggestPage() {
         full icon="spark"
         disabled={loading || (!occasion.trim() && chosenFormality == null) || !weather || items.length === 0}
         loading={loading}
+        loadingLabels={['Reading the sky', 'Digging in your closet', 'Styling it up']}
         onClick={handleSuggest}
       >
         Suggest 3 outfits
