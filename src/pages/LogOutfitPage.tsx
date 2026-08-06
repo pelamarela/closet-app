@@ -190,7 +190,7 @@ export default function LogOutfitPage() {
   const PhotoField = (
     <div style={{ marginBottom: 20 }}>
       <SectionLabel right="optional">photo</SectionLabel>
-      <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
       <button
         onClick={() => fileInputRef.current?.click()}
         style={{
