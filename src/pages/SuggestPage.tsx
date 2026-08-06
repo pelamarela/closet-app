@@ -632,15 +632,15 @@ export default function SuggestPage() {
           top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
           bottom: 'var(--nav-h)',
           left: 20, right: 20,
-          display: 'grid', gridTemplateColumns: '55% 45%',
+          display: 'grid', gridTemplateColumns: '55% 45%', gridTemplateRows: '1fr',
           overflow: 'hidden',
         }}>
           {/* Left: anchor item picker — scrolls independently */}
-          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
+          <div style={{ minWidth: 0, minHeight: 0, paddingRight: 28, paddingTop: 20, height: '100%', overflowY: 'auto' }}>
             {AnchorSection}
           </div>
           {/* Right: brief context (scrolls) + CTA (pinned, always above the fold) */}
-          <div style={{ minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ minWidth: 0, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ minWidth: 0, paddingTop: 20, flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
                 <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>

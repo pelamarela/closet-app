@@ -272,20 +272,20 @@ export default function OutfitsPage() {
           top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
           bottom: 'var(--nav-h)',
           left: 20, right: 20,
-          display: 'grid', gridTemplateColumns: '70% 30%',
+          display: 'grid', gridTemplateColumns: '70% 30%', gridTemplateRows: '1fr',
           overflow: 'hidden',
         }}>
           {/* Left: calendar */}
-          <div style={{ minWidth: 0, paddingRight: 28, paddingTop: 16, height: '100%', overflowY: 'auto' }}>
+          <div style={{ minWidth: 0, minHeight: 0, paddingRight: 28, paddingTop: 16, height: '100%', overflowY: 'auto' }}>
             {MonthNav}
             {StatsStrip}
             {CalendarGrid}
           </div>
           {/* Right: outfit library — scrolls independently */}
-          <div style={{ minWidth: 0, paddingTop: 16, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ minWidth: 0, minHeight: 0, paddingTop: 16, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             {LibraryHeader}
-            <div style={{ flex: 1, overflowY: 'auto' }}>{LibraryList}</div>
-            <div style={{ paddingTop: 16, paddingBottom: 8 }}>{LogButton}</div>
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>{LibraryList}</div>
+            <div style={{ flexShrink: 0, paddingTop: 16, paddingBottom: 8 }}>{LogButton}</div>
           </div>
         </div>
       ) : (

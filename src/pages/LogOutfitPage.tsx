@@ -236,7 +236,7 @@ export default function LogOutfitPage() {
           top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
           bottom: 'var(--nav-h)',
           left: 20, right: 20,
-          display: 'grid', gridTemplateColumns: '58% 42%',
+          display: 'grid', gridTemplateColumns: '58% 42%', gridTemplateRows: '1fr',
           overflow: 'hidden',
         }}>
           {/* Left: item picker (scrolls within its own capped area) + fragrance (always visible below) */}
