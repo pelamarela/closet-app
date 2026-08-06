@@ -494,9 +494,10 @@ export default function ShopPage() {
         <UButton
           full icon="spark"
           disabled={loading || !imagePreview}
+          loading={loading}
           onClick={handleAnalyze}
         >
-          {loading ? 'Analyzing…' : 'Analyze this piece'}
+          Analyze this piece
         </UButton>
       </FixedBar>
     </div>

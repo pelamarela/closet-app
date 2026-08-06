@@ -201,13 +201,33 @@ export function MonoTag({ children, filled = false, accent = false }: {
   )
 }
 
-export function UButton({ children, variant = 'primary', icon, full, onClick, disabled, type = 'button', style: extra }: {
+export function BouncingDots({ size = 4, gap = 4, color = 'currentColor' }: {
+  size?: number
+  gap?: number
+  color?: string
+}) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap }}>
+      {[0, 1, 2].map(i => (
+        <span key={i} style={{
+          width: size, height: size, borderRadius: '50%',
+          background: color, display: 'inline-block',
+          animation: 'dot-bounce 1.4s ease-in-out infinite',
+          animationDelay: `${i * 0.16}s`,
+        }} />
+      ))}
+    </span>
+  )
+}
+
+export function UButton({ children, variant = 'primary', icon, full, onClick, disabled, loading, type = 'button', style: extra }: {
   children: React.ReactNode
   variant?: 'primary' | 'secondary' | 'ghost' | 'accent'
   icon?: string
   full?: boolean
   onClick?: () => void
   disabled?: boolean
+  loading?: boolean
   type?: 'button' | 'submit'
   style?: React.CSSProperties
 }) {
@@ -235,8 +255,12 @@ export function UButton({ children, variant = 'primary', icon, full, onClick, di
         ...extra,
       }}
     >
-      {icon && <Icon name={icon} size={15} stroke={2} />}
-      {children}
+      {loading ? <BouncingDots color={v.color} /> : (
+        <>
+          {icon && <Icon name={icon} size={15} stroke={2} />}
+          {children}
+        </>
+      )}
     </button>
   )
 }

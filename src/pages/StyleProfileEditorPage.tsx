@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
-import { AppBar, SectionLabel, UButton, MonoTag, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
+import { AppBar, SectionLabel, UButton, MonoTag, BouncingDots, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import FixedBar from '../components/FixedBar'
 import { COLOR_SEASONS, COLOR_SEASON_MAP } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
@@ -121,7 +121,7 @@ export default function StyleProfileEditorPage() {
             </div>
           </div>
           <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 12 }}>
-            {generating ? '…' : 'AI ›'}
+            {generating ? <BouncingDots color="rgba(0,0,0,0.4)" /> : 'AI ›'}
           </div>
         </button>
       {generateError && (
