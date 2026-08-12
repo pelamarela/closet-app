@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH, ACCENT } from '../components/ui'
+import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH, ACCENT, TOPBAR_H } from '../components/ui'
 import type { Outfit, Item } from '../types/database'
 import ItemCollage from '../components/ItemCollage'
 import PieceRow from '../components/PieceRow'
@@ -188,13 +188,22 @@ export default function OutfitDetailPage() {
       />
 
       {isDesktop ? (
-        /* Desktop: 2-column, stretched to equal height so the collage fills
-           whatever height the pieces list on the right ends up needing,
-           instead of sitting in a fixed box with blank space below it. */
-        <div style={{ display: 'flex', gap: 0, margin: '20px 20px 0', alignItems: 'stretch' }}>
-          {/* Left: collage (fills available height) + optional outfit photo */}
-          <div style={{ width: '55%', flexShrink: 0, minWidth: 0, paddingRight: 28, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ position: 'relative', flex: 1, minHeight: 360 }}>
+        // Anchored to the viewport (top bar to bottom nav), same pattern as
+        // Suggest/Log-outfit, so the collage fills the actual available
+        // screen height instead of just matching whatever height its sibling
+        // column happens to need — a short pieces list was leaving a large
+        // blank gap between the content and the bottom nav.
+        <div style={{
+          position: 'fixed',
+          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+          bottom: 'var(--nav-h)',
+          left: 20, right: 20,
+          display: 'flex',
+          overflow: 'hidden',
+        }}>
+          {/* Left: collage (fills full height) + optional outfit photo */}
+          <div style={{ width: '55%', flexShrink: 0, minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
               <ItemCollage items={items} fill />
               {!outfitImageUrl && outfit.weather && (
                 <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
@@ -217,11 +226,11 @@ export default function OutfitDetailPage() {
               </div>
             )}
           </div>
-          {/* Right: title + pieces */}
-          <div style={{ width: '45%', minWidth: 0 }}>
+          {/* Right: title + pieces — scrolls independently if it overflows */}
+          <div style={{ width: '45%', minWidth: 0, height: '100%', paddingTop: 20, overflowY: 'auto' }}>
             {TitleBlock}
             {PiecesList}
-            <div style={{ marginTop: 24 }}>
+            <div style={{ marginTop: 24, paddingBottom: 20 }}>
               <LogOutfitButton full onClick={handleRepeat}>Repeat outfit</LogOutfitButton>
             </div>
           </div>

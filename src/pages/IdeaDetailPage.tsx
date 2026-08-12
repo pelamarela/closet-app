@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, Icon, MONO, UI, INK, ACCENT } from '../components/ui'
+import { AppBar, SectionLabel, Icon, MONO, UI, INK, ACCENT, TOPBAR_H } from '../components/ui'
 import type { OutfitIdea, Item } from '../types/database'
 import ItemCollage from '../components/ItemCollage'
 import PieceRow from '../components/PieceRow'
@@ -142,18 +142,25 @@ export default function IdeaDetailPage() {
       />
 
       {isDesktop ? (
-        // Stretched to equal height so the collage fills whatever height the
-        // pieces list on the right ends up needing, instead of sitting in a
-        // fixed box with blank space below it.
-        <div style={{ display: 'flex', margin: '20px 20px 0', alignItems: 'stretch', overflow: 'hidden' }}>
-          <div style={{ width: '50%', flexShrink: 0, minWidth: 0, paddingRight: 28, position: 'relative', minHeight: 360 }}>
+        // Anchored to the viewport (top bar to bottom nav), same pattern as
+        // Suggest/Log-outfit, so the collage fills the actual available
+        // screen height instead of just matching its sibling column's height.
+        <div style={{
+          position: 'fixed',
+          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+          bottom: 'var(--nav-h)',
+          left: 20, right: 20,
+          display: 'flex',
+          overflow: 'hidden',
+        }}>
+          <div style={{ width: '50%', flexShrink: 0, minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', position: 'relative' }}>
             <ItemCollage items={items} fill />
           </div>
-          <div style={{ width: '50%', minWidth: 0 }}>
+          <div style={{ width: '50%', minWidth: 0, height: '100%', paddingTop: 20, overflowY: 'auto' }}>
             {TitleBlock}
             {ReasoningBlock}
             {PiecesList}
-            <div style={{ marginTop: 24 }}>
+            <div style={{ marginTop: 24, paddingBottom: 20 }}>
               <LogOutfitButton full onClick={handleLog}>Log this outfit</LogOutfitButton>
             </div>
           </div>
