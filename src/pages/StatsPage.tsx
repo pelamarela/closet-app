@@ -23,13 +23,14 @@ function seasonOf(dateWorn: string): Season {
 }
 
 // Main pieces (the outfit's actual silhouette) get their own "most worn"
-// ranking, separate from accessories — otherwise accessories dominate the
-// list purely because jewelry/bags get re-worn far more often than any
-// single garment. Fragrance gets its own tertiary ranking for the same reason.
-const MAIN_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
-type WearTier = 'main' | 'secondary' | 'tertiary'
+// ranking, separate from shoes/accessories/fragrance — otherwise those
+// dominate the list purely because they get re-worn far more often than
+// any single garment.
+const MAIN_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'outerwear'])
+const WEAR_TIERS = ['main', 'shoes', 'accessory', 'fragrance'] as const
+type WearTier = typeof WEAR_TIERS[number]
 const wearTierOf = (category: string): WearTier =>
-  MAIN_CATEGORIES.has(category) ? 'main' : category === 'accessory' ? 'secondary' : 'tertiary'
+  MAIN_CATEGORIES.has(category) ? 'main' : category === 'shoes' ? 'shoes' : category === 'accessory' ? 'accessory' : 'fragrance'
 
 function titleCase(s: string) {
   return s.slice(0, 1).toUpperCase() + s.slice(1)
@@ -118,16 +119,18 @@ export default function StatsPage() {
       const season = seasonOf(o.date_worn)
       for (const id of o.item_ids) counts[season][id] = (counts[season][id] ?? 0) + 1
     }
-    const empty = (): Record<WearTier, TierBucket> => ({ main: [], secondary: [], tertiary: [] })
+    const empty = (): Record<WearTier, TierBucket> => ({ main: [], shoes: [], accessory: [], fragrance: [] })
     const result: Record<Season, Record<WearTier, TierBucket>> = { winter: empty(), spring: empty(), summer: empty(), fall: empty() }
+    // Multiples of 3 (main/shoes/accessory) so mobile's fixed 3-column grid
+    // never strands a single lonely item on its own last row.
+    const tierLimits: Record<WearTier, number> = { main: 12, shoes: 12, accessory: 12, fragrance: 5 }
     for (const season of SEASONS) {
       const entries = Object.entries(counts[season])
         .map(([id, count]) => ({ item: itemById.get(id), count }))
         .filter((r): r is { item: ItemWithSignedUrl; count: number } => !!r.item)
-      const byTier: Record<WearTier, TierBucket> = { main: [], secondary: [], tertiary: [] }
+      const byTier = empty()
       for (const entry of entries) byTier[wearTierOf(entry.item.category)].push(entry)
-      const tierLimits: Record<WearTier, number> = { main: 10, secondary: 10, tertiary: 5 }
-      for (const tier of ['main', 'secondary', 'tertiary'] as const) {
+      for (const tier of WEAR_TIERS) {
         byTier[tier] = byTier[tier].sort((a, b) => b.count - a.count).slice(0, tierLimits[tier])
       }
       result[season] = byTier
@@ -135,10 +138,7 @@ export default function StatsPage() {
     return result
   }, [outfits, itemById])
 
-  const seasonHasData = (s: Season) => {
-    const t = bySeasonTopItems[s]
-    return t.main.length > 0 || t.secondary.length > 0 || t.tertiary.length > 0
-  }
+  const seasonHasData = (s: Season) => WEAR_TIERS.some(tier => bySeasonTopItems[s][tier].length > 0)
   const availableSeasons = seasonOrder.filter(seasonHasData)
   const [season, setSeason] = useState<Season | null>(null)
   const activeSeason = (season && seasonHasData(season)) ? season : availableSeasons[0]
@@ -217,10 +217,10 @@ export default function StatsPage() {
                     />
                   )
                 }>most worn by season</SectionLabel>
-                {activeSeason && (['main', 'secondary', 'tertiary'] as const).map(tier => {
+                {activeSeason && WEAR_TIERS.map(tier => {
                   const bucket = bySeasonTopItems[activeSeason][tier]
                   if (bucket.length === 0) return null
-                  const label = tier === 'main' ? 'main pieces' : tier === 'secondary' ? 'accessories' : 'fragrances'
+                  const label = tier === 'main' ? 'main pieces' : tier === 'shoes' ? 'shoes' : tier === 'accessory' ? 'accessories' : 'fragrances'
                   return (
                     <div key={tier} style={{ marginTop: tier === 'main' ? 4 : 20 }}>
                       <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
