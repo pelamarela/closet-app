@@ -103,7 +103,7 @@ export default function OutfitDetailPage() {
   // ── Items collage ────────────────────────────────────────────────────────────
   const Collage = (
     <div style={{ position: 'relative' }}>
-      <ItemCollage items={clothingItems} />
+      <ItemCollage items={items} />
       {!outfitImageUrl && outfit.weather && (
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
           <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />

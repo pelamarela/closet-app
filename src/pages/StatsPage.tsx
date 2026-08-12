@@ -4,6 +4,7 @@ import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, MONO, UI, INK, RULE, outfitTitle } from '../components/ui'
+import ItemCollage from '../components/ItemCollage'
 
 // Two outfits count as "the same combination" if their defining pieces match —
 // a different fragrance, necklace, or jacket shouldn't split an otherwise
@@ -77,33 +78,13 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
   )
 }
 
-function OutfitCollage({ itemIds, items }: { itemIds: string[]; items: ItemWithSignedUrl[] }) {
-  const thumbItems = itemIds.slice(0, 4).map(id => items.find(i => i.id === id)).filter(Boolean) as ItemWithSignedUrl[]
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, width: 56, height: 68, flexShrink: 0 }}>
-      {thumbItems.length === 0 ? (
-        <div style={{ gridColumn: '1/-1', gridRow: '1/-1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)', borderRadius: 2 }} />
-      ) : thumbItems.map((item, i) => (
-        <div key={item.id} style={{
-          background: '#ECEAE6', borderRadius: 1, overflow: 'hidden',
-          ...(thumbItems.length === 1 ? { gridColumn: '1/-1', gridRow: '1/-1' } :
-             thumbItems.length === 3 && i === 2 ? { gridColumn: '1/-1' } : {}),
-        }}>
-          {item.signedImageUrl
-            ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)' }} />
-          }
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export default function StatsPage() {
   const navigate = useNavigate()
   const { items } = useItems()
   const { outfits } = useOutfits()
   const { isDesktop } = useBreakpoint()
+
+  const itemById = useMemo(() => new Map(items.map(i => [i.id, i])), [items])
 
   const bySeasonTopItems = useMemo(() => {
     const counts: Record<Season, Record<string, number>> = { winter: {}, spring: {}, summer: {}, fall: {} }
@@ -111,7 +92,6 @@ export default function StatsPage() {
       const season = seasonOf(o.date_worn)
       for (const id of o.item_ids) counts[season][id] = (counts[season][id] ?? 0) + 1
     }
-    const itemById = new Map(items.map(i => [i.id, i]))
     const result: Record<Season, { item: ItemWithSignedUrl; count: number }[]> = { winter: [], spring: [], summer: [], fall: [] }
     for (const season of SEASONS) {
       result[season] = Object.entries(counts[season])
@@ -121,14 +101,13 @@ export default function StatsPage() {
         .slice(0, 6)
     }
     return result
-  }, [outfits, items])
+  }, [outfits, itemById])
 
   const availableSeasons = SEASONS.filter(s => bySeasonTopItems[s].length > 0)
   const [season, setSeason] = useState<Season | null>(null)
   const activeSeason = (season && bySeasonTopItems[season].length > 0) ? season : availableSeasons[0]
 
   const byCategory = useMemo(() => {
-    const itemById = new Map(items.map(i => [i.id, i]))
     const groups: Record<string, typeof outfits> = {}
     for (const o of outfits) {
       const key = (o.occasion?.trim() || 'uncategorized').toLowerCase()
@@ -151,7 +130,7 @@ export default function StatsPage() {
         return { category, count: list.length, topCombos }
       })
       .sort((a, b) => b.count - a.count)
-  }, [outfits, items])
+  }, [outfits, itemById])
 
   const [category, setCategory] = useState<string | null>(null)
   const activeCategory = (category && byCategory.some(c => c.category === category)) ? category : byCategory[0]?.category
@@ -227,7 +206,12 @@ export default function StatsPage() {
                       }}
                     >
                       <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>0{i + 1}</span>
-                      <OutfitCollage itemIds={combo.item_ids} items={items} />
+                      <div style={{ position: 'relative', width: 56, height: 68, flexShrink: 0 }}>
+                        <ItemCollage
+                          items={combo.item_ids.map(id => itemById.get(id)).filter((it): it is ItemWithSignedUrl => !!it)}
+                          fill
+                        />
+                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK, letterSpacing: '-0.005em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {outfitTitle(combo.item_ids, items, 'outfit')}

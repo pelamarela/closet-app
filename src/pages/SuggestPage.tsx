@@ -14,6 +14,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import FixedBar from '../components/FixedBar'
 import TextBlock from '../components/TextBlock'
 import LogOutfitButton from '../components/LogOutfitButton'
+import ItemCollage from '../components/ItemCollage'
 
 type Suggestion = { item_ids: string[]; reasoning: string }
 
@@ -185,7 +186,7 @@ export default function SuggestPage() {
   }
 
   const itemMap = new Map(
-    items.map(i => [i.id, { name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }])
+    items.map(i => [i.id, { id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }])
   )
 
   const currentSuggestion = suggestions[selectedOption]
@@ -237,22 +238,7 @@ export default function SuggestPage() {
 
     const Thumbnails = (
       <div style={{ marginTop: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(outfitItems.length, 5)}, 1fr)`, gap: 6 }}>
-          {outfitItems.map((item, i) => (
-            <div key={i} style={{ position: 'relative', border: RULE, aspectRatio: '3/4', overflow: 'hidden' }}>
-              {item.signedImageUrl ? (
-                <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
-              )}
-              <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                fontFamily: MONO, fontSize: 7.5, background: 'rgba(255,255,255,0.9)',
-                padding: '2px 4px', textAlign: 'center', letterSpacing: '0.04em',
-              }}>{catLabel(item.category)}</div>
-            </div>
-          ))}
-        </div>
+        <ItemCollage items={outfitItems} aspectRatio="16/9" />
       </div>
     )
 
