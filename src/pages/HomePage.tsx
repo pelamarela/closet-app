@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { apiFetch } from '../lib/apiFetch'
@@ -50,7 +50,30 @@ export default function HomePage() {
   })()
   const prevMonthCount = outfits.filter(o => o.date_worn.startsWith(prevMonthPrefix)).length
   const monthDelta = monthOutfits.length - prevMonthCount
-  const recent = outfits.slice(0, 3)
+
+  // Desktop: the Today hero column's height varies with the collage (photo
+  // count, whether "today's pick" is showing), so the Recent list on the
+  // right measures it and fills in as many rows as actually fit, instead of
+  // a fixed count that leaves blank space below a short list.
+  const heroColRef = useRef<HTMLDivElement>(null)
+  const [recentCount, setRecentCount] = useState(3)
+  useEffect(() => {
+    if (!isDesktop) return
+    const el = heroColRef.current
+    if (!el) return
+    const ROW_H = 64   // padding + avatar + border-bottom, from the row markup below
+    const LABEL_H = 28 // SectionLabel block above the list
+    const measure = () => {
+      const count = Math.floor((el.offsetHeight - LABEL_H) / ROW_H)
+      setRecentCount(Math.max(3, count))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isDesktop])
+
+  const recent = outfits.slice(0, isDesktop ? recentCount : 3)
 
   useEffect(() => {
     getLocation()
@@ -396,7 +419,7 @@ export default function HomePage() {
           so it grows without ever leaving orphaned blank space next to short text. */}
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0' }}>
-          <div>
+          <div ref={heroColRef}>
             {TodayHeroBlock}
             {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
           </div>
