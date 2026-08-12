@@ -14,28 +14,6 @@ async function requireUser(req: VercelRequest): Promise<boolean> {
   const { data, error } = await supabase.auth.getUser(authHeader.slice(7))
   return !error && !!data.user
 }
-const COLOR_SEASON_PALETTES: Record<string, { label: string; palette: string }> = {
-  'bright-spring': { label: 'Bright Spring', palette: 'Warm, clear, high-contrast — poppy red, marigold, grass green, turquoise, warm white. Avoid: muted or dusty tones, black.' },
-  'true-spring':   { label: 'True Spring',   palette: 'Warm, fresh, medium-bright — coral, warm peach, golden yellow, leaf green, camel. Avoid: cool or ashy tones, stark black.' },
-  'light-spring':  { label: 'Light Spring',  palette: 'Warm, light, soft — peach, buttery yellow, light aqua, warm beige. Avoid: dark or heavy colors, black.' },
-  'light-summer':  { label: 'Light Summer',  palette: 'Cool, light, soft — powder blue, lavender, soft rose, light grey. Avoid: warm oranges, black, neon.' },
-  'true-summer':   { label: 'True Summer',   palette: 'Cool, muted, medium — dusty blue, mauve, soft navy, rose pink, grey-beige. Avoid: warm orange/gold, stark black.' },
-  'soft-summer':   { label: 'Soft Summer',   palette: 'Cool, muted, low-contrast — dusty rose, sage, soft plum, greyed navy. Avoid: bright warm tones, pure black/white.' },
-  'soft-autumn':   { label: 'Soft Autumn',   palette: 'Warm, muted, medium — camel, olive, terracotta, dusty rose, warm ivory. Avoid: icy brights, stark black/white, neon.' },
-  'true-autumn':   { label: 'True Autumn',   palette: 'Warm, rich, earthy — rust, mustard, forest green, chocolate brown, burnt orange. Avoid: cool icy pastels, pure white.' },
-  'deep-autumn':   { label: 'Deep Autumn',   palette: 'Warm, deep, rich — espresso, deep olive, burgundy, pumpkin, dark teal. Avoid: pale pastels, cool light tones.' },
-  'deep-winter':   { label: 'Deep Winter',   palette: 'Cool, deep, high-contrast — true black, emerald, deep red, navy, icy white. Avoid: muted earth tones, warm beige.' },
-  'true-winter':   { label: 'True Winter',   palette: 'Cool, clear, high-contrast — true red, royal blue, black, pure white, magenta. Avoid: muted/dusty tones, warm gold.' },
-  'bright-winter': { label: 'Bright Winter', palette: 'Cool, bright, high-contrast — fuchsia, ice blue, true green, black, white. Avoid: muted or warm earthy tones.' },
-}
-
-function colorSeasonBlock(colorSeason?: string | null): string {
-  if (!colorSeason) return ''
-  const entry = COLOR_SEASON_PALETTES[colorSeason]
-  if (!entry) return ''
-  return `\nCLIENT'S COLOR SEASON: ${entry.label} — ${entry.palette}\n`
-}
-
 function warmthRange(tempC: number): [number, number] {
   if (tempC < 5)  return [4, 5]
   if (tempC < 12) return [3, 5]
@@ -72,7 +50,6 @@ type RequestBody = {
   feedback_history?: FeedbackEntry[]
   previously_shown?: string[][]
   anchor_item?: AnchorItem
-  color_season?: string | null
   constants?: string[]
   formality?: number | null
   occasion_history?: OccasionHistoryEntry[]
@@ -168,7 +145,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const {
     occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item,
-    color_season, constants, formality, occasion_history,
+    constants, formality, occasion_history,
   } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
@@ -243,8 +220,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nANCHOR ITEM: The user wants to wear "${anchor_item.name}"${anchor_item.color ? ` (${anchor_item.color})` : ''} — ${anchor_item.category}${anchor_item.subcategory ? `/${anchor_item.subcategory}` : ''} · ID:${anchor_item.id}\nYou MUST include this item (ID:${anchor_item.id}) in every outfit. Your job is to suggest complementary pieces that work specifically with this item — consider its colour, formality, and silhouette when choosing what to pair it with.\n`
     : ''
 
-  const colorBlock = colorSeasonBlock(color_season)
-
   const constantsBlock = constants?.length
     ? `\nALWAYS-WORN PIECES (already part of every look — don't need to be chosen or replaced, but you may still add complementary wardrobe pieces on top): ${constants.join(', ')}\n`
     : ''
@@ -307,7 +282,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
 STYLE NOTES: ${style_profile || 'No style profile set'}
-${colorBlock}${constantsBlock}${anchorBlock}${formalityNote}${formulaBlock}${occasionHistoryBlock}${sparseBlock}
+${constantsBlock}${anchorBlock}${formalityNote}${formulaBlock}${occasionHistoryBlock}${sparseBlock}
 AVAILABLE ITEMS:
 ${itemList}
 
@@ -327,7 +302,7 @@ Rules:
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits
-- Return as many distinct valid combinations as these items can support, up to 3 — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return fewer than 3 if the pool genuinely cannot form that many valid, distinct combinations.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
+- Return as many distinct valid combinations as these items can support, up to 3 — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return fewer than 3 if the pool genuinely cannot form that many valid, distinct combinations.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
 - Be concrete and honest in your reasoning: reference the actual colours/silhouette/material at play rather than generic praise; if nothing in the available items truly works for this occasion, say so plainly instead of forcing enthusiasm
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 

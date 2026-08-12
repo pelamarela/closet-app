@@ -152,7 +152,7 @@ export default function StyleProfileEditorPage() {
 
       {/* Color season */}
       <div style={{ padding: '20px 20px 0' }}>
-        <SectionLabel right="used by shop · optional in suggest">color profile</SectionLabel>
+        <SectionLabel right="used by shop">color profile</SectionLabel>
         <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.5)', marginBottom: 10 }}>
           your seasonal color analysis, if you know it — helps judge whether a color works for you
         </div>
