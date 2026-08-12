@@ -238,7 +238,7 @@ export default function SuggestPage() {
 
     const Thumbnails = (
       <div style={{ marginTop: 14 }}>
-        <ItemCollage items={outfitItems} aspectRatio="16/9" />
+        <ItemCollage items={outfitItems} />
       </div>
     )
 

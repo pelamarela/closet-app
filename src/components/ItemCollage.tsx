@@ -52,7 +52,10 @@ function Grid({ items: cellItems }: { items: CollageItem[] }) {
   )
 }
 
-export default function ItemCollage({ items, aspectRatio = '5/4', fill = false }: Props) {
+// Source photos are standardized to 1:1, so the collage itself defaults to
+// square too — call sites with a specific reason to deviate (a wide mobile
+// banner row, say) can still override via the aspectRatio prop.
+export default function ItemCollage({ items, aspectRatio = '1/1', fill = false }: Props) {
   const garments = items.filter(i => GARMENT_CAT.has(i.category))
   const shoes = items.filter(i => i.category === 'shoes')
   const accessories = items.filter(i => i.category === 'accessory')
