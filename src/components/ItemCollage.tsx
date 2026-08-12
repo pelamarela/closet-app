@@ -30,6 +30,11 @@ const tierOf = (category: string): 0 | 1 | 2 =>
 const GARMENT_CAT = new Set(['top', 'bottom', 'one-piece', 'outerwear'])
 const posFor = (category: string) => GARMENT_CAT.has(category) ? 'top center' : 'center'
 
+// Within the main tier, garments read first (they carry the silhouette) —
+// shoes are equally "main" for identity purposes but shouldn't lead the eye.
+const MAIN_ORDER: Record<string, number> = { 'one-piece': 0, top: 0, bottom: 1, outerwear: 2, shoes: 3 }
+const byMainOrder = (a: CollageItem, b: CollageItem) => (MAIN_ORDER[a.category] ?? 1) - (MAIN_ORDER[b.category] ?? 1)
+
 const G = 3
 
 function Cell({ item, pos, style }: { item: CollageItem; pos?: string; style?: React.CSSProperties }) {
@@ -58,7 +63,7 @@ function Grid({ items: cellItems }: { items: CollageItem[] }) {
 }
 
 export default function ItemCollage({ items, aspectRatio = '5/4', fill = false }: Props) {
-  const main = items.filter(i => tierOf(i.category) === 0)
+  const main = items.filter(i => tierOf(i.category) === 0).sort(byMainOrder)
   const secondary = items.filter(i => tierOf(i.category) === 1)
   const tertiary = items.filter(i => tierOf(i.category) === 2)
   const m = main.length, s = secondary.length, t = tertiary.length
