@@ -34,10 +34,6 @@ export default function SuggestPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [weatherError, setWeatherError] = useState<string | null>(null)
-  const [avoidRecent, setAvoidRecent] = useState(false)
-  const [coldLayer, setColdLayer] = useState(false)
-  const [useColorSeason, setUseColorSeason] = useState(true)
-  const [colorSeason, setColorSeason] = useState<string | null>(null)
   const [constants, setConstants] = useState<string[]>([])
   const [profile, setProfile] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
@@ -69,10 +65,10 @@ export default function SuggestPage() {
   useEffect(() => { fetchWeather() }, [])
   useEffect(() => {
     if (!user) return
-    supabase.from('style_profile').select('description, color_season').eq('user_id', user.id).single()
+    supabase.from('style_profile').select('description').eq('user_id', user.id).single()
       .then(({ data, error }) => {
         if (error) { console.error('style_profile fetch failed:', error); return }
-        if (data) { setProfile(data.description); setColorSeason(data.color_season) }
+        if (data) setProfile(data.description)
       })
     supabase.from('constants').select('description').eq('user_id', user.id)
       .then(({ data }) => setConstants((data ?? []).map(c => c.description)))
@@ -129,7 +125,6 @@ export default function SuggestPage() {
           ({ id, name, category, subcategory, color, warmth, formality, sport })),
         style_profile: profileData?.description ?? '',
         color_season: profileData?.color_season ?? null,
-        use_color_season: useColorSeason,
         constants,
         recent_outfits,
         feedback_history,
@@ -544,38 +539,6 @@ export default function SuggestPage() {
     </div>
   )
 
-  const ConstraintsSection = (
-    <div>
-      <SectionLabel>constraints</SectionLabel>
-      <div style={{ borderTop: RULE }}>
-        {([
-          ['avoid worn this week', avoidRecent, () => setAvoidRecent(v => !v)],
-          ['use cold-layer rule (+1)', coldLayer, () => setColdLayer(v => !v)],
-          ...(colorSeason ? [['factor in color season', useColorSeason, () => setUseColorSeason(v => !v)] as [string, boolean, () => void]] : []),
-        ] as [string, boolean, () => void][]).map(([label, on, toggle], i) => (
-          <div key={i} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 0', borderBottom: RULE,
-            fontFamily: MONO, fontSize: 11,
-          }}>
-            <span style={{ color: INK }}>{label}</span>
-            <button
-              onClick={toggle}
-              style={{
-                padding: '2px 7px',
-                background: on ? INK : 'transparent',
-                color: on ? '#fff' : 'rgba(0,0,0,0.45)',
-                border: `1px solid ${on ? INK : 'rgba(0,0,0,0.15)'}`,
-                fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase',
-                fontFamily: MONO, cursor: 'pointer',
-              }}
-            >{on ? 'on' : 'off'}</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-
   const ProfileSection = (
     <div>
       <SectionLabel right={
@@ -649,7 +612,6 @@ export default function SuggestPage() {
               </div>
               {OccasionSection}
               {FormalitySection}
-              {ConstraintsSection}
               {WeatherSection}
               {ProfileSection}
             </div>
@@ -671,7 +633,6 @@ export default function SuggestPage() {
           <div style={{ padding: '20px 20px 0' }}>{OccasionSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{FormalitySection}</div>
           <div style={{ padding: '20px 20px 0' }}>{AnchorSection}</div>
-          <div style={{ padding: '20px 20px 0' }}>{ConstraintsSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{WeatherSection}</div>
           <div style={{ padding: '20px 20px 0' }}>{ProfileSection}</div>
           <FixedBar zIndex={10} column>{SuggestButton}</FixedBar>

@@ -75,7 +75,7 @@ export default function HomePage() {
 
       const res = await apiFetch('/api/suggest', {
         occasion: topOccasion, weather,
-        items: items.map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
+        items: items.filter(i => i.category !== 'fragrance').map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
           ({ id, name, category, subcategory, color, warmth, formality, sport })),
         style_profile: profileData?.description ?? '',
         color_season: profileData?.color_season ?? null,

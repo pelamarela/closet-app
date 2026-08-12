@@ -73,7 +73,6 @@ type RequestBody = {
   previously_shown?: string[][]
   anchor_item?: AnchorItem
   color_season?: string | null
-  use_color_season?: boolean
   constants?: string[]
   formality?: number | null
   occasion_history?: OccasionHistoryEntry[]
@@ -169,7 +168,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const {
     occasion, weather, items, style_profile, recent_outfits, feedback_history, previously_shown, anchor_item,
-    color_season, use_color_season, constants, formality, occasion_history,
+    color_season, constants, formality, occasion_history,
   } = req.body as RequestBody
   if (!items?.length) return res.status(400).json({ error: 'No items provided' })
 
@@ -190,8 +189,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const hasShoes = cats.includes('shoes')
     return hasShoes && (cats.some(isOnePiece) || (cats.includes('top') && cats.includes('bottom')))
   }
+  // Sport pieces stay excluded from everyday suggestions no matter how much we
+  // loosen other constraints below — only the occasion itself can lift that.
   const nonSport = isSportOccasion ? items : items.filter(i => !i.sport)
-  const candidates = canForm(filtered) ? filtered : nonSport
 
   // Hard-exclude previously shown core items (tops/bottoms/one-pieces) so Claude
   // is forced to explore the rest of the wardrobe on each regen.
@@ -199,23 +199,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Anchor item is always kept in pool regardless of exclusion rules.
   const REGEN_EXCLUDE = new Set(['top', 'bottom', 'one-piece'])
   const shownIds = new Set((previously_shown ?? []).flat())
-  const fresh = candidates.filter(i =>
+  const regenExcluded = (basePool: Item[]) => basePool.filter(i =>
     i.id === anchor_item?.id || !shownIds.has(i.id) || !REGEN_EXCLUDE.has(i.category)
   )
-  const pool = canForm(fresh) ? fresh : candidates
 
-  // Ensure anchor item is always in the pool even if it was filtered by warmth/formality
-  if (anchor_item && !pool.some(i => i.id === anchor_item.id)) {
+  // Ensure the anchor item is always present even if it was filtered out by
+  // weather/formality/regen rules.
+  const withAnchor = (basePool: Item[]): Item[] => {
+    if (!anchor_item || basePool.some(i => i.id === anchor_item.id)) return basePool
     const anchorFull = items.find(i => i.id === anchor_item.id)
-    if (anchorFull) pool.push(anchorFull)
+    return anchorFull ? [...basePool, anchorFull] : basePool
   }
 
-  // Shuffle so Claude doesn't anchor on the same list order
-  const shuffled = [...pool].sort(() => Math.random() - 0.5)
-
-  const itemList = shuffled.map(i =>
-    `ID:${i.id} | ${i.name}${i.color ? ` (${i.color})` : ''} | ${i.category}${i.subcategory ? `/${i.subcategory}` : ''} | warmth:${i.warmth} formality:${i.formality}`
-  ).join('\n')
+  // We always want 3 distinct outfit options back when the wardrobe can support
+  // them. A single strict pool often can't — so we query progressively looser
+  // pools (dropping the regen-exclusion, then the weather/formality filter) and
+  // accumulate valid, distinct suggestions across rounds until we hit 3 or run
+  // out of pools to try. Sport pieces are never reintroduced outside sport
+  // occasions, no matter how loose we get.
+  const tierPools: Item[][] = [
+    withAnchor(regenExcluded(filtered)),  // 1: on-brief + fresh picks
+    withAnchor(filtered),                 // 2: on-brief, repeats allowed
+    withAnchor(regenExcluded(nonSport)),  // 3: full wardrobe + fresh picks
+    withAnchor(nonSport),                 // 4: full wardrobe, repeats allowed
+  ]
 
   const historyText = recent_outfits.length
     ? recent_outfits.slice(0, 20).map(o =>
@@ -236,7 +243,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nANCHOR ITEM: The user wants to wear "${anchor_item.name}"${anchor_item.color ? ` (${anchor_item.color})` : ''} — ${anchor_item.category}${anchor_item.subcategory ? `/${anchor_item.subcategory}` : ''} · ID:${anchor_item.id}\nYou MUST include this item (ID:${anchor_item.id}) in every outfit. Your job is to suggest complementary pieces that work specifically with this item — consider its colour, formality, and silhouette when choosing what to pair it with.\n`
     : ''
 
-  const colorBlock = use_color_season !== false ? colorSeasonBlock(color_season) : ''
+  const colorBlock = colorSeasonBlock(color_season)
 
   const constantsBlock = constants?.length
     ? `\nALWAYS-WORN PIECES (already part of every look — don't need to be chosen or replaced, but you may still add complementary wardrobe pieces on top): ${constants.join(', ')}\n`
@@ -259,11 +266,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? `\nPAST OUTFITS FOR "${occasion}":\n${occasionHistory.slice(0, 15).map(o => `${o.date}: ${o.item_names.join(', ')}`).join('\n')}\n`
     : ''
 
-  const sparseBlock = pool.length < 5
-    ? `\nNote: only ${pool.length} wardrobe item(s) fit this occasion/weather/formality combination. If nothing here truly makes a good outfit, say so plainly in the reasoning and explain what's missing — don't force a mismatched combination just to fill the slot. Only use items from the list below; never suggest buying anything.\n`
-    : ''
+  const responseSchema = {
+    type: 'object',
+    properties: {
+      suggestions: {
+        type: 'array',
+        // Anthropic's structured-output schema only allows minItems of 0 or 1,
+        // so "return up to 3" is enforced via the prompt instruction below —
+        // and reaching 3 overall is enforced by querying progressively looser
+        // pools (see tierPools above) until we accumulate enough.
+        minItems: 1,
+        items: {
+          type: 'object',
+          properties: {
+            item_ids: { type: 'array', items: { type: 'string' } },
+            reasoning: { type: 'string' },
+          },
+          required: ['item_ids', 'reasoning'],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ['suggestions'],
+    additionalProperties: false,
+  }
 
-  const prompt = `You are a personal stylist. Suggest 2–3 outfit combinations from the items listed.
+  async function requestTier(poolItems: Item[]): Promise<Suggestion[]> {
+    // Shuffle so Claude doesn't anchor on the same list order
+    const shuffled = [...poolItems].sort(() => Math.random() - 0.5)
+    const itemList = shuffled.map(i =>
+      `ID:${i.id} | ${i.name}${i.color ? ` (${i.color})` : ''} | ${i.category}${i.subcategory ? `/${i.subcategory}` : ''} | warmth:${i.warmth} formality:${i.formality}`
+    ).join('\n')
+
+    const sparseBlock = poolItems.length < 5
+      ? `\nNote: only ${poolItems.length} wardrobe item(s) fit this occasion/weather/formality combination. If nothing here truly makes a good outfit, say so plainly in the reasoning and explain what's missing — don't force a mismatched combination just to fill the slot. Only use items from the list below; never suggest buying anything.\n`
+      : ''
+
+    const prompt = `You are a personal stylist. Suggest up to 3 distinct outfit combinations from the items listed.
 
 OCCASION: ${occasion || 'unspecified'}
 WEATHER: ${weather.temp_c}°C, ${weather.conditions}
@@ -288,63 +327,28 @@ Rules:
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
 - Vary the suggestions — don't repeat the same item across all outfits
-- Always return at least 2 outfits if the available items can support two distinct valid combinations — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return a single outfit if the pool genuinely cannot form a second valid, distinct combination.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
+- Return as many distinct valid combinations as these items can support, up to 3 — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return fewer than 3 if the pool genuinely cannot form that many valid, distinct combinations.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${colorBlock ? '\n- Favor combinations whose colours sit within the client\'s color season palette; avoid combinations built around a clear clash' : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
 - Be concrete and honest in your reasoning: reference the actual colours/silhouette/material at play rather than generic praise; if nothing in the available items truly works for this occasion, say so plainly instead of forcing enthusiasm
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
 Respond with JSON only, no markdown fences:
 {"suggestions":[{"item_ids":["id1","id2"],"reasoning":"..."}]}`
 
-  const responseSchema = {
-    type: 'object',
-    properties: {
-      suggestions: {
-        type: 'array',
-        // Anthropic's structured-output schema only allows minItems of 0 or 1,
-        // so "at least 2 when the pool supports it" is enforced via the prompt
-        // instruction above (line 291) instead of the schema.
-        minItems: 1,
-        items: {
-          type: 'object',
-          properties: {
-            item_ids: { type: 'array', items: { type: 'string' } },
-            reasoning: { type: 'string' },
-          },
-          required: ['item_ids', 'reasoning'],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ['suggestions'],
-    additionalProperties: false,
-  }
-
-  let message
-  try {
-    message = await client.messages.create({
+    const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       output_config: { format: { type: 'json_schema', schema: responseSchema } },
       messages: [{ role: 'user', content: prompt }],
     })
-  } catch (err) {
-    console.error('suggest error:', err)
-    return res.status(500).json({ error: err instanceof Error ? err.message : 'Suggestion failed' })
-  }
 
-  const textBlock = message.content.find(b => b.type === 'text')
-  const raw = textBlock ? textBlock.text : ''
-  const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-
-  let suggestions: Suggestion[]
-  try {
+    const textBlock = message.content.find(b => b.type === 'text')
+    const raw = textBlock ? textBlock.text : ''
+    const text = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
     const parsed = JSON.parse(text)
-    suggestions = parsed.suggestions ?? []
-  } catch {
-    return res.status(500).json({ error: 'Failed to parse suggestions', raw })
+    return parsed.suggestions ?? []
   }
 
-  const idToItem = new Map(pool.map(i => [i.id, i]))
+  const idToItem = new Map(items.map(i => [i.id, i]))
 
   const count = (cats: string[], cat: string) => cats.filter(c => c === cat).length
 
@@ -364,16 +368,49 @@ Respond with JSON only, no markdown fences:
     return cats.includes('top') && cats.includes('bottom')
   }
 
-  const safe = suggestions
-    .map(s => ({ ...s, item_ids: s.item_ids.filter(id => idToItem.has(id)) }))
-    .filter(s => isValidOutfit(s.item_ids))
-    .filter(s => !anchor_item || s.item_ids.includes(anchor_item.id))
+  const validate = (raw: Suggestion[]): Suggestion[] =>
+    raw
+      .map(s => ({ ...s, item_ids: s.item_ids.filter(id => idToItem.has(id)) }))
+      .filter(s => isValidOutfit(s.item_ids))
+      .filter(s => !anchor_item || s.item_ids.includes(anchor_item.id))
+
+  const MAX_SUGGESTIONS = 3
+  const accumulated: Suggestion[] = []
+  const seenOutfits = new Set<string>()
+  const triedPools = new Set<string>()
+  let lastErr: unknown = null
+
+  for (const tierPool of tierPools) {
+    if (accumulated.length >= MAX_SUGGESTIONS) break
+    if (!canForm(tierPool)) continue
+    const signature = [...tierPool.map(i => i.id)].sort().join(',')
+    if (triedPools.has(signature)) continue
+    triedPools.add(signature)
+
+    try {
+      const raw = await requestTier(tierPool)
+      for (const s of validate(raw)) {
+        const key = [...s.item_ids].sort().join('|')
+        if (seenOutfits.has(key)) continue
+        seenOutfits.add(key)
+        accumulated.push(s)
+        if (accumulated.length >= MAX_SUGGESTIONS) break
+      }
+    } catch (err) {
+      console.error('suggest tier error:', err)
+      lastErr = err
+    }
+  }
+
+  if (accumulated.length === 0 && lastErr) {
+    return res.status(500).json({ error: lastErr instanceof Error ? lastErr.message : 'Suggestion failed' })
+  }
 
   // Belt-and-suspenders repeat check: even though the prompt already sees past
   // outfits for this occasion, flag it explicitly if a suggestion still lands on
   // an exact repeat within the formality-scaled window, rather than blocking it.
   const windowDays = repeatWindowDays(fRange)
-  const withRepeatNotes = safe.map(s => {
+  const withRepeatNotes = accumulated.map(s => {
     if (!occasion) return s
     const names = s.item_ids.map(id => idToItem.get(id)?.name).filter((n): n is string => !!n)
     const repeatDate = findRepeat(occasionHistory, names, windowDays)
