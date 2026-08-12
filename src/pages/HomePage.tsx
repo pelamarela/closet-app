@@ -94,7 +94,7 @@ export default function HomePage() {
   }
 
   const TodayHeroBlock = (
-    <div style={{ display: 'flex', flexDirection: 'column', height: isDesktop && todayOutfit ? '100%' : undefined }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       <SectionLabel>today</SectionLabel>
       {loading ? (
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>loading…</div>
@@ -103,17 +103,18 @@ export default function HomePage() {
           onClick={() => navigate(`/outfits/${todayOutfit.id}`)}
           style={{
             width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-            display: 'flex', alignItems: isDesktop ? 'stretch' : 'center', gap: 16,
-            flex: isDesktop ? 1 : undefined, minHeight: 0,
+            display: 'flex', alignItems: 'center', gap: 16,
           }}
         >
-          <div style={{ flex: isDesktop ? '0 0 20%' : 1, minWidth: 0, position: isDesktop ? 'relative' : undefined }}>
+          {/* Sized by width, natural 1:1 height — no fill/stretch trick, so the
+              card's height comes from the image's real proportions instead of
+              an arbitrary pixel guess (which left orphaned text last time). */}
+          <div style={{ flex: isDesktop ? '0 0 42%' : 1, minWidth: 0 }}>
             <ItemCollage
               items={todayOutfit.item_ids
                 .map(id => items.find(i => i.id === id))
                 .filter((i): i is NonNullable<typeof i> => !!i)}
               aspectRatio="1/1"
-              fill={isDesktop}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -389,14 +390,12 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero (+ today's pick below it) + Recent — one aligned row on desktop, shared row height.
-          minHeight gives the hero collage real presence instead of shrinking to
-          match however short the Recent list's natural content happens to be —
-          and since the rest of the page is normal flow, a taller row here also
-          pushes the weather/stats block down, closing the gap before the
-          fixed action bar on tall viewports. */}
+      {/* Today hero (+ today's pick below it) + Recent — one aligned row on desktop, shared
+          row height. The hero column's height now comes from the collage's own
+          width-driven 1:1 size (see TodayHeroBlock) rather than a forced minHeight,
+          so it grows without ever leaving orphaned blank space next to short text. */}
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0', minHeight: 420 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0' }}>
           <div>
             {TodayHeroBlock}
             {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
