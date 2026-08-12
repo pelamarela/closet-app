@@ -301,8 +301,8 @@ Rules:
 - Never combine a one-piece with a separate top or bottom
 - Never include two tops, two bottoms, or two one-pieces
 - Outerwear and accessories are optional additions
-- Vary the suggestions — don't repeat the same item across all outfits
-- Return as many distinct valid combinations as these items can support, up to 3 — shared pieces (e.g. the same shoes) across outfits are fine, only the tops/bottoms/one-piece need to differ. Only return fewer than 3 if the pool genuinely cannot form that many valid, distinct combinations.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
+- The point of variety is the OUTFIT, not the trimmings: each suggestion's top+bottom (or one-piece) MUST be a genuinely different combination from every other suggestion. Swapping only an accessory, outerwear layer, or shoe while keeping the same top/bottom/one-piece is NOT a distinct outfit — do not spend a slot on that.
+- Return as many outfits with distinct core pieces as these items can support, up to 3 — shoes can repeat across outfits, but the top/bottom/one-piece must not. Only return fewer than 3 if the pool genuinely cannot form that many outfits with distinct core pieces.${anchor_item ? '\n- Every suggestion MUST include the anchor item ID:' + anchor_item.id : ''}${constantsBlock ? '\n- Assume the always-worn pieces are present in every outfit — don\'t suggest wardrobe items that duplicate them' : ''}
 - Be concrete and honest in your reasoning: reference the actual colours/silhouette/material at play rather than generic praise; if nothing in the available items truly works for this occasion, say so plainly instead of forcing enthusiasm
 - Keep reasoning to 1–2 sentences${anchor_item ? '; explain why the chosen pieces complement the anchor item' : ''}
 
@@ -349,9 +349,16 @@ Respond with JSON only, no markdown fences:
       .filter(s => isValidOutfit(s.item_ids))
       .filter(s => !anchor_item || s.item_ids.includes(anchor_item.id))
 
+  // "Distinct" is judged by core pieces only (top/bottom/one-piece) — swapping
+  // just an accessory, outerwear layer, or shoe while keeping the same base is
+  // not a different outfit, so it must not count as one of the 3 slots.
+  const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece'])
+  const coreSignature = (ids: string[]) =>
+    ids.filter(id => CORE_CATEGORIES.has(idToItem.get(id)?.category ?? '')).sort().join('|')
+
   const MAX_SUGGESTIONS = 3
   const accumulated: Suggestion[] = []
-  const seenOutfits = new Set<string>()
+  const seenCores = new Set<string>()
   const triedPools = new Set<string>()
   let lastErr: unknown = null
 
@@ -365,9 +372,9 @@ Respond with JSON only, no markdown fences:
     try {
       const raw = await requestTier(tierPool)
       for (const s of validate(raw)) {
-        const key = [...s.item_ids].sort().join('|')
-        if (seenOutfits.has(key)) continue
-        seenOutfits.add(key)
+        const key = coreSignature(s.item_ids)
+        if (seenCores.has(key)) continue
+        seenCores.add(key)
         accumulated.push(s)
         if (accumulated.length >= MAX_SUGGESTIONS) break
       }
