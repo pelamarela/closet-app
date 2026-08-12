@@ -389,9 +389,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Today hero (+ today's pick below it) + Recent — one aligned row on desktop, shared row height */}
+      {/* Today hero (+ today's pick below it) + Recent — one aligned row on desktop, shared row height.
+          minHeight gives the hero collage real presence instead of shrinking to
+          match however short the Recent list's natural content happens to be —
+          and since the rest of the page is normal flow, a taller row here also
+          pushes the weather/stats block down, closing the gap before the
+          fixed action bar on tall viewports. */}
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 32, margin: '24px 20px 0', minHeight: 420 }}>
           <div>
             {TodayHeroBlock}
             {TodaysPickBlock && <div style={{ marginTop: 20 }}>{TodaysPickBlock}</div>}
