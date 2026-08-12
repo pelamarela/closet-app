@@ -61,7 +61,8 @@ export default function HomePage() {
     if (!isDesktop) return
     const el = heroColRef.current
     if (!el) return
-    const ROW_H = 64   // padding + avatar + border-bottom, from the row markup below
+    const ROW_H = 72   // padding + avatar + border-bottom, with headroom for the meta line
+                       // wrapping to 2 lines when occasion + rating are both present
     const LABEL_H = 28 // SectionLabel block above the list
     const measure = () => {
       const count = Math.floor((el.offsetHeight - LABEL_H) / ROW_H)
@@ -310,9 +311,13 @@ export default function HomePage() {
             <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
               {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
             </div>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>
-              {o.date_worn} · {o.item_ids.length} pieces
-              {o.weather ? ` · ${o.weather.temp_c}°` : ''}
+            <div style={{ display: 'flex', gap: 8, marginTop: 2, fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', flexWrap: 'wrap' }}>
+              {o.occasion && <><span>{o.occasion}</span><span>·</span></>}
+              <span>{o.date_worn}</span>
+              <span>·</span>
+              <span>{o.item_ids.length} pieces</span>
+              {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
+              {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
             </div>
           </div>
           <Icon name="forward" size={14} stroke={1.2} />

@@ -243,7 +243,8 @@ export default function OutfitsPage() {
               <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
                 {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
               </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', flexWrap: 'wrap' }}>
+                {o.occasion && <><span>{o.occasion}</span><span>·</span></>}
                 <span>{o.item_ids.length} pieces</span>
                 {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
                 {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
