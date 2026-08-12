@@ -14,16 +14,6 @@ type Props = {
   fill?: boolean
 }
 
-// Visual importance, not data identity: main pieces (the outfit's actual
-// silhouette — including shoes, which are as defining as a top or bottom)
-// get the big tiles; secondary pieces (accessories) get a sidebar; tertiary
-// pieces (fragrance — and anything else added later) get shown even smaller
-// within that same sidebar, never claiming a main tile.
-const MAIN_CAT = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
-const SECONDARY_CAT = new Set(['accessory'])
-const tierOf = (category: string): 0 | 1 | 2 =>
-  MAIN_CAT.has(category) ? 0 : SECONDARY_CAT.has(category) ? 1 : 2
-
 // Garment photos are usually shot on a person/hanger, so anchoring the crop
 // to the top keeps the garment itself in frame. Shoes/accessories/fragrance
 // are usually flat product shots, so a centered crop reads better.
@@ -63,9 +53,19 @@ function Grid({ items: cellItems }: { items: CollageItem[] }) {
 }
 
 export default function ItemCollage({ items, aspectRatio = '5/4', fill = false }: Props) {
-  const main = items.filter(i => tierOf(i.category) === 0).sort(byMainOrder)
-  const secondary = items.filter(i => tierOf(i.category) === 1)
-  const tertiary = items.filter(i => tierOf(i.category) === 2)
+  const garments = items.filter(i => GARMENT_CAT.has(i.category))
+  const shoes = items.filter(i => i.category === 'shoes')
+  const accessories = items.filter(i => i.category === 'accessory')
+  const other = items.filter(i => !GARMENT_CAT.has(i.category) && i.category !== 'shoes' && i.category !== 'accessory')
+
+  // Shoes are as defining as a top/bottom, so they normally sit with the main
+  // pieces — but if there are no accessories to fill the sidebar, that leaves
+  // an empty sidebar next to an awkward spanning tile in the main grid. Move
+  // shoes to the sidebar instead in that case.
+  const shoesInMain = accessories.length > 0 || garments.length === 0
+  const main = (shoesInMain ? [...garments, ...shoes] : garments).sort(byMainOrder)
+  const secondary = shoesInMain ? accessories : shoes
+  const tertiary = other
   const m = main.length, s = secondary.length, t = tertiary.length
   const total = m + s + t
 
