@@ -294,7 +294,7 @@ export default function StatsPage() {
                             padding: '16px 0', borderBottom: RULE,
                           }}
                         >
-                          <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>0{i + 1}</span>
+                          <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 600, color: INK, lineHeight: 1, flexShrink: 0, width: 20 }}>0{i + 1}</span>
                           <div style={{ position: 'relative', width: 120, height: 120, flexShrink: 0 }}>
                             <ItemCollage
                               items={combo.item_ids.map(id => itemById.get(id)).filter((it): it is ItemWithSignedUrl => !!it)}
