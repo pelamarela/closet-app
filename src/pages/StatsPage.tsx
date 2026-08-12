@@ -69,7 +69,7 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
   return (
     <button
       onClick={onClick}
-      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+      style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
     >
       <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#ECEAE6', borderRadius: 3, overflow: 'hidden' }}>
         {item.signedImageUrl
