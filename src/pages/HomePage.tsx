@@ -109,7 +109,7 @@ export default function HomePage() {
           {/* Sized by width, natural 1:1 height — no fill/stretch trick, so the
               card's height comes from the image's real proportions instead of
               an arbitrary pixel guess (which left orphaned text last time). */}
-          <div style={{ flex: isDesktop ? '0 0 42%' : 1, minWidth: 0 }}>
+          <div style={{ flex: isDesktop ? '0 0 58%' : 1, minWidth: 0 }}>
             <ItemCollage
               items={todayOutfit.item_ids
                 .map(id => items.find(i => i.id === id))
