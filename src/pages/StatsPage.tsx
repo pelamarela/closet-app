@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, MONO, UI, INK, RULE, outfitTitle } from '../components/ui'
+import { AppBar, SectionLabel, MONO, UI, INK, RULE, BG, TOPBAR_H, outfitTitle } from '../components/ui'
 import ItemCollage from '../components/ItemCollage'
 
 // Two outfits count as "the same combination" if their defining pieces match —
@@ -123,7 +123,7 @@ export default function StatsPage() {
     const result: Record<Season, Record<WearTier, TierBucket>> = { winter: empty(), spring: empty(), summer: empty(), fall: empty() }
     // Multiples of 3 (main/shoes/accessory) so mobile's fixed 3-column grid
     // never strands a single lonely item on its own last row.
-    const tierLimits: Record<WearTier, number> = { main: 12, shoes: 12, accessory: 12, fragrance: 5 }
+    const tierLimits: Record<WearTier, number> = { main: 12, shoes: 6, accessory: 6, fragrance: 6 }
     for (const season of SEASONS) {
       const entries = Object.entries(counts[season])
         .map(([id, count]) => ({ item: itemById.get(id), count }))
@@ -222,12 +222,24 @@ export default function StatsPage() {
                   if (bucket.length === 0) return null
                   const label = tier === 'main' ? 'main pieces' : tier === 'shoes' ? 'shoes' : tier === 'accessory' ? 'accessories' : 'fragrances'
                   return (
-                    <div key={tier} style={{ marginTop: tier === 'main' ? 4 : 20 }}>
-                      <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                        {label}
+                    <div key={tier} style={{ marginTop: tier === 'main' ? 4 : 28 }}>
+                      {/* Sticky per-section heading — as you scroll through a tier's
+                          items, its label stays pinned below the top bar until the
+                          next tier's heading reaches it and takes over, so it's
+                          always clear which section is on screen. */}
+                      <div style={{
+                        position: 'sticky',
+                        top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+                        zIndex: 5,
+                        background: BG,
+                        padding: '8px 0',
+                      }}>
+                        <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 700, color: INK, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {label}
+                        </div>
                       </div>
                       <div style={{
-                        display: 'grid',
+                        marginTop: 8, display: 'grid',
                         gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
                         gap: 12,
                       }}>
