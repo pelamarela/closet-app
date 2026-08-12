@@ -118,8 +118,9 @@ export default function StatsPage() {
         .filter((r): r is { item: ItemWithSignedUrl; count: number } => !!r.item)
       const byTier: Record<WearTier, TierBucket> = { main: [], secondary: [], tertiary: [] }
       for (const entry of entries) byTier[wearTierOf(entry.item.category)].push(entry)
+      const tierLimits: Record<WearTier, number> = { main: 10, secondary: 10, tertiary: 5 }
       for (const tier of ['main', 'secondary', 'tertiary'] as const) {
-        byTier[tier] = byTier[tier].sort((a, b) => b.count - a.count).slice(0, 6)
+        byTier[tier] = byTier[tier].sort((a, b) => b.count - a.count).slice(0, tierLimits[tier])
       }
       result[season] = byTier
     }
@@ -192,7 +193,7 @@ export default function StatsPage() {
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   cursor: 'pointer',
                 }}
-              >{v}</button>
+              >{v === 'season' ? 'Items' : 'Outfits'}</button>
             ))}
           </div>
 
