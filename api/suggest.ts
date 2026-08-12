@@ -300,10 +300,10 @@ Respond with JSON only, no markdown fences:
     properties: {
       suggestions: {
         type: 'array',
-        // Only require 2+ when the pool is large enough to plausibly support two
-        // distinct valid outfits — matches the sparseBlock threshold above, so we
-        // never force the model into fabricating an outfit that can't exist.
-        minItems: pool.length >= 5 ? 2 : 1,
+        // Anthropic's structured-output schema only allows minItems of 0 or 1,
+        // so "at least 2 when the pool supports it" is enforced via the prompt
+        // instruction above (line 291) instead of the schema.
+        minItems: 1,
         items: {
           type: 'object',
           properties: {
