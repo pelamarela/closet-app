@@ -70,7 +70,13 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
   return (
     <button
       onClick={onClick}
-      style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+      // minWidth: 0 overrides the grid-item default of min-width: auto — without
+      // it, a track won't shrink below its content's intrinsic size, so a large
+      // source photo can force its whole column (and every column after it, since
+      // repeat() tracks share one width) wider than the row, pushing later items
+      // off-screen. Garment photos are typically much larger source images than
+      // flat-lay shoe/accessory shots, which is why this only showed up here.
+      style={{ display: 'block', width: '100%', minWidth: 0, overflow: 'hidden', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
     >
       {/* padding-top:100% (not aspect-ratio) so the square holds even under
           mobile-width grid quirks — height is derived purely from the box's
