@@ -262,12 +262,12 @@ export default function StatsPage() {
                           onClick={() => navigate(`/outfits/${combo.outfitId}`)}
                           style={{
                             width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
-                            display: 'flex', gap: 12, alignItems: 'center',
-                            padding: '12px 0', borderBottom: RULE,
+                            display: 'flex', gap: 16, alignItems: 'center',
+                            padding: '16px 0', borderBottom: RULE,
                           }}
                         >
                           <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>0{i + 1}</span>
-                          <div style={{ position: 'relative', width: 60, height: 60, flexShrink: 0 }}>
+                          <div style={{ position: 'relative', width: 120, height: 120, flexShrink: 0 }}>
                             <ItemCollage
                               items={combo.item_ids.map(id => itemById.get(id)).filter((it): it is ItemWithSignedUrl => !!it)}
                               fill
