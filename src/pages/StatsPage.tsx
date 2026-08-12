@@ -5,6 +5,11 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, MONO, UI, INK, RULE, outfitTitle } from '../components/ui'
 
+// Two outfits count as "the same combination" if their defining pieces match —
+// a different fragrance, necklace, or jacket shouldn't split an otherwise
+// identical look into separate one-off entries.
+const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
+
 const SEASONS = ['winter', 'spring', 'summer', 'fall'] as const
 type Season = typeof SEASONS[number]
 
@@ -123,6 +128,7 @@ export default function StatsPage() {
   const activeSeason = (season && bySeasonTopItems[season].length > 0) ? season : availableSeasons[0]
 
   const byCategory = useMemo(() => {
+    const itemById = new Map(items.map(i => [i.id, i]))
     const groups: Record<string, typeof outfits> = {}
     for (const o of outfits) {
       const key = (o.occasion?.trim() || 'uncategorized').toLowerCase()
@@ -133,7 +139,10 @@ export default function StatsPage() {
       .map(([category, list]) => {
         const comboCounts = new Map<string, { item_ids: string[]; count: number; outfitId: string }>()
         for (const o of list) {
-          const key = [...o.item_ids].sort().join(',')
+          const coreIds = o.item_ids.filter(id => CORE_CATEGORIES.has(itemById.get(id)?.category ?? ''))
+          // Fall back to the full set on the rare outfit with no core pieces logged,
+          // so those don't all collapse into one empty-key bucket together.
+          const key = coreIds.length ? [...coreIds].sort().join(',') : [...o.item_ids].sort().join(',')
           const existing = comboCounts.get(key)
           if (existing) existing.count += 1
           else comboCounts.set(key, { item_ids: o.item_ids, count: 1, outfitId: o.id })
@@ -142,7 +151,7 @@ export default function StatsPage() {
         return { category, count: list.length, topCombos }
       })
       .sort((a, b) => b.count - a.count)
-  }, [outfits])
+  }, [outfits, items])
 
   const [category, setCategory] = useState<string | null>(null)
   const activeCategory = (category && byCategory.some(c => c.category === category)) ? category : byCategory[0]?.category

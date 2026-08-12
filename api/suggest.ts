@@ -126,14 +126,27 @@ function repeatWindowDays(range: [number, number] | null): number {
   return Math.round(7 + mid * 7)
 }
 
-function findRepeat(occasionHistory: OccasionHistoryEntry[], candidateNames: string[], windowDays: number): string | null {
-  if (!occasionHistory.length || !candidateNames.length) return null
+// For judging whether an outfit repeats a past one, only the defining pieces
+// matter — a different fragrance or necklace shouldn't make two otherwise
+// identical outfits look like different combinations. Shoes count as defining
+// here (unlike Regen's own within-batch variety check below), matching how
+// the stats page now judges "the same outfit."
+const REPEAT_CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
+
+function findRepeat(
+  occasionHistory: OccasionHistoryEntry[],
+  candidateNames: string[],
+  nameToCategory: Map<string, string>,
+  windowDays: number,
+): string | null {
+  const coreOnly = (names: string[]) => names.filter(n => REPEAT_CORE_CATEGORIES.has(nameToCategory.get(n) ?? ''))
+  const candidateSet = new Set(coreOnly(candidateNames))
+  if (!occasionHistory.length || !candidateSet.size) return null
   const cutoff = Date.now() - windowDays * 86400000
-  const candidateSet = new Set(candidateNames)
   for (const entry of occasionHistory) {
     const t = new Date(entry.date).getTime()
     if (Number.isNaN(t) || t < cutoff) continue
-    const set = new Set(entry.item_names)
+    const set = new Set(coreOnly(entry.item_names))
     if (set.size === candidateSet.size && [...set].every(n => candidateSet.has(n))) return entry.date
   }
   return null
@@ -392,10 +405,11 @@ Respond with JSON only, no markdown fences:
   // outfits for this occasion, flag it explicitly if a suggestion still lands on
   // an exact repeat within the formality-scaled window, rather than blocking it.
   const windowDays = repeatWindowDays(fRange)
+  const nameToCategory = new Map(items.map(i => [i.name, i.category]))
   const withRepeatNotes = accumulated.map(s => {
     if (!occasion) return s
     const names = s.item_ids.map(id => idToItem.get(id)?.name).filter((n): n is string => !!n)
-    const repeatDate = findRepeat(occasionHistory, names, windowDays)
+    const repeatDate = findRepeat(occasionHistory, names, nameToCategory, windowDays)
     if (!repeatDate) return s
     return { ...s, reasoning: `You wore this exact combination for "${occasion}" on ${repeatDate} — here it is again, but consider mixing it up if you want something fresh. ${s.reasoning}` }
   })
