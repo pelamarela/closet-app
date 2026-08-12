@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
+import { useIdeas } from '../hooks/useIdeas'
 import { useConstants } from '../hooks/useConstants'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { AppBar, SectionLabel, MonoTag, Icon, UButton, MONO, UI, INK, RULE, BLUSH } from '../components/ui'
@@ -35,6 +36,7 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const { items } = useItems()
   const { outfits } = useOutfits()
+  const { ideas } = useIdeas()
   const { constants } = useConstants()
   const { isDesktop } = useBreakpoint()
   const [profile, setProfile] = useState<string | null>(null)
@@ -130,6 +132,7 @@ export default function SettingsPage() {
       <div style={{ borderTop: RULE }}>
         <NavRow label="Items" value={`${items.length}`} onClick={() => navigate('/wardrobe')} />
         <NavRow label="Outfits" value={`${outfits.length}`} onClick={() => navigate('/outfits')} />
+        <NavRow label="Ideas" value={`${ideas.length}`} onClick={() => navigate('/ideas')} />
         <NavRow label="Statistics" onClick={() => navigate('/settings/stats')} />
         <NavRow label="Archived" onClick={() => navigate('/settings/archived')} last />
       </div>

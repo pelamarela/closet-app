@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useIdeas } from '../hooks/useIdeas'
 import { useItems } from '../hooks/useItems'
 import type { OutfitIdeaWithItems } from '../types/database'
-import { TopBar, Icon, MONO, UI, INK, RULE } from '../components/ui'
+import { AppBar, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import { outfitTitle } from '../components/ui'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import Spinner from '../components/Spinner'
@@ -82,7 +82,7 @@ export default function IdeasPage() {
 
   return (
     <div style={{ paddingBottom: isDesktop ? 40 : 80 }}>
-      <TopBar title="Ideas" />
+      <AppBar title="Ideas" back onBack={() => navigate('/settings')} />
 
       <div style={{ padding: '16px 20px 0' }}>
         <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
