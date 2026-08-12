@@ -41,19 +41,27 @@ function Dropdown({ value, onChange, options }: {
   options: { value: string; label: string }[]
 }) {
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      style={{
-        fontFamily: MONO, fontSize: 10, fontWeight: 600, color: INK,
-        textTransform: 'uppercase', letterSpacing: '0.06em',
-        background: '#fff', border: RULE, borderRadius: 4,
-        padding: '6px 8px', cursor: 'pointer',
-        WebkitAppearance: 'none' as const, appearance: 'none' as const,
-      }}
-    >
-      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
+    <div style={{ position: 'relative', display: 'inline-flex' }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          fontFamily: MONO, fontSize: 11, fontWeight: 700, color: INK,
+          textTransform: 'uppercase', letterSpacing: '0.06em',
+          background: '#fff', border: `1px solid ${INK}`, borderRadius: 4,
+          padding: '7px 28px 7px 10px', cursor: 'pointer',
+          WebkitAppearance: 'none' as const, appearance: 'none' as const,
+        }}
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <svg
+        width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </div>
   )
 }
 
@@ -63,7 +71,7 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
       onClick={onClick}
       style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
     >
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 4', background: '#ECEAE6', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#ECEAE6', borderRadius: 3, overflow: 'hidden' }}>
         {item.signedImageUrl
           ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)' }} />
@@ -220,7 +228,7 @@ export default function StatsPage() {
                       </div>
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
+                        gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
                         gap: 12,
                       }}>
                         {bucket.map(({ item, count }) => (
