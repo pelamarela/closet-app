@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import type { OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
-import { TopBar, Icon, MONO, UI, INK, RULE, RULE_DASHED, outfitTitle, TOPBAR_H } from '../components/ui'
+import { TopBar, MONO, UI, INK, RULE, RULE_DASHED, TOPBAR_H } from '../components/ui'
 import { outfitPalette } from '../lib/outfitPalette'
 import Spinner from '../components/Spinner'
 import FixedBar from '../components/FixedBar'
 import LogOutfitButton from '../components/LogOutfitButton'
+import OutfitRow from '../components/OutfitRow'
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7 }
@@ -217,42 +218,9 @@ export default function OutfitsPage() {
     </div>
   ) : (
     <div style={{ borderTop: RULE }}>
-      {visibleOutfits.map((o) => {
-        const d = new Date(o.date_worn + 'T00:00:00')
-        return (
-          <button
-            key={o.id}
-            onClick={() => navigate(`/outfits/${o.id}`)}
-            style={{
-              width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-              display: 'grid', gridTemplateColumns: '50px 48px 1fr 14px',
-              gap: 12, alignItems: 'center',
-              paddingTop: 12, paddingBottom: 12, borderBottom: RULE,
-            }}
-          >
-            <div style={{ fontFamily: MONO }}>
-              <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1 }}>{String(d.getDate()).padStart(2,'0')}</div>
-              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 3, letterSpacing: '0.04em' }}>
-                {MONTH_SHORT[d.getMonth()].toLowerCase()} · {DAY_LABELS[d.getDay()]}
-              </div>
-            </div>
-            <div style={{ width: 48, height: 60, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0 }}>
-              <OutfitThumb outfit={o} />
-            </div>
-            <div>
-              <div style={{ fontFamily: 'Geist, Inter, system-ui', fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', flexWrap: 'wrap' }}>
-                {o.occasion && <><span>{o.occasion}</span><span>·</span></>}
-                <span>{o.item_ids.length} pieces</span>
-                {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
-              </div>
-            </div>
-            <Icon name="forward" size={12} stroke={1.2} />
-          </button>
-        )
-      })}
+      {visibleOutfits.map((o) => (
+        <OutfitRow key={o.id} outfit={o} items={items} onClick={() => navigate(`/outfits/${o.id}`)} />
+      ))}
     </div>
   )
 

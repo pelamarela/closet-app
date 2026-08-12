@@ -9,12 +9,12 @@ import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { TopBar, SectionLabel, UButton, Icon, MONO, UI, INK, RULE, ACCENT, outfitTitle } from '../components/ui'
-import { outfitPalette } from '../lib/outfitPalette'
 import QuickActions from '../components/QuickActions'
 import FixedBar from '../components/FixedBar'
 import AddItemButton from '../components/AddItemButton'
 import LogOutfitButton from '../components/LogOutfitButton'
 import ItemCollage from '../components/ItemCollage'
+import OutfitRow from '../components/OutfitRow'
 
 type TodaySuggestion = { item_ids: string[]; reasoning: string }
 
@@ -61,8 +61,7 @@ export default function HomePage() {
     if (!isDesktop) return
     const el = heroColRef.current
     if (!el) return
-    const ROW_H = 72   // padding + avatar + border-bottom, with headroom for the meta line
-                       // wrapping to 2 lines when occasion + rating are both present
+    const ROW_H = 86   // shared OutfitRow: 12+12 padding, 60px thumbnail, border-bottom
     const LABEL_H = 28 // SectionLabel block above the list
     const measure = () => {
       const count = Math.floor((el.offsetHeight - LABEL_H) / ROW_H)
@@ -291,36 +290,8 @@ export default function HomePage() {
   const RecentBlock = recent.length > 0 ? (
     <>
       <SectionLabel right={<span onClick={() => navigate('/outfits')} style={{ cursor: 'pointer' }}>{outfits.length} total ›</span>}>recent</SectionLabel>
-      {recent.map((o, i) => (
-        <button
-          key={o.id}
-          onClick={() => navigate(`/outfits/${o.id}`)}
-          style={{
-            width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 12,
-            paddingTop: 10, paddingBottom: 10,
-            borderTop: i === 0 ? RULE : 'none',
-            borderBottom: RULE,
-          }}
-        >
-          <div style={{
-            width: 34, height: 42, borderRadius: 2, overflow: 'hidden', border: RULE, flexShrink: 0,
-            background: (() => { const [a,b] = outfitPalette(o.id); return `repeating-linear-gradient(135deg, ${a} 0 10px, ${b} 10px 20px)`; })(),
-          }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>
-              {outfitTitle(o.item_ids, items, o.occasion || 'outfit')}
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 2, fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.5)', flexWrap: 'wrap' }}>
-              {o.occasion && <><span>{o.occasion}</span><span>·</span></>}
-              <span>{o.date_worn}</span>
-              <span>·</span>
-              <span>{o.item_ids.length} pieces</span>
-              {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
-            </div>
-          </div>
-          <Icon name="forward" size={14} stroke={1.2} />
-        </button>
+      {recent.map(o => (
+        <OutfitRow key={o.id} outfit={o} items={items} onClick={() => navigate(`/outfits/${o.id}`)} />
       ))}
     </>
   ) : null
