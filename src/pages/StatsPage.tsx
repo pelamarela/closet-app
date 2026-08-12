@@ -196,7 +196,7 @@ export default function StatsPage() {
             ))}
           </div>
 
-          <div style={{ marginTop: 20, maxWidth: isDesktop ? 680 : undefined }}>
+          <div style={{ marginTop: 20 }}>
             {view === 'season' ? (
               <>
                 <SectionLabel right={
