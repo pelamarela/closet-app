@@ -142,11 +142,14 @@ export default function IdeaDetailPage() {
       />
 
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '50% 50%', margin: '20px 20px 0', alignItems: 'start', overflow: 'hidden' }}>
-          <div style={{ minWidth: 0, paddingRight: 28 }}>
-            {Collage}
+        // Stretched to equal height so the collage fills whatever height the
+        // pieces list on the right ends up needing, instead of sitting in a
+        // fixed box with blank space below it.
+        <div style={{ display: 'flex', margin: '20px 20px 0', alignItems: 'stretch', overflow: 'hidden' }}>
+          <div style={{ width: '50%', flexShrink: 0, minWidth: 0, paddingRight: 28, position: 'relative', minHeight: 360 }}>
+            <ItemCollage items={items} fill />
           </div>
-          <div style={{ minWidth: 0 }}>
+          <div style={{ width: '50%', minWidth: 0 }}>
             {TitleBlock}
             {ReasoningBlock}
             {PiecesList}

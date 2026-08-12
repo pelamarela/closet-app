@@ -188,13 +188,24 @@ export default function OutfitDetailPage() {
       />
 
       {isDesktop ? (
-        /* Desktop: 2-column */
-        <div style={{ display: 'grid', gridTemplateColumns: '55% 45%', gap: 0, margin: '20px 20px 0', alignItems: 'start' }}>
-          {/* Left: collage + optional outfit photo */}
-          <div style={{ minWidth: 0, paddingRight: 28 }}>
-            {Collage}
+        /* Desktop: 2-column, stretched to equal height so the collage fills
+           whatever height the pieces list on the right ends up needing,
+           instead of sitting in a fixed box with blank space below it. */
+        <div style={{ display: 'flex', gap: 0, margin: '20px 20px 0', alignItems: 'stretch' }}>
+          {/* Left: collage (fills available height) + optional outfit photo */}
+          <div style={{ width: '55%', flexShrink: 0, minWidth: 0, paddingRight: 28, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ position: 'relative', flex: 1, minHeight: 360 }}>
+              <ItemCollage items={items} fill />
+              {!outfitImageUrl && outfit.weather && (
+                <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
+                  <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
+                  <MonoKV k="cond" v={outfit.weather.conditions} />
+                  {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+                </div>
+              )}
+            </div>
             {outfitImageUrl && (
-              <div style={{ marginTop: 16, width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ marginTop: 16, width: '100%', aspectRatio: '5/4', flexShrink: 0, border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
                 <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 {outfit.weather && (
                   <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
@@ -207,7 +218,7 @@ export default function OutfitDetailPage() {
             )}
           </div>
           {/* Right: title + pieces */}
-          <div style={{ minWidth: 0 }}>
+          <div style={{ width: '45%', minWidth: 0 }}>
             {TitleBlock}
             {PiecesList}
             <div style={{ marginTop: 24 }}>
