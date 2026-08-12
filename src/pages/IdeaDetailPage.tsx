@@ -153,8 +153,13 @@ export default function IdeaDetailPage() {
           display: 'flex',
           overflow: 'hidden',
         }}>
-          <div style={{ width: '50%', flexShrink: 0, minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', position: 'relative' }}>
-            <ItemCollage items={items} fill />
+          {/* The padding lives on this outer box, not the positioned one below —
+              an absolutely-positioned fill child insets from the padding edge,
+              so padding and position:relative can't share the same element. */}
+          <div style={{ width: '50%', flexShrink: 0, minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%' }}>
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <ItemCollage items={items} fill />
+            </div>
           </div>
           <div style={{ width: '50%', minWidth: 0, height: '100%', paddingTop: 20, overflowY: 'auto' }}>
             {TitleBlock}
