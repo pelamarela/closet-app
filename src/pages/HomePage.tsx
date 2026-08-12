@@ -317,7 +317,6 @@ export default function HomePage() {
               <span>·</span>
               <span>{o.item_ids.length} pieces</span>
               {o.weather && <><span>·</span><span>{o.weather.temp_c}°</span></>}
-              {o.rating && <><span>·</span><span style={{ color: '#9C5544' }}>{'★'.repeat(o.rating)}{'·'.repeat(5 - o.rating)}</span></>}
             </div>
           </div>
           <Icon name="forward" size={14} stroke={1.2} />
