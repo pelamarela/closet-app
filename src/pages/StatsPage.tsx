@@ -72,10 +72,13 @@ function ItemThumb({ item, count, onClick }: { item: ItemWithSignedUrl; count: n
       onClick={onClick}
       style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
     >
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', background: '#ECEAE6', borderRadius: 3, overflow: 'hidden' }}>
+      {/* padding-top:100% (not aspect-ratio) so the square holds even under
+          mobile-width grid quirks — height is derived purely from the box's
+          own width, with no dependency on aspect-ratio + percentage sizing. */}
+      <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: '#ECEAE6', borderRadius: 3, overflow: 'hidden' }}>
         {item.signedImageUrl
-          ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)' }} />
+          ? <img src={item.signedImageUrl} alt={item.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)' }} />
         }
         <div style={{
           position: 'absolute', top: 4, right: 4,
@@ -229,7 +232,12 @@ export default function StatsPage() {
                           always clear which section is on screen. */}
                       <div style={{
                         position: 'sticky',
-                        top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
+                        // Layout's <main> sets overflowX:'hidden', which per spec forces
+                        // overflowY to compute as 'auto' too — making <main> (not the
+                        // window) the sticky scroll container. Its own scrollport already
+                        // starts after the safe-area inset (main has paddingTop: var(--safe-t)),
+                        // so offsetting by --safe-t again here would double-count it.
+                        top: TOPBAR_H,
                         zIndex: 5,
                         background: BG,
                         padding: '8px 0',
@@ -240,7 +248,9 @@ export default function StatsPage() {
                       </div>
                       <div style={{
                         marginTop: 8, display: 'grid',
-                        gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(96px, 1fr))' : 'repeat(3, 1fr)',
+                        gridTemplateColumns: isDesktop
+                          ? (tier === 'main' ? 'repeat(6, 1fr)' : 'repeat(auto-fit, minmax(96px, 1fr))')
+                          : 'repeat(3, 1fr)',
                         gap: 12,
                       }}>
                         {bucket.map(({ item, count }) => (
