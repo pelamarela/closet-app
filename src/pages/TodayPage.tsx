@@ -245,30 +245,27 @@ export default function TodayPage() {
     const handleRepeat = () => navigate('/outfits/new', { state: { preselectedIds: todayOutfit.item_ids, occasion: todayOutfit.occasion ?? '', date: today } })
 
     const DesktopMain = (
-      <div style={{ display: 'flex', gap: 26 }}>
-        <div style={{ width: 340, flexShrink: 0, position: 'relative' }}>
-          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', height: 400, background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 42fr) minmax(220px, 58fr)', gap: 26 }}>
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', aspectRatio: '340 / 400', background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
             <Collage items={collageItems(todayOutfit.item_ids)} fill />
           </button>
           {todayOutfit.occasion && (
             <div style={{ position: 'absolute', top: 14, left: 14, height: 30, display: 'inline-flex', alignItems: 'center', padding: '0 13px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize', pointerEvents: 'none' }}>{todayOutfit.occasion}</div>
           )}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
           <Disp s={26}>{outfitTitle(todayOutfit.item_ids, items, 'Outfit logged.')}</Disp>
           <Body s={14} style={{ marginTop: 6 }}>{todayOutfit.item_ids.length} pieces · logged at {time}</Body>
           <div style={{ marginTop: 22 }}>
             {todayItems.map((item, i) => (
               <button
                 key={item.id} onClick={() => navigate(`/wardrobe/${item.id}`)}
-                style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < todayItems.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+                style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '11px 0', background: 'none', border: 'none', borderBottom: i < todayItems.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
               >
-                <div style={{ width: 34, height: 42, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                  {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-                </div>
-                <div style={{ flex: 1, fontFamily: fS, fontSize: 14 }}>{item.name}</div>
-                <Mono s={10.5}>{item.category}</Mono>
-                <Mono s={11} c={T.cocoa} style={{ fontWeight: 700 }}>{wearCountById[item.id] ?? 0}×</Mono>
+                <div style={{ flex: 1, minWidth: 0, fontFamily: fS, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                <Mono s={10.5} style={{ flexShrink: 0 }}>{item.category}</Mono>
+                <Mono s={11} c={T.cocoa} style={{ fontWeight: 700, flexShrink: 0 }}>{wearCountById[item.id] ?? 0}×</Mono>
               </button>
             ))}
           </div>
@@ -319,7 +316,7 @@ export default function TodayPage() {
           <div style={{ padding: '30px 22px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(480px, 1fr) 400px', gap: 52, alignItems: 'start' }}>
               <div>
-                <V4Card pad={24}>{DesktopMain}</V4Card>
+                <V4Card pad={24} style={{ overflow: 'hidden' }}>{DesktopMain}</V4Card>
                 {ThisWeekCard}
               </div>
               {SidebarBlock}
