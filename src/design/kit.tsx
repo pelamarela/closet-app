@@ -3,7 +3,7 @@
 // so later phases can adapt the other v4-*.jsx reference screens with minimal translation risk.
 // This is the v3 replacement for components/ui.tsx — pages migrate to it one at a time.
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 
 // Fixed height of the persistent app header (design/Layout.tsx) — pages that
@@ -256,18 +256,55 @@ const BTN_KIND: Record<BtnKind, CSSProperties> = {
   white: { background: T.white, color: T.ink, border: 'none' },
 }
 
-export function Btn({ children, kind = 'primary', icon, full, flex, disabled = false, type = 'button', onClick, style }: {
+export function BouncingDots({ size = 4, gap = 4, color = 'currentColor' }: { size?: number; gap?: number; color?: string }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap }}>
+      {[0, 1, 2].map(i => (
+        <span key={i} style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'inline-block', animation: 'dot-bounce 1.4s ease-in-out infinite', animationDelay: `${i * 0.16}s` }} />
+      ))}
+    </span>
+  )
+}
+
+const CYCLE_MS = 1600
+
+// Fades between `phrases` on a timer — used for AI-processing button labels
+// so a long wait reads as active progress rather than a stuck spinner. Only
+// ever rendered while a `loading` flag is true, so it mounts fresh each time
+// and starts at index 0 without needing to reset on prop change.
+export function CyclingLabel({ phrases, style: extra }: { phrases: string[]; style?: CSSProperties }) {
+  const [i, setI] = useState(0)
+  const phrasesKey = phrases.join('|')
+  useEffect(() => {
+    if (phrases.length < 2) return
+    const id = setInterval(() => setI(v => (v + 1) % phrases.length), CYCLE_MS)
+    return () => clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- phrasesKey already encodes phrases.length
+  }, [phrasesKey])
+  return <span key={i} style={{ animation: `label-fade ${CYCLE_MS}ms ease-in-out`, ...extra }}>{phrases[i]}</span>
+}
+
+export function Btn({ children, kind = 'primary', icon, full, flex, disabled = false, loading = false, loadingLabels, type = 'button', onClick, style }: {
   children: ReactNode; kind?: BtnKind; icon?: IconName; full?: boolean; flex?: number
-  disabled?: boolean; type?: 'button' | 'submit'; onClick?: () => void; style?: CSSProperties
+  disabled?: boolean; loading?: boolean; loadingLabels?: string[]; type?: 'button' | 'submit'; onClick?: () => void; style?: CSSProperties
 }) {
   return (
     <button type={type} disabled={disabled} onClick={onClick} className={`ds-btn ds-btn-${kind}`} style={{
       height: 52, padding: '0 22px', borderRadius: 2, cursor: disabled ? 'not-allowed' : 'pointer',
       width: full ? '100%' : undefined, flex, fontFamily: fS, fontSize: 14.5, fontWeight: 400,
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, overflow: 'hidden',
       WebkitTapHighlightColor: 'transparent', ...BTN_KIND[kind], ...style,
     }}>
-      {icon && <V4Icon n={icon} s={19} w={1.9} />}{children}
+      {loading ? (
+        <>
+          {loadingLabels?.length && <CyclingLabel phrases={loadingLabels} style={{ overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, whiteSpace: 'nowrap' }} />}
+          <BouncingDots color={style?.color ?? BTN_KIND[kind].color as string} />
+        </>
+      ) : (
+        <>
+          {icon && <V4Icon n={icon} s={19} w={1.9} />}{children}
+        </>
+      )}
     </button>
   )
 }

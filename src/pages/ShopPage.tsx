@@ -6,6 +6,7 @@ import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
 
 type PairingItem = { id: string; name: string; reason: string }
@@ -30,6 +31,7 @@ export default function ShopPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { items } = useItems()
+  const { isDesktop } = useBreakpoint()
   const fileRef = useRef<HTMLInputElement>(null)
   const { saveIdea } = useIdeaMutations()
 
@@ -97,25 +99,21 @@ export default function ShopPage() {
 
   // ── Result ────────────────────────────────────────────────────────────────
   if (view === 'result' && result) {
-    return (
-      <div style={{ paddingBottom: 40 }}>
-        <V4Bar back title="Closet" onBack={() => navigate('/wardrobe')} right={<Mono s={11}>claude sonnet</Mono>} />
-        <div style={{ padding: '10px 22px 0' }}>
-          {imagePreview && (
-            <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden' }}>
-              <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          )}
-        </div>
-        <div style={{ padding: '20px 22px 0' }}>
-          <V4Card fill={T.peach} shadow={false} pad={18}>
-            <Mono s={11} c={T.cocoa}>the verdict</Mono>
-            <Disp s={28} style={{ marginTop: 7 }}>{VERDICT_HEADLINE[result.verdict]}</Disp>
-            {result.style_analysis && <Body s={14} c={T.g700} style={{ marginTop: 9 }}>{result.style_analysis}</Body>}
-            {result.closet_compatibility && <Body s={14} c={T.g700} style={{ marginTop: 8 }}>{result.closet_compatibility}</Body>}
-          </V4Card>
-        </div>
-        <div style={{ padding: '22px 22px 0' }}>
+    const PhotoBlock = imagePreview && (
+      <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', overflow: 'hidden' }}>
+        <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      </div>
+    )
+
+    const InfoBlock = (
+      <>
+        <V4Card fill={T.peach} shadow={false} pad={18}>
+          <Mono s={11} c={T.cocoa}>the verdict</Mono>
+          <Disp s={28} style={{ marginTop: 7 }}>{VERDICT_HEADLINE[result.verdict]}</Disp>
+          {result.style_analysis && <Body s={14} c={T.g700} style={{ marginTop: 9 }}>{result.style_analysis}</Body>}
+          {result.closet_compatibility && <Body s={14} c={T.g700} style={{ marginTop: 8 }}>{result.closet_compatibility}</Body>}
+        </V4Card>
+        <div style={{ marginTop: 22 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
             <Disp s={44} c={T.cocoa} style={{ letterSpacing: '-.03em' }}>{result.style_match}%</Disp>
             <Body s={13.5} style={{ paddingBottom: 6 }}>style match</Body>
@@ -138,7 +136,7 @@ export default function ShopPage() {
           )}
         </div>
         {result.pairing_items.length > 0 && (
-          <div style={{ padding: '24px 22px 0' }}>
+          <div style={{ marginTop: 24 }}>
             <SecH>You already own</SecH>
             {result.pairing_items.map((p, i) => {
               const item = itemMap.get(p.id)
@@ -157,7 +155,7 @@ export default function ShopPage() {
           </div>
         )}
         {result.outfit_ideas.length > 0 && (
-          <div style={{ padding: '24px 22px 0' }}>
+          <div style={{ marginTop: 24 }}>
             <SecH>It could work with</SecH>
             {result.outfit_ideas.map((idea, i) => {
               const saved = savedIdeas.has(i)
@@ -175,10 +173,27 @@ export default function ShopPage() {
             })}
           </div>
         )}
-        <div style={{ padding: '24px 22px 0', display: 'flex', gap: 10 }}>
+        <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
           <Btn kind="quiet" flex={1} icon="cam" onClick={reset}>Analyze another</Btn>
           <Btn flex={1} icon="hanger" onClick={() => { if (imageFile) setSingleFile(imageFile); navigate('/wardrobe/new') }}>Add to closet</Btn>
         </div>
+      </>
+    )
+
+    return (
+      <div style={{ paddingBottom: 40 }}>
+        <V4Bar back title="Closet" onBack={() => navigate('/wardrobe')} right={<Mono s={11}>claude sonnet</Mono>} />
+        {isDesktop ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
+            <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
+            <div>{InfoBlock}</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ padding: '10px 22px 0' }}>{PhotoBlock}</div>
+            <div style={{ padding: '20px 22px 0' }}>{InfoBlock}</div>
+          </>
+        )}
       </div>
     )
   }
@@ -222,7 +237,7 @@ export default function ShopPage() {
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-          <Btn full icon="spark" disabled={loading || !imagePreview} onClick={handleAnalyze}>{loading ? 'Thinking…' : 'Should I buy it?'}</Btn>
+          <Btn full icon="spark" disabled={loading || !imagePreview} loading={loading} loadingLabels={['Eyeing it up', 'Cross-checking your closet', 'Making the call']} onClick={handleAnalyze}>Should I buy it?</Btn>
         </div>
       </div>
     </div>

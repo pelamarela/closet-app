@@ -8,6 +8,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted , CONTENT_MAX_W } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -28,6 +29,7 @@ export default function SuggestPage() {
   const { user } = useAuth()
   const { items } = useItems()
   const { outfits } = useOutfits()
+  const { isDesktop } = useBreakpoint()
   const navState = location.state as { occasion?: string } | null
 
   const [view, setView] = useState<View>('brief')
@@ -198,26 +200,30 @@ export default function SuggestPage() {
     const current = suggestions[selectedOption]
     const currentItems = current.item_ids.map(id => items.find(i => i.id === id)).filter((i): i is NonNullable<typeof i> => !!i)
 
-    return (
-      <div style={{ paddingBottom: 40 }}>
-        <V4Bar back title="Brief" onBack={() => setView('brief')} right={<Mono s={11.5}>{selectedOption + 1} / {suggestions.length}</Mono>} />
-        <div style={{ padding: '8px 22px 0', position: 'relative' }}>
-          <div style={{ width: '100%', aspectRatio: '4/3' }}><Collage items={collageItems(current.item_ids)} fill /></div>
-          {occasion && <div style={{ position: 'absolute', top: 22, left: 30, height: 29, display: 'inline-flex', alignItems: 'center', padding: '0 12px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' }}>{occasion}</div>}
+    const PhotoBlock = (
+      <>
+        <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative' }}>
+          <Collage items={collageItems(current.item_ids)} fill />
+          {occasion && <div style={{ position: 'absolute', top: 22, left: 22, height: 29, display: 'inline-flex', alignItems: 'center', padding: '0 12px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' }}>{occasion}</div>}
         </div>
         {suggestions.length > 1 && (
-          <div style={{ padding: '16px 22px 0', display: 'flex', justifyContent: 'center' }}><Dots n={suggestions.length} i={selectedOption} /></div>
+          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}><Dots n={suggestions.length} i={selectedOption} /></div>
         )}
         {suggestions.length > 1 && (
-          <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {suggestions.map((_, i) => <Pill key={i} on={i === selectedOption} s="sm" onClick={() => setSelectedOption(i)}>Look {i + 1}</Pill>)}
           </div>
         )}
-        <div style={{ padding: '16px 22px 0' }}>
+      </>
+    )
+
+    const InfoBlock = (
+      <>
+        <div>
           <Disp s={22}>{occasion ? `${occasion.charAt(0).toUpperCase()}${occasion.slice(1)}${weather ? `, ${weather.temp_c}°` : ''}.` : weather ? `${weather.temp_c}° and ${weather.conditions}.` : 'Your look.'}</Disp>
           {anchorItem && <Mono s={10} style={{ display: 'block', marginTop: 6 }}>built around: {anchorItem.name}</Mono>}
         </div>
-        <div style={{ padding: '16px 22px 0' }}>
+        <div style={{ marginTop: 16 }}>
           {currentItems.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < currentItems.length - 1 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ width: 34, height: 42, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
@@ -228,23 +234,40 @@ export default function SuggestPage() {
             </div>
           ))}
         </div>
-        <div style={{ padding: '18px 22px 0' }}>
+        <div style={{ marginTop: 18 }}>
           <V4Card fill={T.peachSoft} shadow={false} pad={16}><Body s={14} c={T.g700}>{current.reasoning}</Body></V4Card>
         </div>
-        <div style={{ padding: '16px 22px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
           <Mono s={10}>rate this suggestion</Mono>
           <div style={{ flex: 1, borderTop: `1px dashed ${T.g200}` }} />
           <button onClick={() => handleFeedback(selectedOption, 'up')} style={{ width: 34, height: 34, background: feedback[selectedOption] === 'up' ? T.ink : 'transparent', border: `1px solid ${feedback[selectedOption] === 'up' ? T.ink : T.g200}`, color: feedback[selectedOption] === 'up' ? '#fff' : T.g400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="thumbs-up" s={15} w={1.7} /></button>
           <button onClick={() => handleFeedback(selectedOption, 'down')} style={{ width: 34, height: 34, background: feedback[selectedOption] === 'down' ? T.ink : 'transparent', border: `1px solid ${feedback[selectedOption] === 'down' ? T.ink : T.g200}`, color: feedback[selectedOption] === 'down' ? '#fff' : T.g400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="thumbs-down" s={15} w={1.7} /></button>
         </div>
-        <div style={{ padding: '20px 22px 0', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ marginTop: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
           <RoundBtn icon="bookmark" tone="peach" onClick={() => handleSaveIdea(current.item_ids, current.reasoning)} />
           <Btn flex={1} icon="check" onClick={() => handleLog(current.item_ids)}>Wear this today</Btn>
         </div>
-        {(savedMsg || saveIdeaError) && <Body s={12} c={saveIdeaError ? T.roseDeep : T.cocoa} style={{ padding: '10px 22px 0', textAlign: 'center' }}>{saveIdeaError ?? 'Saved to ideas ✓'}</Body>}
-        <div style={{ padding: '16px 22px 0', textAlign: 'center' }}>
+        {(savedMsg || saveIdeaError) && <Body s={12} c={saveIdeaError ? T.roseDeep : T.cocoa} style={{ marginTop: 10, textAlign: 'center' }}>{saveIdeaError ?? 'Saved to ideas ✓'}</Body>}
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
           <button onClick={handleSuggest} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13.5, color: T.cocoa, textDecoration: 'underline' }}>Try three different ones</button>
         </div>
+      </>
+    )
+
+    return (
+      <div style={{ paddingBottom: 40 }}>
+        <V4Bar back title="Brief" onBack={() => setView('brief')} right={<Mono s={11.5}>{selectedOption + 1} / {suggestions.length}</Mono>} />
+        {isDesktop ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
+            <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
+            <div>{InfoBlock}</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ padding: '8px 22px 0' }}>{PhotoBlock}</div>
+            <div style={{ padding: '16px 22px 0' }}>{InfoBlock}</div>
+          </>
+        )}
       </div>
     )
   }
