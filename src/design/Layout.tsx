@@ -30,7 +30,7 @@ function Header() {
   const initial = (user?.email ?? '?').charAt(0).toUpperCase()
   return (
     <div style={{
-      position: 'sticky', top: 0, zIndex: 30, background: T.paper, height: APP_HEADER_H, boxSizing: 'border-box',
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 30, background: T.paper, height: APP_HEADER_H, boxSizing: 'border-box',
       padding: '0 22px', borderBottom: `1px solid ${T.line}`,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
@@ -139,7 +139,7 @@ export default function V3Layout() {
   return (
     <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', flexDirection: 'column', width: '100%' }}>
       <Header />
-      <main style={{ flex: 1, paddingBottom: 'var(--nav-h)' }}>
+      <main style={{ flex: 1, paddingTop: APP_HEADER_H, paddingBottom: 'var(--nav-h)' }}>
         <Outlet />
       </main>
       <TabBar />

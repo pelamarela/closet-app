@@ -4,18 +4,19 @@ import { useItems } from '../hooks/useItems'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useOutfits } from '../hooks/useOutfits'
 import { setBatchFiles, setSingleFile } from '../lib/batchState'
+import { catLabel } from '../lib/categoryLabel'
 import type { Category } from '../types/database'
 import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, APP_HEADER_H } from '../design/kit'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'top', label: 'Tops' },
-  { value: 'bottom', label: 'Bottoms' },
-  { value: 'one-piece', label: 'One-piece' },
-  { value: 'outerwear', label: 'Outerwear' },
-  { value: 'shoes', label: 'Shoes' },
-  { value: 'accessory', label: 'Bags & jewellery' },
-  { value: 'fragrance', label: 'Fragrance' },
+  { value: 'all', label: 'all' },
+  { value: 'top', label: catLabel('top') },
+  { value: 'bottom', label: catLabel('bottom') },
+  { value: 'one-piece', label: catLabel('one-piece') },
+  { value: 'outerwear', label: catLabel('outerwear') },
+  { value: 'shoes', label: catLabel('shoes') },
+  { value: 'accessory', label: catLabel('accessory') },
+  { value: 'fragrance', label: catLabel('fragrance') },
 ]
 
 const STALE_DAYS = 365

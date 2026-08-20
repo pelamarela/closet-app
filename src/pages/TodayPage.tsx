@@ -205,7 +205,10 @@ export default function TodayPage() {
             <div style={{ display: 'flex', gap: 10 }}>
               {ideas.slice(0, 3).map(idea => (
                 <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: '100%', aspectRatio: '3/4', boxShadow: `inset 0 0 0 1px ${T.line}` }}><Collage items={collageItems(idea.item_ids)} /></div>
+                  <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}>
+                    <Collage items={collageItems(idea.item_ids)} />
+                    <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
+                  </div>
                   <Body s={12} style={{ marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</Body>
                 </button>
               ))}

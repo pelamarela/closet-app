@@ -7,17 +7,18 @@ import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, Mono, SecH, APP_HEADER_H } from '../design/kit'
+import { catLabel } from '../lib/categoryLabel'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, APP_HEADER_H } from '../design/kit'
 
 const CATS: { value: string; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'top', label: 'Tops' },
-  { value: 'bottom', label: 'Bottoms' },
-  { value: 'one-piece', label: 'One-piece' },
-  { value: 'outerwear', label: 'Outerwear' },
-  { value: 'shoes', label: 'Shoes' },
-  { value: 'accessory', label: 'Bags' },
-  { value: 'fragrance', label: 'Fragrance' },
+  { value: 'all', label: 'all' },
+  { value: 'top', label: catLabel('top') },
+  { value: 'bottom', label: catLabel('bottom') },
+  { value: 'one-piece', label: catLabel('one-piece') },
+  { value: 'outerwear', label: catLabel('outerwear') },
+  { value: 'shoes', label: catLabel('shoes') },
+  { value: 'accessory', label: catLabel('accessory') },
+  { value: 'fragrance', label: catLabel('fragrance') },
 ]
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
@@ -144,15 +145,16 @@ export default function LogOutfitPage() {
     return (
       <div style={{ paddingBottom: 100 }}>
         <V4Bar right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 14, color: T.cocoa }}>Cancel</button>} />
-        <div style={{ padding: '4px 22px 0' }}>
-          <Disp s={24}>What did you wear?</Disp>
-        </div>
         <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ padding: '18px 22px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600 }}>{selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'} on</div>
-              {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
-            </div>
+          <div style={{ padding: '4px 22px 0' }}>
+            <Disp s={24}>What did you wear?</Disp>
+          </div>
+          <div style={{ padding: '14px 22px 0' }}>
+            {selectedIds.size > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+                <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
               {picked.map(item => (
                 <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
@@ -175,14 +177,11 @@ export default function LogOutfitPage() {
           ) : gridItems.length === 0 ? (
             <Body s={13}>No items here.</Body>
           ) : (
-            <>
-              <Mono s={11} style={{ display: 'block', marginBottom: 10 }}>worn most recently first</Mono>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                {gridItems.map(item => (
-                  <ItemTile key={item.id} src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
-                ))}
-              </div>
-            </>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
+              {gridItems.map(item => (
+                <ItemTile key={item.id} src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
+              ))}
+            </div>
           )}
         </div>
         <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>

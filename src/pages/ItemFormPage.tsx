@@ -5,18 +5,19 @@ import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { peekSingleFile, clearSingleFile } from '../lib/batchState'
+import { catLabel } from '../lib/categoryLabel'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH } from '../design/kit'
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: 'top', label: 'Top' },
-  { value: 'bottom', label: 'Bottom' },
-  { value: 'one-piece', label: 'One-piece' },
-  { value: 'outerwear', label: 'Outerwear' },
-  { value: 'shoes', label: 'Shoes' },
-  { value: 'accessory', label: 'Bags & jewellery' },
-  { value: 'fragrance', label: 'Fragrance' },
+  { value: 'top', label: catLabel('top') },
+  { value: 'bottom', label: catLabel('bottom') },
+  { value: 'one-piece', label: catLabel('one-piece') },
+  { value: 'outerwear', label: catLabel('outerwear') },
+  { value: 'shoes', label: catLabel('shoes') },
+  { value: 'accessory', label: catLabel('accessory') },
+  { value: 'fragrance', label: catLabel('fragrance') },
 ]
 
 const EMPTY: ItemFormData = {
