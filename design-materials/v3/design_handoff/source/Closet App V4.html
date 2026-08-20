@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Closet App V4</title>
+<link rel="stylesheet" href="_ds/pelamarela-design-system-aa5cb977-b2bc-4b00-a9cc-429ff8b38a1b/colors_and_type.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;padding:0}body{font-family:"Poppins",system-ui,sans-serif;color:#000}*{box-sizing:border-box}a{color:#6F4E37;text-decoration:none}a:hover{color:#000;text-decoration:underline}</style>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#F2E1D0"/><g fill="none" stroke="#000" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M50 44a7 7 0 1 1 7-7"/><path d="M50 44v6"/><path d="M30 70l20-14 20 14"/><path d="M30 70h40"/></g></svg></template>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="v4-kit.jsx"></script>
+<script type="text/babel" src="v4-today.jsx"></script>
+<script type="text/babel" src="v4-closet.jsx"></script>
+<script type="text/babel" src="v4-log.jsx"></script>
+<script type="text/babel" src="v4-suggest.jsx"></script>
+<script type="text/babel" src="v4-ideas.jsx"></script>
+<script type="text/babel" src="v4-profile.jsx"></script>
+<script type="text/babel" src="v4-stats.jsx"></script>
+<script type="text/babel" src="v4-desktop.jsx"></script>
+<script type="text/babel" src="v4-review.jsx"></script>
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="v4-review" title="00 · The review" subtitle="Eleven findings against V3, each with what V4 does about it. Read these first — the screens that follow are the answers.">
+        <DCArtboard id="v4-rev-a" label="Structure" width={780} height={1180}><V4ReviewA /></DCArtboard>
+        <DCArtboard id="v4-rev-b" label="Craft & flow" width={780} height={1310}><V4ReviewB /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-today" title="01 · Today" subtitle="Home and Calendar merged. Weather is the headline because it decides what you put on; the week strip replaces the recent list and opens the month. Any past day \u2014 from the month list, from Statistics, from a \u201cworn with\u201d row \u2014 opens the same Outfit detail. The empty state is the app's most valuable screen \u2014 it's where Suggest gets its front door.">
+        <DCArtboard id="v4-today-logged" label="Today · logged" width={390} height={1004}><V4Today /></DCArtboard>
+        <DCArtboard id="v4-today-empty" label="Today · nothing logged" width={390} height={1064}><V4TodayEmpty /></DCArtboard>
+        <DCArtboard id="v4-month" label="Month" width={390} height={1210}><V4Month /></DCArtboard>
+        <DCArtboard id="v4-outfit-detail" label="Outfit detail" width={390} height={1340}><V4OutfitDetail /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-log" title="02 · Log an outfit" subtitle="V3's 1450px single-scroll form becomes two sheets with a visible tray. You can always see the look assembling, and selected tiles actually look selected.">
+        <DCArtboard id="v4-log-1" label="Step 1 · pieces" width={390} height={858}><V4LogPieces /></DCArtboard>
+        <DCArtboard id="v4-log-2" label="Step 2 · context" width={390} height={858}><V4LogContext /></DCArtboard>
+        <DCArtboard id="v4-log-3" label="Saved" width={390} height={894}><V4LogSaved /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-suggest" title="03 · Suggest" subtitle="One question instead of four fields — weather is context, formality is learned and stays invisible. Results are three swipeable full cards, so the options can be compared rather than toggled.">
+        <DCArtboard id="v4-sug-brief" label="Brief" width={390} height={858}><V4SuggestBrief /></DCArtboard>
+        <DCArtboard id="v4-sug-load" label="Working" width={390} height={894}><V4SuggestLoading /></DCArtboard>
+        <DCArtboard id="v4-sug-out" label="Result · 1 of 3" width={390} height={1235}><V4SuggestResult /></DCArtboard>
+        <DCArtboard id="v4-sug-error" label="Suggest · couldn't generate" width={390} height={894}><V4SuggestError /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-closet" title="04 · Closet" subtitle="One taxonomy — category pills over a single grid — instead of chips and tier headers doing the same job twice. Item detail gains actions and visual scales. Shop is a tool launched from here: it returns a verdict, names what you already own that does the job, and ends.">
+        <DCArtboard id="v4-wardrobe" label="Wardrobe" width={390} height={1245}><V4Wardrobe /></DCArtboard>
+        <DCArtboard id="v4-item" label="Item detail" width={390} height={1405}><V4Item /></DCArtboard>
+        <DCArtboard id="v4-shop-check" label="Shop · check" width={390} height={894}><V4ShopCheck /></DCArtboard>
+        <DCArtboard id="v4-shop-out" label="Shop · verdict" width={390} height={1340}><V4ShopResult /></DCArtboard>
+        <DCArtboard id="v4-shop-error" label="Shop · couldn't read link" width={390} height={894}><V4ShopError /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-ideas" title="05 · Ideas" subtitle="Promoted out of Settings › Wardrobe into a tab. Suggestions you save land here, so the save action finally means something.">
+        <DCArtboard id="v4-ideas-list" label="Ideas" width={390} height={1000}><V4Ideas /></DCArtboard>
+        <DCArtboard id="v4-idea-detail" label="Idea detail" width={390} height={1270}><V4IdeaDetail /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-me" title="06 · Me" subtitle="The account tab V3 didn't have. Statistics, Ideas, Archived and Constants become real destinations, and statistics gain time scoping, most/least-worn pairs, brand ranking, signature colour palettes and a weekday/weekend read.">
+        <DCArtboard id="v4-me-main" label="Me" width={390} height={1155}><V4Me /></DCArtboard>
+        <DCArtboard id="v4-stats-pieces" label="Statistics · pieces" width={390} height={1420}><V4StatsPieces /></DCArtboard>
+        <DCArtboard id="v4-stats-outfits" label="Statistics · outfits" width={390} height={1510}><V4StatsOutfits /></DCArtboard>
+        <DCArtboard id="v4-stats-colour" label="Statistics · colour" width={390} height={1440}><V4StatsColour /></DCArtboard>
+        <DCArtboard id="v4-style" label="How I dress" width={390} height={950}><V4StyleProfile /></DCArtboard>
+      </DCSection>
+
+      <DCSection id="v4-desktop" title="07 · Desktop" subtitle="Same information architecture, translated: the bottom tabs become a sidebar with the Log action at the top, and the phone's vertical stack becomes two columns.">
+        <DCArtboard id="v4-desk-today" label="Today · desktop" width={1440} height={900}><V4TodayDesktop /></DCArtboard>
+        <DCArtboard id="v4-desk-closet" label="Closet · desktop" width={1440} height={940}><V4ClosetDesktop /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

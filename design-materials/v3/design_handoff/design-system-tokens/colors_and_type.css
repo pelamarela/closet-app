@@ -1,0 +1,142 @@
+/* ============================================================
+   PELAMARELA — Brand Foundations (colors & type)
+   "Softly creative, quietly real."
+   Minimal black & white with peach warmth.
+   ------------------------------------------------------------
+   COLORS are the brand's current, confirmed palette (from the
+   brand board): paper, ink, peach, rose.
+   FONTS — current working direction, PROVISIONAL while the
+   identity is finalised:
+     • PelamarelaRegular → "pelamarela" handwritten wordmark (self-hosted)
+     • Syne    → display / headings (self-hosted)
+     • Poppins → body / UI (self-hosted)
+   Space Mono loads from Google Fonts CDN (substitute — see README).
+   Relative url()s resolve against this file's location (root).
+   Add to HTML <head>:
+   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+   ============================================================ */
+
+/* ---------- PelamarelaRegular — handwritten wordmark ---------- */
+@font-face{font-family:"PelamarelaRegular";src:url("fonts/PelamarelaRegular-Regular.otf") format("opentype"),url("fonts/PelamarelaRegular-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
+
+/* ---------- Syne — display ---------- */
+@font-face{font-family:"Syne";src:url("fonts/Syne-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Syne";src:url("fonts/Syne-Medium.ttf") format("truetype");font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:"Syne";src:url("fonts/Syne-SemiBold.ttf") format("truetype");font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:"Syne";src:url("fonts/Syne-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Syne";src:url("fonts/Syne-ExtraBold.ttf") format("truetype");font-weight:800;font-style:normal;font-display:swap;}
+
+/* ---------- Poppins — body / UI ---------- */
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-Light.ttf") format("truetype");font-weight:300;font-style:normal;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-Italic.ttf") format("truetype");font-weight:400;font-style:italic;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-Medium.ttf") format("truetype");font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-SemiBold.ttf") format("truetype");font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Poppins";src:url("fonts/Poppins-ExtraBold.ttf") format("truetype");font-weight:800;font-style:normal;font-display:swap;}
+
+/* ---------- Space Mono — small mono labels (Google-hosted; drop a local file in /fonts to self-host) ---------- */
+@font-face{font-family:"Space Mono";src:url("https://fonts.gstatic.com/s/spacemono/v13/i7dPIFZifjKcF5UAWdDRUEZ2RFq7AwU.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Space Mono";src:url("https://fonts.gstatic.com/s/spacemono/v13/i7dMIFZifjKcF5UAWdDRYER8QHi-EwWMbg.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;}
+
+:root {
+  /* ============================================================
+     CORE PALETTE — the four current brand colors
+     ============================================================ */
+  --paper: #F7F6F5;   /* background */
+  --ink:   #000000;   /* text */
+  --peach: #F2E1D0;   /* "logo add-on" — primary warm accent */
+  --rose:  #DFAFA1;   /* "secondary" — dusty rose */
+  --cocoa: #6F4E37;   /* warm brown — grounding earthy accent */
+  --white: #FFFFFF;
+
+  /* supporting tints / shades (derived, for flexibility) */
+  --peach-soft: #FAF2EA;
+  --peach-deep: #E9CBB0;
+  --rose-soft:  #ECCFC4;
+  --rose-deep:  #C98E7C;   /* accessible rose for small text on paper */
+  --cocoa-soft: #8A6B54;   /* lighter brown */
+  --cocoa-deep: #543A29;   /* near-espresso */
+  --line:       #E6E3E0;   /* hairline on paper */
+  --line-ink:   rgba(0,0,0,.12);
+
+  /* greys (kept neutral & honest) */
+  --grey-700: #2B2B29;
+  --grey-500: #5A5854;
+  --grey-400: #8A8884;
+  --grey-200: #D9D6D2;
+
+  /* ============================================================
+     SEMANTIC TOKENS — light (the brand default)
+     ============================================================ */
+  --bg-1: var(--paper);
+  --bg-2: var(--white);
+  --bg-3: var(--peach-soft);
+
+  --fg-1: var(--ink);
+  --fg-2: var(--grey-500);
+  --fg-3: var(--grey-400);
+  --fg-on-accent: var(--ink);
+
+  --border: var(--line);
+  --border-strong: #000000;
+
+  --accent: var(--ink);          /* primary interactive = ink */
+  --highlight: var(--peach);     /* fills / marks */
+  --highlight-alt: var(--rose);
+
+  /* ---- Radii — soft, restrained ---- */
+  --r-xs: 3px; --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-full: 999px;
+
+  /* ---- Spacing (4px base) ---- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
+  --sp-6:32px; --sp-7:48px; --sp-8:64px; --sp-9:96px;
+
+  /* ---- Shadows — soft, low, neutral ---- */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.05);
+  --shadow-md: 0 10px 30px rgba(0,0,0,.07);
+
+  /* ---- Type families (provisional working direction) ---- */
+  --font-script: "PelamarelaRegular", "Segoe Script", cursive;   /* handwritten wordmark */
+  --font-display: "Syne", "Poppins", system-ui, sans-serif;  /* headings */
+  --font-sans: "Poppins", -apple-system, "Segoe UI", sans-serif; /* body / UI */
+  --font-mono: "Space Mono", ui-monospace, "SF Mono", monospace;
+
+  /* ---- Type scale (rem, 16px root) ---- */
+  --text-xs:.75rem; --text-sm:.875rem; --text-base:1rem; --text-lg:1.125rem;
+  --text-xl:1.5rem; --text-2xl:2rem; --text-3xl:2.75rem; --text-4xl:3.75rem; --text-5xl:5rem;
+
+  --lh-tight:1.05; /* @kind other */
+  --lh-snug:1.2;   /* @kind other */
+  --lh-normal:1.6; /* @kind other */
+  --tracking-wide:.18em; --tracking-tight:-.01em;
+}
+
+/* ============================================================
+   The dotted-grid board background (brand signature surface)
+   ============================================================ */
+.pm-board-bg {
+  background-color: var(--paper);
+  background-image: radial-gradient(circle, rgba(0,0,0,.16) 1px, transparent 1.4px);
+  background-size: 26px 26px;
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT HELPERS
+   ============================================================ */
+.pm-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.pm-h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-4xl);
+  line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); color: var(--fg-1); }
+.pm-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-2xl);
+  line-height: var(--lh-snug); color: var(--fg-1); }
+.pm-script { font-family: var(--font-script); font-weight: 600; color: var(--fg-1); }
+.pm-body { font-family: var(--font-sans); font-size: var(--text-base); line-height: var(--lh-normal);
+  color: var(--fg-2); text-wrap: pretty; }
+.pm-mono { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--fg-3); }
