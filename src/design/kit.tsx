@@ -123,6 +123,29 @@ export function ItemPhoto({ src, alt = '', tone = 'sand', crop, style }: {
   return <Ph tone={tone} crop={crop} style={style} />
 }
 
+// Closet grid tile — real photo (falls back to the Ph placeholder), optional
+// worn-count badge, optional selected ring/check for pick flows.
+export function ItemTile({ src, alt = '', tone = 'sand', crop, worn, sel, onClick }: {
+  src?: string | null; alt?: string; tone?: PhTone; crop?: 'top' | 'center'
+  worn?: number; sel?: boolean; onClick?: () => void
+}) {
+  return (
+    <button onClick={onClick} className="ds-tile" style={{
+      position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', padding: 0,
+      background: 'none', cursor: 'pointer',
+      boxShadow: sel ? `0 0 0 2.5px ${T.ink}` : `inset 0 0 0 1px ${T.line}`,
+    }}>
+      <ItemPhoto src={src} alt={alt} tone={tone} crop={crop} />
+      {worn != null && (
+        <div style={{ position: 'absolute', right: 6, bottom: 6, height: 20, padding: '0 7px', borderRadius: 2, background: 'rgba(247,246,245,.92)', display: 'flex', alignItems: 'center', fontFamily: fM, fontSize: 10, fontWeight: 700 }}>{worn}×</div>
+      )}
+      {sel && (
+        <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, background: T.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="check" s={13} w={2.6} /></div>
+      )}
+    </button>
+  )
+}
+
 export function Disp({ children, s = 28, w = 600, c = T.ink, style }: {
   children: ReactNode; s?: number; w?: number; c?: string; style?: CSSProperties
 }) {
