@@ -38,7 +38,7 @@ export type IconName =
   | 'home' | 'hanger' | 'bulb' | 'user' | 'plus' | 'check' | 'back' | 'next' | 'close'
   | 'spark' | 'cal' | 'sun' | 'heart' | 'search' | 'more' | 'up' | 'down' | 'box'
   | 'archive' | 'pen' | 'cam' | 'link' | 'chart' | 'grid' | 'list' | 'repeat'
-  | 'caret' | 'bookmark' | 'trash' | 'bag'
+  | 'caret' | 'bookmark' | 'trash' | 'bag' | 'thumbs-up' | 'thumbs-down'
 
 const ICON_PATHS: Record<IconName, string> = {
   home: 'M4 11l8-6.5L20 11M6.5 9.4V19h11V9.4',
@@ -71,6 +71,8 @@ const ICON_PATHS: Record<IconName, string> = {
   bookmark: 'M6.5 4.5h11v15l-5.5-3.8-5.5 3.8z',
   trash: 'M5 7.5h14M9.5 7.5V5.3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V7.5M7 7.5 7.8 19a1.4 1.4 0 0 0 1.4 1.3h5.6A1.4 1.4 0 0 0 16.2 19l.8-11.5M10.2 11v6M13.8 11v6',
   bag: 'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
+  'thumbs-up': 'M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3',
+  'thumbs-down': 'M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10zM17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17',
 }
 
 export function V4Icon({ n, s = 22, w = 1.6, c, style }: {

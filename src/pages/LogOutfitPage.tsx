@@ -100,7 +100,7 @@ export default function LogOutfitPage() {
   }
 
   const handleSaveAsIdea = async () => {
-    await saveIdea(occasion, notes, Array.from(selectedIds))
+    await saveIdea(occasion, '', Array.from(selectedIds), notes)
     setSavedAsIdea(true)
   }
 

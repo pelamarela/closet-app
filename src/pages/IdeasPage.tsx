@@ -1,119 +1,76 @@
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useIdeas } from '../hooks/useIdeas'
 import { useItems } from '../hooks/useItems'
-import type { OutfitIdeaWithItems } from '../types/database'
-import { AppBar, Icon, MONO, UI, INK, RULE } from '../components/ui'
 import { outfitTitle } from '../components/ui'
-import { useBreakpoint } from '../hooks/useBreakpoint'
-import Spinner from '../components/Spinner'
+import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono } from '../design/kit'
+import Collage from '../design/Collage'
 
-const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-
-function IdeaRow({ idea, items, onClick }: {
-  idea: OutfitIdeaWithItems
-  items: ReturnType<typeof useItems>['items']
-  onClick: () => void
-}) {
-  const d = new Date(idea.created_at)
-  const thumbItems = idea.item_ids.slice(0, 4).map(id => items.find(i => i.id === id)).filter(Boolean) as typeof items
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-        display: 'grid', gridTemplateColumns: '44px 1fr 14px',
-        gap: 12, alignItems: 'center',
-        paddingTop: 12, paddingBottom: 12, borderBottom: RULE,
-      }}
-    >
-      {/* Mini collage */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, width: 44, height: 54, flexShrink: 0 }}>
-        {thumbItems.length === 0 ? (
-          <div style={{ gridColumn: '1/-1', gridRow: '1/-1', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)', borderRadius: 2 }} />
-        ) : thumbItems.map((item, i) => (
-          <div key={item.id} style={{
-            background: '#ECEAE6', borderRadius: 1, overflow: 'hidden',
-            ...(thumbItems.length === 1 ? { gridColumn: '1/-1', gridRow: '1/-1' } :
-               thumbItems.length === 3 && i === 2 ? { gridColumn: '1/-1' } : {}),
-          }}>
-            {item.signedImageUrl
-              ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 6px, #DCD9D3 6px 12px)' }} />
-            }
-          </div>
-        ))}
-      </div>
-
-      <div style={{ minWidth: 0, overflow: 'hidden' }}>
-        <div style={{ fontFamily: UI, fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {outfitTitle(idea.item_ids, items, idea.occasion || 'idea')}
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 4, fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-          <span style={{ flexShrink: 0 }}>{idea.item_ids.length} pieces</span>
-          {idea.occasion && <><span style={{ flexShrink: 0 }}>·</span><span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{idea.occasion}</span></>}
-          <span style={{ flexShrink: 0 }}>·</span>
-          <span style={{ flexShrink: 0 }}>{String(d.getDate()).padStart(2,'0')} {MONTH_SHORT[d.getMonth()].toLowerCase()}</span>
-        </div>
-        {idea.reasoning && (
-          <div style={{
-            fontFamily: UI, fontSize: 11, color: 'rgba(0,0,0,0.5)', marginTop: 4,
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {idea.reasoning}
-          </div>
-        )}
-      </div>
-
-      <Icon name="forward" size={12} stroke={1.2} />
-    </button>
-  )
-}
+type Filter = 'all' | 'suggested' | 'mine'
 
 export default function IdeasPage() {
   const navigate = useNavigate()
   const { ideas, loading } = useIdeas()
   const { items } = useItems()
-  const { isDesktop } = useBreakpoint()
+  const [filter, setFilter] = useState<Filter>('all')
+
+  const suggested = useMemo(() => ideas.filter(i => !!i.reasoning), [ideas])
+  const mine = useMemo(() => ideas.filter(i => !i.reasoning), [ideas])
+  const visible = filter === 'suggested' ? suggested : filter === 'mine' ? mine : ideas
+
+  const collageItems = (itemIds: string[]) => itemIds
+    .map(id => items.find(i => i.id === id))
+    .filter((i): i is NonNullable<typeof i> => !!i)
+    .map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
   if (loading) {
-    return <Spinner />
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 80 }}>
-      <AppBar title="Ideas" back onBack={() => navigate('/settings')} />
-
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          // saved outfit ideas
-        </div>
-        <div style={{ fontFamily: UI, fontSize: 28, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.1 }}>
-          {ideas.length} {ideas.length === 1 ? 'idea' : 'ideas'} saved.
-        </div>
+    <div style={{ paddingBottom: 32 }}>
+      <div style={{ padding: '4px 22px 0' }}>
+        <Disp s={30}>Ideas</Disp>
+        <Body s={13.5} style={{ marginTop: 6 }}>{ideas.length} look{ideas.length === 1 ? '' : 's'} you've saved for a day that hasn't happened yet.</Body>
       </div>
-
-      <div style={{ padding: '20px 20px 0' }}>
-        {ideas.length === 0 ? (
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', padding: '20px 0', lineHeight: 1.6 }}>
-            no ideas yet — go to <button
-              onClick={() => navigate('/suggest')}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: MONO, fontSize: 10, color: INK, borderBottom: '1px solid currentColor' }}
-            >suggest</button> and save outfits you like.
-          </div>
-        ) : (
-          <div style={{ borderTop: RULE }}>
-            {ideas.map(idea => (
-              <IdeaRow
-                key={idea.id}
-                idea={idea}
-                items={items}
-                onClick={() => navigate(`/ideas/${idea.id}`)}
-              />
-            ))}
-          </div>
-        )}
+      <div style={{ padding: '18px 22px 0' }}>
+        <Btn kind="peach" icon="spark" full onClick={() => navigate('/suggest')}>Suggest</Btn>
       </div>
+      <div style={{ display: 'flex', gap: 8, padding: '20px 22px 0', overflowX: 'auto' }}>
+        <Pill on={filter === 'all'} s="sm" count={ideas.length} onClick={() => setFilter('all')}>All</Pill>
+        <Pill on={filter === 'suggested'} s="sm" count={suggested.length} onClick={() => setFilter('suggested')}>Suggested</Pill>
+        <Pill on={filter === 'mine'} s="sm" count={mine.length} onClick={() => setFilter('mine')}>Mine</Pill>
+      </div>
+      {visible.length === 0 ? (
+        <div style={{ padding: '40px 22px 0' }}>
+          <Body s={13.5}>
+            {ideas.length === 0 ? (
+              <>No ideas yet — go to <button onClick={() => navigate('/suggest')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: fS, fontSize: 13.5, color: T.cocoa, textDecoration: 'underline' }}>Suggest</button> and save outfits you like.</>
+            ) : `No ${filter} ideas.`}
+          </Body>
+        </div>
+      ) : (
+        <div style={{ padding: '18px 22px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {visible.map(idea => {
+            const d = new Date(idea.created_at)
+            return (
+              <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', overflow: 'hidden' }}>
+                  <Collage items={collageItems(idea.item_ids)} fill />
+                  {idea.occasion && (
+                    <div style={{ position: 'absolute', top: 9, left: 9, height: 24, display: 'inline-flex', alignItems: 'center', padding: '0 10px', background: 'rgba(247,246,245,.92)', fontFamily: fS, fontSize: 11.5, fontWeight: 600, textTransform: 'capitalize' }}>{idea.occasion}</div>
+                  )}
+                  {idea.reasoning && (
+                    <div style={{ position: 'absolute', bottom: 9, right: 9, width: 24, height: 24, background: 'rgba(247,246,245,.92)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="spark" s={13} w={1.7} c={T.cocoa} /></div>
+                  )}
+                </div>
+                <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, marginTop: 8, lineHeight: 1.35 }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</div>
+                <div style={{ marginTop: 3 }}><Mono s={10.5}>saved {d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }).toLowerCase()}</Mono></div>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
