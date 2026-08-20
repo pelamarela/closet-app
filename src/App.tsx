@@ -66,6 +66,7 @@ export default function App() {
             <Route path="/ideas/:id" element={<IdeaDetailPage />} />
             <Route path="/settings" element={<MePage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
+            <Route path="/settings/stats" element={<StatsPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
@@ -74,7 +75,6 @@ export default function App() {
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
             <Route path="/settings/password" element={<ChangePasswordPage />} />
             <Route path="/settings/archived" element={<ArchivedPage />} />
-            <Route path="/settings/stats" element={<StatsPage />} />
             <Route path="/settings/constants" element={<ConstantsPage />} />
           </Route>
         </Routes>
