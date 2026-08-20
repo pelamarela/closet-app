@@ -1,8 +1,10 @@
+import type { ComponentType } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
-import HomePage from './pages/HomePage'
+import V3Layout from './design/Layout'
+import TodayPage from './pages/TodayPage'
 import WardrobePage from './pages/WardrobePage'
 import ItemFormPage from './pages/ItemFormPage'
 import ItemDetailPage from './pages/ItemDetailPage'
@@ -22,7 +24,13 @@ import ArchivedPage from './pages/ArchivedPage'
 import StatsPage from './pages/StatsPage'
 import ConstantsPage from './pages/ConstantsPage'
 
-function ProtectedRoutes() {
+// Two shells during the v3 migration: pages that have been rebuilt against
+// design/kit.tsx render under V3Layout (persistent header, 4 tabs + raised
+// Log action); everything else still renders under the old Layout (5-tab
+// nav, no persistent header) until its turn comes. Navigating between an
+// old-shell and new-shell page swaps the chrome — expected until every page
+// has migrated, see design/Layout.tsx.
+function ProtectedShell({ Shell }: { Shell: ComponentType }) {
   const { session, loading } = useAuth()
 
   if (loading) {
@@ -35,7 +43,7 @@ function ProtectedRoutes() {
 
   if (!session) return <Navigate to="/login" replace />
 
-  return <Layout />
+  return <Shell />
 }
 
 export default function App() {
@@ -44,8 +52,10 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route element={<ProtectedRoutes />}>
-            <Route path="/" element={<HomePage />} />
+          <Route element={<ProtectedShell Shell={V3Layout} />}>
+            <Route path="/" element={<TodayPage />} />
+          </Route>
+          <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe" element={<WardrobePage />} />
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />

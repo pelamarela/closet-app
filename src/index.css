@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Pelamarela's handwritten wordmark — sourced but not applied anywhere yet;
+   no v3 screen currently uses it (see design-materials/v3 handoff README). */
+@font-face {
+  font-family: "PelamarelaRegular";
+  src: url("/fonts/PelamarelaRegular-Regular.otf") format("opentype"),
+       url("/fonts/PelamarelaRegular-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-ink: #0A0A0A;
   --color-blush: #DFAFA1;
