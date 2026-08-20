@@ -94,10 +94,12 @@ export default function StyleProfileEditorPage() {
           <div style={{ marginTop: 15 }}><Btn kind="white" icon="spark" disabled={generating} style={{ height: 46, fontSize: 14 }} onClick={generateFromOutfits}>{generating ? 'Reading your looks…' : 'Draft from my history'}</Btn></div>
         </V4Card>
       </div>
-      <div style={{ position: 'fixed', bottom: 'var(--nav-h)', left: 0, right: 0, padding: '16px 22px 28px', background: T.paper, borderTop: `1px solid ${T.line}`, display: 'flex', gap: 10 }}>
-        {saveError && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 22 }}>{saveError}</Body>}
-        <Btn kind="quiet" flex={1} onClick={() => navigate('/settings')}>Discard</Btn>
-        <Btn flex={1.5} icon="check" disabled={saving || !isDirty} onClick={save}>{saving ? 'Saving…' : 'Save'}</Btn>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '16px 22px 28px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10, position: 'relative' }}>
+          {saveError && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{saveError}</Body>}
+          <Btn kind="quiet" flex={1} onClick={() => navigate('/settings')}>Discard</Btn>
+          <Btn flex={1.5} icon="check" disabled={saving || !isDirty} onClick={save}>{saving ? 'Saving…' : 'Save'}</Btn>
+        </div>
       </div>
     </div>
   )

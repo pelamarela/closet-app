@@ -183,8 +183,10 @@ export default function LogOutfitPage() {
             </>
           )}
         </div>
-        <div style={{ position: 'fixed', bottom: 'var(--nav-h)', left: 0, right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-          <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
+        <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+          <div style={{ maxWidth: 640, margin: '0 auto' }}>
+            <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
+          </div>
         </div>
       </div>
     )
@@ -259,11 +261,13 @@ export default function LogOutfitPage() {
           <V4Icon n="cam" s={17} w={1.5} />{imageFile ? imageFile.name : 'Add a photo of the full look (optional)'}
         </button>
       </div>
-      <div style={{ position: 'fixed', bottom: 'var(--nav-h)', left: 0, right: 0, padding: '14px 22px 20px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
-        {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-        <Btn full icon="check" disabled={saving} onClick={handleSave}>
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : `Save to ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}`}
-        </Btn>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
+          <Btn full icon="check" disabled={saving} onClick={handleSave}>
+            {saving ? 'Saving…' : isEdit ? 'Save changes' : `Save to ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}`}
+          </Btn>
+        </div>
       </div>
     </div>
   )

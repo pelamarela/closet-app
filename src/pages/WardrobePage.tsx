@@ -149,19 +149,21 @@ export default function WardrobePage() {
         </div>
       )}
       {selectMode && (
-        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 'var(--nav-h)', padding: '14px 22px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}`, display: 'flex', gap: 10, zIndex: 20 }}>
-          {confirmArchive ? (
-            <>
-              <Mono s={11} c={T.roseDeep} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>archive {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}?</Mono>
-              <Btn kind="quiet" onClick={() => setConfirmArchive(false)}>Cancel</Btn>
-              <Btn kind="peach" disabled={archiving} onClick={handleArchive}>{archiving ? 'Archiving…' : 'Confirm'}</Btn>
-            </>
-          ) : (
-            <>
-              <Btn kind="quiet" flex={1} onClick={() => setSelectedIds(new Set(filtered.map(i => i.id)))}>Select all</Btn>
-              <Btn kind="primary" flex={1.4} disabled={selectedIds.size === 0} onClick={() => setConfirmArchive(true)}>Archive {selectedIds.size > 0 ? selectedIds.size : ''}</Btn>
-            </>
-          )}
+        <div style={{ position: 'fixed', left: 'var(--v3-sidenav-w)', right: 0, bottom: 'var(--v3-sticky-bottom)', padding: '14px 22px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}`, zIndex: 20 }}>
+          <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+            {confirmArchive ? (
+              <>
+                <Mono s={11} c={T.roseDeep} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>archive {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}?</Mono>
+                <Btn kind="quiet" onClick={() => setConfirmArchive(false)}>Cancel</Btn>
+                <Btn kind="peach" disabled={archiving} onClick={handleArchive}>{archiving ? 'Archiving…' : 'Confirm'}</Btn>
+              </>
+            ) : (
+              <>
+                <Btn kind="quiet" flex={1} onClick={() => setSelectedIds(new Set(filtered.map(i => i.id)))}>Select all</Btn>
+                <Btn kind="primary" flex={1.4} disabled={selectedIds.size === 0} onClick={() => setConfirmArchive(true)}>Archive {selectedIds.size > 0 ? selectedIds.size : ''}</Btn>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -308,10 +308,12 @@ export default function SuggestPage() {
           <button onClick={() => setShowAnchorPicker(true)} style={{ width: 60, height: 74, border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></button>
         )}
       </div>
-      <div style={{ position: 'fixed', bottom: 'var(--nav-h)', left: 0, right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-        <Body s={12} c={T.g500} style={{ marginBottom: 10 }}>Using how you actually dress, and the weather.</Body>
-        <Btn full icon="spark" disabled={(!occasion.trim() && chosenFormality == null) || !weather || items.length === 0} onClick={handleSuggest}>Put together three looks</Btn>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
+          <Body s={12} c={T.g500} style={{ marginBottom: 10 }}>Using how you actually dress, and the weather.</Body>
+          <Btn full icon="spark" disabled={(!occasion.trim() && chosenFormality == null) || !weather || items.length === 0} onClick={handleSuggest}>Put together three looks</Btn>
+        </div>
       </div>
     </div>
   )

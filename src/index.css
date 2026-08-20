@@ -25,6 +25,19 @@
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --nav-h: calc(60px + env(safe-area-inset-bottom, 0px));
+
+  /* v3 shell only (design/Layout.tsx) — the old shell's bottom nav (components/Layout.tsx)
+     stays fixed-height at every width, so this must NOT touch --nav-h itself. Sticky
+     footers on v3 pages use these instead: no bottom tab bar to clear on desktop, and the
+     content column starts to the right of the sidebar. */
+  --v3-sticky-bottom: var(--nav-h);
+  --v3-sidenav-w: 0px;
+}
+@media (min-width: 768px) {
+  :root {
+    --v3-sticky-bottom: 0px;
+    --v3-sidenav-w: 236px;
+  }
 }
 
 * {
