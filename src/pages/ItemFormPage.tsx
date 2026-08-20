@@ -1,26 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
-import { useBreakpoint } from '../hooks/useBreakpoint'
-import RatingPicker from '../components/RatingPicker'
-import { SectionLabel, UButton, MONO, UI, INK, RULE, ACCENT } from '../components/ui'
 import { peekSingleFile, clearSingleFile } from '../lib/batchState'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import FixedBar from '../components/FixedBar'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH } from '../design/kit'
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: 'top', label: 'top' },
-  { value: 'bottom', label: 'btm' },
-  { value: 'one-piece', label: '1pc' },
-  { value: 'outerwear', label: 'otw' },
-  { value: 'shoes', label: 'shoe' },
-  { value: 'accessory',  label: 'acc' },
-  { value: 'fragrance',  label: 'frag' },
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'one-piece', label: 'One-piece' },
+  { value: 'outerwear', label: 'Outerwear' },
+  { value: 'shoes', label: 'Shoes' },
+  { value: 'accessory', label: 'Bags & jewellery' },
+  { value: 'fragrance', label: 'Fragrance' },
 ]
 
 const EMPTY: ItemFormData = {
@@ -28,29 +24,26 @@ const EMPTY: ItemFormData = {
   pattern: '', material: '', warmth: 3, formality: 3, sport: false, brand: '',
 }
 
-function Field({
-  label, value, onChange, placeholder, required, mono,
-}: {
-  label: string; value: string; onChange: (v: string) => void
-  placeholder?: string; required?: boolean; mono?: boolean
+function Field({ label, value, onChange, placeholder }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string
 }) {
   return (
-    <div style={{ padding: '12px 0', borderBottom: RULE }}>
-      <div style={{
-        fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)',
-        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-      }}>
-        {label}{required && <span style={{ color: '#9C5544', marginLeft: 3 }}>*</span>}
-      </div>
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 6 }}>{label}</div>
       <input
-        type="text" value={value} onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: '100%', fontFamily: mono ? MONO : UI, fontSize: 16, fontWeight: 500,
-          color: value ? INK : 'rgba(0,0,0,0.35)',
-          background: 'none', border: 'none', outline: 'none', padding: 0,
-        }}
+        type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', fontFamily: fS, fontSize: 15, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '4px 0 8px' }}
       />
+    </div>
+  )
+}
+
+function DotPicker({ value, onChange, n = 5, tone = T.cocoa }: { value: number; onChange: (v: number) => void; n?: number; tone?: string }) {
+  return (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {Array.from({ length: n }, (_, i) => i + 1).map(n2 => (
+        <button key={n2} type="button" onClick={() => onChange(n2)} style={{ flex: 1, height: 36, background: n2 <= value ? tone : 'transparent', boxShadow: `inset 0 0 0 1px ${n2 <= value ? tone : T.g200}`, border: 'none', cursor: 'pointer', fontFamily: fM, fontSize: 11, fontWeight: 700, color: n2 <= value ? '#fff' : T.g400 }}>{n2}</button>
+      ))}
     </div>
   )
 }
@@ -61,7 +54,6 @@ export default function ItemFormPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addItem, updateItem, archiveItem } = useItemMutations()
-  const { isDesktop } = useBreakpoint()
 
   const [preloadedFile] = useState<File | null>(() => isEdit ? null : peekSingleFile())
   const [form, setForm] = useState<ItemFormData>(() => {
@@ -77,15 +69,16 @@ export default function ItemFormPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const parseName = (file: File) => {
     const base = file.name.replace(/\.[^.]+$/, '')
     const seg = base.split('_').pop() ?? base
     return seg.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim()
   }
-  const COLORS = new Set(['red','blue','black','white','green','brown','grey','gray','yellow','pink','purple','orange','beige','navy','cream','nude','camel','tan','ivory','khaki','olive','burgundy'])
+  const COLORS = new Set(['red', 'blue', 'black', 'white', 'green', 'brown', 'grey', 'gray', 'yellow', 'pink', 'purple', 'orange', 'beige', 'navy', 'cream', 'nude', 'camel', 'tan', 'ivory', 'khaki', 'olive', 'burgundy'])
   const parseColor = (name: string) => name.toLowerCase().split(' ').find(w => COLORS.has(w)) ?? ''
-  const VALID_CATS = new Set(['top','bottom','one-piece','outerwear','shoes','accessory','fragrance'])
+  const VALID_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory', 'fragrance'])
   const toCategory = (raw: string): Category => VALID_CATS.has(raw) ? raw as Category : 'top'
 
   const analyzePhoto = async (file: File) => {
@@ -120,7 +113,6 @@ export default function ItemFormPage() {
       setAnalyzing(false)
     }
   }
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!isEdit || !user) return
@@ -134,8 +126,7 @@ export default function ItemFormPage() {
           warmth: data.warmth, formality: data.formality, sport: data.sport ?? false, brand: data.brand ?? '',
         })
         if (data.image_url) {
-          const { data: s } = await supabase.storage
-            .from('item-photos').createSignedUrl(data.image_url, 3600)
+          const { data: s } = await supabase.storage.from('item-photos').createSignedUrl(data.image_url, 3600)
           setExistingImageUrl(s?.signedUrl ?? null)
         }
         setLoadingItem(false)
@@ -161,33 +152,27 @@ export default function ItemFormPage() {
         setForm(f => ({
           ...f,
           ...(ai.category ? { category: ai.category } : {}),
-          ...(ai.color    ? { color: ai.color }       : {}),
-          ...(ai.brand    ? { brand: ai.brand }       : {}),
+          ...(ai.color ? { color: ai.color } : {}),
+          ...(ai.brand ? { brand: ai.brand } : {}),
           ...(ai.material ? { material: ai.material } : {}),
-          ...(ai.pattern  ? { pattern: ai.pattern }   : {}),
+          ...(ai.pattern ? { pattern: ai.pattern } : {}),
           ...(ai.subcategory ? { subcategory: ai.subcategory } : {}),
         }))
       } catch { setAnalyzeError('AI analysis unavailable — fill in manually') }
     }
     analyze()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const set = (k: keyof ItemFormData) => (v: string) =>
-    setForm(f => ({ ...f, [k]: v }) as ItemFormData)
-
+  const set = (k: keyof ItemFormData) => (v: string) => setForm(f => ({ ...f, [k]: v }) as ItemFormData)
   const imagePreview = imageFile ? URL.createObjectURL(imageFile) : existingImageUrl
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault()
+  const handleSubmit = async () => {
     if (!form.name.trim()) return
     setSaving(true); setError(null)
     try {
-      if (isEdit && id) {
-        await updateItem(id, form, imageFile ?? undefined)
-      } else {
-        await addItem(form, imageFile ?? undefined)
-      }
+      if (isEdit && id) await updateItem(id, form, imageFile ?? undefined)
+      else await addItem(form, imageFile ?? undefined)
       navigate('/wardrobe')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -198,224 +183,90 @@ export default function ItemFormPage() {
   const handleArchive = async () => {
     if (!id || !confirm('Archive this item? It will be hidden from your wardrobe.')) return
     setSaving(true)
-    try {
-      await archiveItem(id)
-      navigate('/wardrobe')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-      setSaving(false)
-    }
+    try { await archiveItem(id); navigate('/wardrobe') }
+    catch (err) { setError(err instanceof Error ? err.message : 'Something went wrong'); setSaving(false) }
   }
 
   if (loadingItem) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
-        <Loader2 className="animate-spin" size={20} style={{ color: 'rgba(0,0,0,0.3)' }} />
-      </div>
-    )
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
 
-  // ── Photo uploader (shared between mobile and desktop) ───────────────────────
-  const PhotoUploader = (
-    <>
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        style={{
-          width: '100%',
-          aspectRatio: isDesktop ? '3/4' : '4/3',
-          border: imagePreview ? RULE : '1.5px dashed rgba(0,0,0,0.25)',
-          borderRadius: 3, overflow: 'hidden', background: '#fff',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 8,
-          position: 'relative', cursor: 'pointer',
-        }}
-      >
-        {imagePreview ? (
-          <>
-            <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-            <div style={{
-              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{
-                border: '1px solid rgba(255,255,255,0.7)', borderRadius: 2,
-                padding: '6px 12px', fontFamily: MONO, fontSize: 9, color: '#fff',
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-              }}>{analyzing ? 'analyzing…' : 'change photo'}</div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={{ width: 40, height: 40, border: RULE, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: INK }}>
-                <path d="M12 5v14M5 12h14"/>
-              </svg>
-            </div>
-            <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, color: INK }}>Tap to add a photo</div>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>max 1200px · ~300 KB · JPEG</div>
-            {analyzing && <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>// analyzing with AI…</div>}
-            {analyzeError && <div style={{ fontFamily: MONO, fontSize: 9, color: ACCENT, marginTop: 4 }}>{analyzeError}</div>}
-          </>
-        )}
-      </button>
-      <input
-        ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
-        onChange={e => {
-          const file = e.target.files?.[0] ?? null
-          setImageFile(file)
-          if (file) analyzePhoto(file)
-        }}
-      />
-    </>
-  )
-
-  // ── Form fields (shared) ─────────────────────────────────────────────────────
-  const FormFields = (
-    <>
-      <SectionLabel right="required *">attributes</SectionLabel>
-      <Field label="name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" required />
-      <div style={{ padding: '12px 0', borderBottom: RULE }}>
-        <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-          category <span style={{ color: '#9C5544' }}>*</span>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {CATEGORIES.map(c => (
-            <button
-              key={c.value} type="button"
-              onClick={() => setForm(f => ({ ...f, category: c.value }))}
-              style={{
-                padding: '3px 10px', borderRadius: 2,
-                border: `1px solid ${form.category === c.value ? INK : 'rgba(0,0,0,0.15)'}`,
-                background: form.category === c.value ? INK : 'transparent',
-                color: form.category === c.value ? '#fff' : 'rgba(0,0,0,0.55)',
-                fontFamily: MONO, fontSize: 10, cursor: 'pointer', letterSpacing: '0.04em',
-              }}
-            >{c.label}</button>
-          ))}
-        </div>
-      </div>
-      <RatingPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} label="Warmth" hint="1 = light · 5 = heavy" />
-      <RatingPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} label="Formality" hint="1 = casual · 5 = formal" />
-      <div style={{ padding: '12px 0', borderBottom: RULE, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>
-            sport / gym only
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.35)' }}>
-            excluded from everyday outfit suggestions
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
-          style={{
-            width: 40, height: 22, borderRadius: 11,
-            background: form.sport ? INK : 'rgba(0,0,0,0.12)',
-            border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0,
-            transition: 'background 0.15s',
-          }}
-        >
-          <span style={{
-            position: 'absolute', top: 3, left: form.sport ? 21 : 3,
-            width: 16, height: 16, borderRadius: '50%', background: '#fff',
-            transition: 'left 0.15s',
-          }} />
-        </button>
-      </div>
-      <Field label="color" value={form.color} onChange={set('color')} placeholder="white, navy, black…" mono />
-      <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" mono />
-      <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" mono />
-      <Field label="pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" mono />
-      <Field label="subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" mono />
-    </>
-  )
-
-  const SaveButtons = (
-    <>
-      <UButton variant="ghost" onClick={() => navigate('/wardrobe')} style={{ flex: 1 }}>
-        Cancel
-      </UButton>
-      <UButton
-        onClick={() => handleSubmit()} disabled={saving || !form.name.trim()}
-        style={{ flex: 1.6 }}
-      >
-        {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}
-      </UButton>
-    </>
-  )
-
   return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
-      {/* Header */}
-      <div style={{ padding: '16px 20px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button
-            onClick={() => navigate('/wardrobe')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              fontFamily: UI, fontSize: 13, fontWeight: 600,
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: INK,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 6l-6 6 6 6"/>
-            </svg>
-            Closet
-          </button>
-          {isEdit && (
-            <button
-              onClick={handleArchive} disabled={saving}
-              style={{
-                fontFamily: MONO, fontSize: 9.5, color: '#9C5544',
-                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                textTransform: 'uppercase', letterSpacing: '0.06em', opacity: saving ? 0.4 : 1,
-              }}
-            >archive</button>
-          )}
-        </div>
-        <div style={{ borderTop: RULE, marginTop: 12 }} />
+    <div style={{ paddingBottom: 100 }}>
+      <V4Bar
+        back title="Closet" onBack={() => navigate('/wardrobe')}
+        right={isEdit ? <button onClick={handleArchive} disabled={saving} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.g400, display: 'flex', opacity: saving ? .4 : 1 }}><V4Icon n="archive" s={19} w={1.6} /></button> : undefined}
+      />
+      <div style={{ padding: '4px 22px 0' }}>
+        <Disp s={24}>{isEdit ? 'Edit item' : 'Add an item'}</Disp>
       </div>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ padding: '14px 20px 0' }}>
-          <div style={{ fontFamily: UI, fontSize: 24, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 1.05 }}>
-            {isEdit ? 'Edit item' : 'Add an item'}
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
-            {isEdit ? 'update details · save changes' : 'compress · save · sync'}
+      <div style={{ padding: '18px 22px 0' }}>
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0] ?? null; setImageFile(f); if (f) analyzePhoto(f) }} />
+        <button
+          type="button" onClick={() => fileInputRef.current?.click()}
+          style={{ width: '100%', aspectRatio: '4/3', border: 'none', padding: 0, cursor: 'pointer', position: 'relative', overflow: 'hidden', boxShadow: imagePreview ? `inset 0 0 0 1px ${T.line}` : 'none', background: imagePreview ? 'none' : T.white }}
+        >
+          {imagePreview ? (
+            <>
+              <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>{analyzing ? 'Analyzing…' : 'Change photo'}</span>
+              </div>
+            </>
+          ) : (
+            <div style={{ width: '100%', height: '100%', border: `1.5px dashed ${T.g200}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <V4Icon n="cam" s={26} w={1.4} c={T.g400} />
+              <Body s={13.5} c={T.ink}>Tap to add a photo</Body>
+              <Mono s={10}>max 1200px · ~300 KB · JPEG</Mono>
+              {analyzing && <Body s={12} c={T.cocoa} style={{ marginTop: 4 }}>Analyzing with AI…</Body>}
+            </div>
+          )}
+        </button>
+        {analyzeError && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{analyzeError}</Body>}
+      </div>
+      <div style={{ padding: '26px 22px 0' }}>
+        <SecH>Attributes</SecH>
+        <Field label="Name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" />
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={form.category === c.value} onClick={() => setForm(f => ({ ...f, category: c.value }))}>{c.label}</Pill>)}
           </div>
         </div>
-
-        {isDesktop ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '40% 60%', gap: 0, margin: '16px 20px 0', alignItems: 'start' }}>
-            <div style={{ paddingRight: 24, position: 'sticky', top: 'var(--safe-t, 0)' }}>
-              {PhotoUploader}
-            </div>
-            <div>
-              {FormFields}
-              {error && (
-                <div style={{ padding: '12px 0', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
-              )}
-              <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-                {SaveButtons}
-              </div>
-            </div>
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
+            <Mono s={11}>1 = light · 5 = heavy</Mono>
           </div>
-        ) : (
-          <>
-            <div style={{ padding: '16px 20px 0' }}>{PhotoUploader}</div>
-            <div style={{ padding: '20px 20px 0' }}>{FormFields}</div>
-            {error && (
-              <div style={{ padding: '12px 20px', fontFamily: MONO, fontSize: 10, color: '#9C5544' }}>{error}</div>
-            )}
-          </>
-        )}
-      </form>
-
-      {!isDesktop && (
-        <FixedBar>{SaveButtons}</FixedBar>
-      )}
+          <DotPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} />
+        </div>
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
+            <Mono s={11}>1 = casual · 5 = formal</Mono>
+          </div>
+          <DotPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} tone={T.roseDeep} />
+        </div>
+        <Row4
+          label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
+          value={form.sport ? 'On' : 'Off'} chev={false}
+          onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
+        />
+        <div style={{ marginTop: 6 }}>
+          <Field label="Colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
+          <Field label="Brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
+          <Field label="Material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />
+          <Field label="Pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" />
+          <Field label="Subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" />
+        </div>
+      </div>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+          {error && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{error}</Body>}
+          <Btn kind="quiet" flex={1} onClick={() => navigate('/wardrobe')}>Cancel</Btn>
+          <Btn flex={1.6} icon="check" disabled={saving || !form.name.trim()} onClick={handleSubmit}>{saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}</Btn>
+        </div>
+      </div>
     </div>
   )
 }

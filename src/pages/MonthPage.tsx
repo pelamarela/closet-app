@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { outfitTitle } from '../components/ui'
-import { calcStreak } from '../lib/streak'
-import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone, APP_HEADER_H } from '../design/kit'
 import Collage from '../design/Collage'
 
 const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -12,12 +11,6 @@ const DOW_SHORT = ['m', 't', 'w', 't', 'f', 's', 's']
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7 }
-
-function topOccasions(outfits: OutfitWithItems[], n = 2): string[] {
-  const freq: Record<string, number> = {}
-  outfits.forEach(o => { if (o.occasion) freq[o.occasion] = (freq[o.occasion] ?? 0) + 1 })
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, n).map(([k]) => k)
-}
 
 export default function MonthPage() {
   const navigate = useNavigate()
@@ -48,9 +41,6 @@ export default function MonthPage() {
   const todayStr = now.toISOString().slice(0, 10)
 
   const monthOutfits = outfits.filter(o => o.date_worn.startsWith(monthPrefix)).sort((a, b) => b.date_worn.localeCompare(a.date_worn))
-  const loggedDays = new Set(monthOutfits.map(o => o.date_worn)).size
-  const streak = calcStreak(outfits)
-  const topOcc = topOccasions(monthOutfits)
 
   const visibleOutfits = selectedDate ? (outfitsByDate[selectedDate] ?? []) : monthOutfits
 
@@ -66,7 +56,7 @@ export default function MonthPage() {
   return (
     <div style={{ paddingBottom: 32 }}>
       <V4Bar back title="Today" onBack={() => navigate('/')} />
-      <div style={{ padding: '10px 22px 0', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, padding: '10px 22px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', borderBottom: `1px solid ${T.line}` }}>
         <div>
           <Mono s={11.5} c={T.cocoa}>{viewYear}</Mono>
           <Disp s={30} style={{ marginTop: 4 }}>{MONTH_FULL[viewMonth]}</Disp>
@@ -75,22 +65,6 @@ export default function MonthPage() {
           <RoundBtn icon="back" onClick={prevMonth} />
           <RoundBtn icon="next" onClick={nextMonth} />
         </div>
-      </div>
-      <div style={{ padding: '10px 22px 0' }}>
-        <Body s={14}>
-          {loggedDays} day{loggedDays === 1 ? '' : 's'} logged{streak > 1 ? `, a ${streak}-day streak going` : ''}.
-          {topOcc.length > 0 && (
-            <>
-              {' '}Mostly{' '}
-              {topOcc.map((o, i) => (
-                <span key={o}>
-                  {i > 0 && ' and '}
-                  <span style={{ color: T.ink, fontWeight: 500 }}>{o}</span>
-                </span>
-              ))}.
-            </>
-          )}
-        </Body>
       </div>
       <div style={{ padding: '18px 22px 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
@@ -110,12 +84,19 @@ export default function MonthPage() {
                 style={{
                   position: 'relative', aspectRatio: '3/4', overflow: 'hidden', padding: 0, cursor: 'pointer',
                   background: dayOutfits.length ? 'none' : T.white,
-                  boxShadow: isSelected ? `inset 0 0 0 2px ${T.ink}` : (dayOutfits.length ? 'none' : `inset 0 0 0 1px ${T.line}`),
+                  boxShadow: dayOutfits.length || isSelected ? 'none' : `inset 0 0 0 1px ${T.line}`,
                 }}
               >
-                {dayOutfits.length > 0 && <Collage items={collageItems(dayOutfits[0].item_ids)} border={false} />}
+                {dayOutfits.length > 0 && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: 1 }}>
+                    {dayOutfits.slice(0, 3).map(o => <div key={o.id} style={{ flex: 1, height: '100%' }}><Ph tone={outfitTone(o.id)} /></div>)}
+                  </div>
+                )}
                 {dayOutfits.length > 0 && <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 13, background: 'rgba(247,246,245,.9)' }} />}
                 <div style={{ position: 'absolute', top: 3, left: 4, fontFamily: fM, fontSize: 9.5, fontWeight: isToday ? 700 : 400, color: dayOutfits.length ? 'rgba(0,0,0,.7)' : T.g400 }}>{day}</div>
+                {/* Painted last so it sits above the tone strips instead of underneath — an inset
+                    box-shadow on the button itself gets fully covered by an opaque full-bleed child. */}
+                {isSelected && <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 2px ${T.ink}`, pointerEvents: 'none' }} />}
               </button>
             )
           })}

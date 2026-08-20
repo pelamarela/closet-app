@@ -7,7 +7,7 @@ import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, Mono, SecH } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, Mono, SecH, APP_HEADER_H } from '../design/kit'
 
 const CATS: { value: string; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -147,25 +147,27 @@ export default function LogOutfitPage() {
         <div style={{ padding: '4px 22px 0' }}>
           <Disp s={24}>What did you wear?</Disp>
         </div>
-        <div style={{ padding: '18px 22px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600 }}>{selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'} on</div>
-            {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
+        <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ padding: '18px 22px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600 }}>{selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'} on</div>
+              {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
+            </div>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+              {picked.map(item => (
+                <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                  {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                  <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <V4Icon n="close" s={11} w={2.4} />
+                  </button>
+                </div>
+              ))}
+              <div style={{ width: 60, height: 74, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
-            {picked.map(item => (
-              <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-                <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <V4Icon n="close" s={11} w={2.4} />
-                </button>
-              </div>
-            ))}
-            <div style={{ width: 60, height: 74, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
+          <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
+            {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, padding: '20px 22px 0', overflowX: 'auto' }}>
-          {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
         </div>
         <div style={{ padding: '16px 22px 0' }}>
           {itemsLoading ? (

@@ -6,6 +6,11 @@
 import { useState } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 
+// Fixed height of the persistent app header (design/Layout.tsx) — pages that
+// need their own sticky sub-header (below it, not fighting it for top:0) use
+// this as their `top` offset.
+export const APP_HEADER_H = 58
+
 export const T = {
   paper: '#F7F6F5', white: '#FFFFFF', ink: '#000000',
   peach: '#F2E1D0', peachSoft: '#FAF2EA', peachDeep: '#E9CBB0',
@@ -97,6 +102,15 @@ const PH_TONES: Record<PhTone, [string, string, 0 | 1]> = {
   cocoa: ['#7C5B44', '#61452F', 1], ink: ['#2C2925', '#1A1815', 1],
   sand: ['#EDEAE5', '#DFDAD3', 0], paper: ['#F4F2EF', '#E8E4DE', 0],
 }
+const TONE_CYCLE: PhTone[] = ['peach', 'rose', 'cocoa', 'ink', 'sand', 'paper']
+
+// Deterministic tone per id — used where a real photo collage would be too
+// small to read (week strip, month calendar cells): same outfit always
+// shows the same color, different outfits are visually distinct at a glance.
+export function outfitTone(id: string): PhTone {
+  const n = parseInt(id.replace(/-/g, '').slice(0, 6), 16) || 0
+  return TONE_CYCLE[n % TONE_CYCLE.length]
+}
 
 export function Ph({ tone = 'sand', label, crop, style }: {
   tone?: PhTone; label?: string; crop?: 'top' | 'center'; style?: CSSProperties
@@ -187,11 +201,17 @@ export function SecH({ children, right, onRightClick, style }: {
 }
 
 // Contextual bar under the persistent header — back button + title + right-side icon(s).
-export function V4Bar({ title, back, onBack, right, pad = 22 }: {
-  title?: ReactNode; back?: boolean; onBack?: () => void; right?: ReactNode; pad?: number
+// Sticky by default (pinned just below the app header) so every page's own
+// header behaves like the Closet page's — the design system's baseline, not
+// an opt-in per page.
+export function V4Bar({ title, back, onBack, right, pad = 22, sticky = true }: {
+  title?: ReactNode; back?: boolean; onBack?: () => void; right?: ReactNode; pad?: number; sticky?: boolean
 }) {
   return (
-    <div style={{ height: 44, padding: `0 ${pad}px`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: T.ink }}>
+    <div style={{
+      height: 44, padding: `0 ${pad}px`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: T.ink,
+      ...(sticky ? { position: 'sticky' as const, top: APP_HEADER_H, zIndex: 25, background: T.paper } : {}),
+    }}>
       {back ? (
         <button onClick={onBack} style={{
           display: 'flex', alignItems: 'center', gap: 6, marginLeft: -6, background: 'none', border: 'none',
@@ -257,6 +277,11 @@ export function RoundBtn({ icon, tone = 'quiet', disabled = false, onClick, styl
       flexShrink: 0, cursor: disabled ? 'not-allowed' : 'pointer', WebkitTapHighlightColor: 'transparent', ...k, ...style,
     }}><V4Icon n={icon} s={21} w={1.7} /></button>
   )
+}
+
+// Subtle section separator — full-bleed hairline within the page's padded column.
+export function Divider({ style }: { style?: CSSProperties }) {
+  return <div style={{ height: 1, background: T.line, margin: '26px 22px 0', ...style }} />
 }
 
 export function V4Card({ children, fill = T.white, pad = 16, shadow = true, style }: {

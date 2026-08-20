@@ -5,7 +5,7 @@ import { useItemMutations } from '../hooks/useItemMutations'
 import { useOutfits } from '../hooks/useOutfits'
 import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono } from '../design/kit'
+import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, APP_HEADER_H } from '../design/kit'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -77,7 +77,7 @@ export default function WardrobePage() {
   const byFilter = filter === 'all' ? items : items.filter(i => i.category === filter)
   const filtered = (staleOnly ? staleItems.filter(i => byFilter.includes(i)) : byFilter)
     .slice()
-    .sort((a, b) => (lastWornById[b.id] ?? '').localeCompare(lastWornById[a.id] ?? ''))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
   const countFor = (v: 'all' | Category) => v === 'all' ? items.length : items.filter(i => i.category === v).length
 
   if (loading) return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
@@ -88,7 +88,6 @@ export default function WardrobePage() {
       <Disp s={30}>Closet</Disp>
       <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
         <input ref={addFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFiles} />
-        <button onClick={() => navigate('/settings/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="chart" s={22} w={1.6} /></button>
         <button onClick={() => addFileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: `${T.g200}55`, color: T.ink, border: 'none', cursor: 'pointer' }}>
           <V4Icon n="plus" s={15} w={1.9} /><span style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600 }}>Add</span>
         </button>
@@ -114,28 +113,30 @@ export default function WardrobePage() {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      {Header}
-      <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        {selectMode ? (
-          <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>Cancel</button>
-        ) : (
-          <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>{items.length} items · select</button>
-        )}
-      </div>
-      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
-        {FILTERS.map(f => (
-          <Pill key={f.value} on={filter === f.value} s="sm" count={countFor(f.value)} onClick={() => setFilter(f.value)}>{f.label}</Pill>
-        ))}
+      <div style={{ position: 'sticky', top: APP_HEADER_H, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
+        {Header}
+        <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          {selectMode ? (
+            <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>Cancel</button>
+          ) : (
+            <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>{items.length} items · select</button>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
+          {FILTERS.map(f => (
+            <Pill key={f.value} on={filter === f.value} s="sm" count={countFor(f.value)} onClick={() => setFilter(f.value)}>{f.label}</Pill>
+          ))}
+        </div>
       </div>
       <div style={{ padding: '16px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.ink }}>{staleOnly ? 'Not worn in a year' : 'Recently worn'}</div>
+        <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.ink }}>{staleOnly ? 'Not worn in a year' : 'Recently added'}</div>
         {staleOnly && <button onClick={() => setStaleOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
       </div>
       <div style={{ padding: '10px 22px 0' }}>
         {filtered.length === 0 ? (
           <Body s={13} style={{ padding: '20px 0' }}>No {filter === 'all' ? 'items' : FILTERS.find(f => f.value === filter)?.label.toLowerCase()}.</Body>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
             {filtered.map(item => (
               <ItemTile
                 key={item.id}

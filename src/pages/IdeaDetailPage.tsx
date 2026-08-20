@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import type { OutfitIdea, Item } from '../types/database'
+import { outfitTitle } from '../components/ui'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -75,7 +76,7 @@ export default function IdeaDetailPage() {
         back title="Ideas" onBack={() => navigate('/ideas')}
         right={<>
           <button onClick={() => navigate(`/ideas/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
-          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.g400, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
+          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
         </>}
       />
       <div style={{ padding: '8px 22px 0' }}>
@@ -86,7 +87,7 @@ export default function IdeaDetailPage() {
           {idea.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{idea.occasion}</Mono>}
           <Mono s={11}>saved {savedLabel}{idea.reasoning ? ' · suggested' : ''}</Mono>
         </div>
-        <Disp s={25}>{idea.occasion ? `${idea.occasion}.` : 'Outfit idea.'}</Disp>
+        <Disp s={25}>{outfitTitle(items.map(i => i.id), items, 'Outfit idea.')}</Disp>
       </div>
       {(idea.reasoning || idea.notes) && (
         <div style={{ padding: '18px 22px 0' }}>

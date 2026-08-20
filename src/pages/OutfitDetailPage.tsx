@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import type { Outfit, Item } from '../types/database'
+import { outfitTitle } from '../components/ui'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -106,7 +107,7 @@ export default function OutfitDetailPage() {
         back title="Month" onBack={() => navigate('/outfits')}
         right={<>
           <button onClick={() => navigate(`/outfits/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
-          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.g400, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
+          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
         </>}
       />
       <div style={{ padding: '8px 22px 0' }}>
@@ -123,7 +124,7 @@ export default function OutfitDetailPage() {
           {outfit.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{outfit.occasion}</Mono>}
           <Mono s={11}>{dateLabel} · {dow}</Mono>
         </div>
-        <Disp s={25}>{outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}</Disp>
+        <Disp s={25}>{outfitTitle(items.map(i => i.id), items, 'Outfit.')}</Disp>
         <Body s={13} style={{ marginTop: 5 }}>{items.length} piece{items.length === 1 ? '' : 's'}</Body>
       </div>
       {outfit.weather && (

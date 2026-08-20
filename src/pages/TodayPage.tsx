@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { useIdeas } from '../hooks/useIdeas'
-import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getLogReminderEnabled } from '../lib/settings'
 import { outfitTitle } from '../components/ui'
-import { T, fS, fM, dotted, V4Icon, Btn, RoundBtn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { T, fS, fM, dotted, V4Icon, Btn, RoundBtn, Disp, Body, Mono, SecH, V4Card, Ph, outfitTone, Divider } from '../design/kit'
 import Collage from '../design/Collage'
 
 const DOW = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
@@ -46,9 +45,7 @@ export default function TodayPage() {
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
   const { ideas } = useIdeas()
-  const { saveIdea } = useIdeaMutations()
   const [weather, setWeather] = useState<WeatherData | null>(null)
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     getLocation().then(({ lat, lon }) => getCurrentWeather(lat, lon)).then(setWeather).catch(() => {})
@@ -74,22 +71,17 @@ export default function TodayPage() {
     .filter((i): i is NonNullable<typeof i> => !!i)
     .map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
-  const handleSaveToday = async () => {
-    if (!todayOutfit) return
-    await saveIdea(todayOutfit.occasion ?? '', todayOutfit.notes ?? '', todayOutfit.item_ids)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
 
   const WeatherHead = (
-    <div style={{ padding: '18px 22px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+    <div style={{ padding: '4px 22px 0' }}>
+      <Disp s={30}>Today.</Disp>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '14px 0 7px' }}>
         <V4Icon n="sun" s={16} w={1.7} c={T.cocoa} />
         <Mono s={11.5} c={T.cocoa}>{DOW[now.getDay()]} {String(now.getDate()).padStart(2, '0')} {now.toLocaleDateString('en-US', { month: 'short' }).toLowerCase()}</Mono>
       </div>
-      <Disp s={26}>
-        {weather ? `${weather.conditions.charAt(0).toUpperCase()}${weather.conditions.slice(1)} — ${weather.temp_c}°.` : 'Checking the weather…'}
-      </Disp>
+      {weather && (
+        <Disp s={26}>{weather.conditions.charAt(0).toUpperCase()}{weather.conditions.slice(1)} — {weather.temp_c}°.</Disp>
+      )}
     </div>
   )
 
@@ -109,7 +101,7 @@ export default function TodayPage() {
             >
               <Mono s={10.5} c={isToday ? T.ink : T.g400} style={{ fontWeight: isToday ? 700 : 400, textTransform: 'uppercase' }}>{DOW_SHORT[i]}</Mono>
               <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', boxShadow: isToday ? `inset 0 0 0 2px ${T.ink}` : `inset 0 0 0 1px ${T.line}` }}>
-                {outfit ? <Collage items={collageItems(outfit.item_ids)} border={false} /> : (
+                {outfit ? <Ph tone={outfitTone(outfit.id)} /> : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g200 }}><V4Icon n="plus" s={15} w={1.8} /></div>
                 )}
               </div>
@@ -122,7 +114,7 @@ export default function TodayPage() {
   )
 
   const MonthTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0 ? (
-    <div style={{ padding: '24px 22px 0' }}>
+    <div style={{ padding: '18px 22px 0' }}>
       <V4Card fill={T.peachSoft} shadow={false} pad={16}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14 }}>
           <div>
@@ -163,13 +155,12 @@ export default function TodayPage() {
               <Disp s={21}>{outfitTitle(todayOutfit.item_ids, items, 'Outfit logged.')}</Disp>
               <Body s={13} style={{ marginTop: 5 }}>{todayOutfit.item_ids.length} pieces · logged at {time}</Body>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              <RoundBtn icon="bookmark" onClick={handleSaveToday} tone={saved ? 'peach' : 'quiet'} />
-              <RoundBtn icon="next" onClick={() => navigate(`/outfits/${todayOutfit.id}`)} />
-            </div>
+            <RoundBtn icon="next" onClick={() => navigate(`/outfits/${todayOutfit.id}`)} />
           </div>
         </div>
-        <div style={{ padding: '26px 0 0' }}>{WeekStrip}</div>
+        <Divider />
+        <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
+        {MonthTrend && <Divider />}
         {MonthTrend}
       </div>
     )
@@ -194,7 +185,7 @@ export default function TodayPage() {
           <img src="/brand/wave.png" alt="" style={{ width: 92, display: 'block', marginBottom: 18, opacity: .95 }} />
           <Disp s={22}>Nothing on today yet.</Disp>
           <Body s={14} style={{ marginTop: 8, maxWidth: 280 }}>
-            Tell me what you put on{items.length > 0 ? `, or I can pull something together from the ${items.length} pieces you own` : ''}.
+            You can log it yourself or I can pull something together from your closet.
           </Body>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
             <Btn full icon="cal" onClick={() => navigate('/outfits/new', { state: { date: today } })}>Log what I'm wearing</Btn>
@@ -202,20 +193,25 @@ export default function TodayPage() {
           </div>
         </div>
       </div>
-      <div style={{ padding: '26px 0 0' }}>{WeekStrip}</div>
+      <Divider />
+      <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
+      {MonthTrend && <Divider />}
       {MonthTrend}
       {ideas.length > 0 && (
-        <div style={{ padding: '24px 22px 0' }}>
-          <SecH right="Ideas" onRightClick={() => navigate('/ideas')}>Saved for later</SecH>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {ideas.slice(0, 3).map(idea => (
-              <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '100%', aspectRatio: '3/4' }}><Collage items={collageItems(idea.item_ids)} /></div>
-                <Body s={12} style={{ marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</Body>
-              </button>
-            ))}
+        <>
+          <Divider />
+          <div style={{ padding: '18px 22px 0' }}>
+            <SecH right="Ideas" onRightClick={() => navigate('/ideas')}>Saved for later</SecH>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {ideas.slice(0, 3).map(idea => (
+                <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ width: '100%', aspectRatio: '3/4', boxShadow: `inset 0 0 0 1px ${T.line}` }}><Collage items={collageItems(idea.item_ids)} /></div>
+                  <Body s={12} style={{ marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</Body>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

@@ -57,7 +57,9 @@ export default function App() {
             <Route path="/outfits" element={<MonthPage />} />
             <Route path="/outfits/:id" element={<OutfitDetailPage />} />
             <Route path="/wardrobe" element={<WardrobePage />} />
+            <Route path="/wardrobe/new" element={<ItemFormPage />} />
             <Route path="/wardrobe/:id" element={<ItemDetailPage />} />
+            <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/outfits/new" element={<LogOutfitPage />} />
             <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
@@ -69,9 +71,7 @@ export default function App() {
             <Route path="/settings/stats" element={<StatsPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
-            <Route path="/wardrobe/new" element={<ItemFormPage />} />
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
-            <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
             <Route path="/settings/password" element={<ChangePasswordPage />} />
             <Route path="/settings/archived" element={<ArchivedPage />} />

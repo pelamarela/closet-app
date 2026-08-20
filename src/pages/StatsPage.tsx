@@ -4,7 +4,7 @@ import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../components/ui'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
-import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
+import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat } from '../design/kit'
 import Collage from '../design/Collage'
 
 type Tab = 'pieces' | 'outfits' | 'colour'
@@ -23,6 +23,26 @@ function mondayOf(d: Date) {
   const m = new Date(d)
   m.setDate(d.getDate() + offset)
   return m
+}
+
+// Scopes outfits to the current week/month/year for the grain selector —
+// "current", not a trailing window, since the Colour tab shows a single
+// snapshot rather than a trend over time.
+function filterByGrain(outfits: OutfitWithItems[], grain: Grain): OutfitWithItems[] {
+  const now = new Date()
+  if (grain === 'Weekly') {
+    const start = mondayOf(now)
+    const s = start.toISOString().slice(0, 10)
+    const end = new Date(start); end.setDate(start.getDate() + 6)
+    const e = end.toISOString().slice(0, 10)
+    return outfits.filter(o => o.date_worn >= s && o.date_worn <= e)
+  }
+  if (grain === 'Yearly') {
+    const y = String(now.getFullYear())
+    return outfits.filter(o => o.date_worn.startsWith(y))
+  }
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  return outfits.filter(o => o.date_worn.startsWith(prefix))
 }
 
 export default function StatsPage() {
@@ -70,7 +90,7 @@ export default function StatsPage() {
       {Head}
       {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} navigate={navigate} />}
       {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} collageItems={collageItems} navigate={navigate} />}
-      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} />}
+      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} />}
     </div>
   )
 }
@@ -226,24 +246,21 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
         </div>
       )}
       {weekday.length > 0 && weekend.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <Disp s={20}>Weekday you, weekend you</Disp>
-          <V4Card pad={0} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginTop: 14 }}>
-            {[['Weekday', weekday], ['Weekend', weekend]].map(([label, list], i) => (
-              <div key={label as string} style={{ padding: 16, borderLeft: i ? `1px solid ${T.line}` : 'none' }}>
-                <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600 }}>{label as string}</div>
-                <div style={{ marginTop: 12 }}><Mono s={10}>most often</Mono></div>
-                {topOcc(list as OutfitWithItems[]).map(o => <div key={o} style={{ fontFamily: fS, fontSize: 13, marginTop: 3, textTransform: 'capitalize' }}>{o}</div>)}
-                <div style={{ marginTop: 14 }}><Mono s={10}>pieces per look</Mono></div>
-                <Disp s={22} style={{ marginTop: 2 }}>{avgPieces(list as OutfitWithItems[])}</Disp>
-              </div>
-            ))}
-          </V4Card>
+        <div style={{ marginTop: 26 }}>
+          <Mono s={11} style={{ display: 'block', marginBottom: 8 }}>weekday vs. weekend</Mono>
+          {([['Weekday', weekday], ['Weekend', weekend]] as const).map(([label, list], i) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: i === 0 ? `1px solid ${T.line}` : 'none' }}>
+              <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, width: 66, flexShrink: 0 }}>{label}</div>
+              <div style={{ flex: 1, minWidth: 0, fontFamily: fS, fontSize: 12.5, color: T.g500, textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{topOcc(list).join(', ') || '—'}</div>
+              <Mono s={11.5} c={T.cocoa} style={{ flexShrink: 0 }}>{avgPieces(list)} pcs/look</Mono>
+            </div>
+          ))}
         </div>
       )}
       {combos.length > 0 && (
         <div style={{ marginTop: 28 }}>
-          <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, marginBottom: 12 }}>Combinations you repeat</div>
+          <Disp s={20}>Combinations you repeat</Disp>
+          <div style={{ marginTop: 14 }} />
           {combos.map((c, i) => (
             <button key={i} onClick={() => navigate(`/outfits/${c.outfitId}`)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', borderBottom: i < combos.length - 1 ? `1px solid ${T.line}` : 'none', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
               <div style={{ width: 36, height: 45, flexShrink: 0 }}><Collage items={collageItems(c.item_ids)} /></div>
@@ -274,10 +291,12 @@ function outfitBuckets(o: OutfitWithItems, itemById: Map<string, ItemWithSignedU
 }
 
 // ── Colour ──────────────────────────────────────────────────────────────
-function ColourTab({ outfits, itemById }: { outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl> }) {
+function ColourTab({ outfits, itemById, grain }: { outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain }) {
+  const scoped = useMemo(() => filterByGrain(outfits, grain), [outfits, grain])
+
   const palettes = useMemo(() => {
     const map = new Map<string, { buckets: ColorBucket[]; count: number }>()
-    for (const o of outfits) {
+    for (const o of scoped) {
       const buckets = outfitBuckets(o, itemById)
       if (buckets.length === 0) continue
       const key = buckets.map(b => b.key).sort().join(',')
@@ -286,12 +305,12 @@ function ColourTab({ outfits, itemById }: { outfits: OutfitWithItems[]; itemById
       else map.set(key, { buckets, count: 1 })
     }
     return [...map.values()].sort((a, b) => b.count - a.count).slice(0, 5)
-  }, [outfits, itemById])
+  }, [scoped, itemById])
 
   const byWeekday = useMemo(() => {
     const buckets: Record<number, Record<string, number>> = {}
     for (let d = 0; d < 7; d++) buckets[d] = {}
-    for (const o of outfits) {
+    for (const o of scoped) {
       const dow = new Date(o.date_worn + 'T00:00:00').getDay()
       for (const b of outfitBuckets(o, itemById)) buckets[dow][b.key] = (buckets[dow][b.key] ?? 0) + 1
     }
@@ -302,12 +321,14 @@ function ColourTab({ outfits, itemById }: { outfits: OutfitWithItems[]; itemById
       const top = entries.sort((a, b) => b[1] - a[1]).slice(0, 3)
       return { label: DOW_FULL[day], segs: top.map(([key, v]) => ({ key, pct: Math.round((v / total) * 100) })) }
     })
-  }, [outfits, itemById])
+  }, [scoped, itemById])
   const bucketByKey = new Map<string, ColorBucket>()
-  outfits.forEach(o => outfitBuckets(o, itemById).forEach(b => bucketByKey.set(b.key, b)))
+  scoped.forEach(o => outfitBuckets(o, itemById).forEach(b => bucketByKey.set(b.key, b)))
+
+  const periodLabel = grain === 'Weekly' ? 'this week' : grain === 'Yearly' ? 'this year' : 'this month'
 
   if (palettes.length === 0) {
-    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>Add colours to your items to see palette trends here.</Body></div>
+    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>No outfits with colours logged {periodLabel}.</Body></div>
   }
 
   return (

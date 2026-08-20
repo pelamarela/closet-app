@@ -14,7 +14,7 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, Btn, type IconName } from './kit'
+import { T, fS, V4Icon, Btn, APP_HEADER_H, type IconName } from './kit'
 
 const TABS: { id: string; label: string; to: string; icon: IconName; active: (p: string) => boolean }[] = [
   { id: 'today', label: 'Today', to: '/', icon: 'home', active: p => p === '/' || p.startsWith('/outfits') },
@@ -30,8 +30,8 @@ function Header() {
   const initial = (user?.email ?? '?').charAt(0).toUpperCase()
   return (
     <div style={{
-      position: 'sticky', top: 0, zIndex: 30, background: T.paper,
-      padding: '10px 22px 12px', borderBottom: `1px solid ${T.line}`,
+      position: 'sticky', top: 0, zIndex: 30, background: T.paper, height: APP_HEADER_H, boxSizing: 'border-box',
+      padding: '0 22px', borderBottom: `1px solid ${T.line}`,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
       <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
@@ -137,9 +137,9 @@ export default function V3Layout() {
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', flexDirection: 'column', width: '100%' }}>
       <Header />
-      <main style={{ flex: 1, paddingBottom: 'var(--nav-h)', overflowX: 'hidden' }}>
+      <main style={{ flex: 1, paddingBottom: 'var(--nav-h)' }}>
         <Outlet />
       </main>
       <TabBar />

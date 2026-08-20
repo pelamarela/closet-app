@@ -46,7 +46,26 @@
       "Bash(lsof -ti:5173)",
       "Bash(xargs kill -9)",
       "Bash(curl -s http://localhost:5173/)",
-      "Bash(kill %1)"
+      "Bash(kill %1)",
+      "Skill(claude-api)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(npx --yes playwright --version)",
+      "Bash(npx --yes playwright install chromium --with-deps)",
+      "Bash(npx --yes playwright screenshot --viewport-size=1400,700 collage-fill-test.html collage-fill-test.png)",
+      "Bash(npx --yes playwright screenshot --viewport-size=1400,500 collage-fill-test2.html collage-fill-test2.png)",
+      "Bash(curl -s -X POST https://closet.pelamarela.com/api/suggest -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s https://api.vercel.com/v13/deployments/dpl_FrGx4Csnb6xHqrRH3HKkaBd3HERJ?teamId=team_ZvrfmLbfSRBgMS7IQErSN6tt -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(xargs -r kill -9)",
+      "Bash(curl -s http://localhost:5173/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(node -e ' *)",
+      "Bash(npx --yes playwright screenshot --viewport-size=1400,800 \"file://$\\(pwd\\)/repro.html\" repro.png)",
+      "Bash(npx --yes playwright screenshot --viewport-size=600,500 \"file://$\\(pwd\\)/repro2.html\" repro2.png)",
+      "Bash(rm -rf ~/fashion-skill)",
+      "Bash(mkdir -p ~/.claude/skills/fashion)",
+      "Bash(cp ~/fashion-skill/SKILL.md ~/.claude/skills/fashion/SKILL.md)",
+      "Bash(mkdir -p ~/.claude/commands)",
+      "Bash(cp ~/fashion-skill/SKILL.md ~/.claude/commands/fashion.md)",
+      "Bash(grep -rl \"auth_email_confirm\\\\|constants\\\\|suggestion_feedback\\\\|outfit_ideas\\\\|idea_items\" --include=\"*.sql\" -not -path \"*/node_modules/*\" .)"
     ]
   }
 }
