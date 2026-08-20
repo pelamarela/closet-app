@@ -130,8 +130,20 @@ export default function TodayPage() {
     </div>
   )
 
-  const MonthTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0 ? (
-    <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
+  const hasTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0
+
+  // Compact text-only summary — used inside the merged desktop sidebar card,
+  // right under the week strip. The bar chart itself lives in WideTrend,
+  // full-width in the main column, where there's room to actually read it.
+  const TrendSummary = hasTrend ? (
+    <div style={{ padding: '18px 0 0' }}>
+      <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
+      {trendLabel && <Disp s={17} w={400} style={{ marginTop: 4 }}>{trendLabel}</Disp>}
+    </div>
+  ) : null
+
+  const MonthTrend = hasTrend ? (
+    <div style={{ padding: '18px 22px 0' }}>
       <V4Card fill={T.peachSoft} shadow={false} pad={16}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14 }}>
           <div>
@@ -149,6 +161,34 @@ export default function TodayPage() {
     </div>
   ) : null
 
+  // Wide version of the same trend, full main-column width — desktop only.
+  const WideTrend = hasTrend ? (
+    <div style={{ marginTop: 30 }}>
+      <V4Card fill={T.peachSoft} shadow={false} pad={22}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20 }}>
+          <div>
+            <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
+            {trendLabel && <Disp s={20} w={400} style={{ marginTop: 4 }}>{trendLabel}</Disp>}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginTop: 22 }}>
+          {months.map((m, i) => {
+            const max = Math.max(...monthCounts, 1)
+            const barH = Math.max((monthCounts[i] / max) * 74, 3)
+            return (
+              <div key={m.prefix} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: '100%', height: 74, display: 'flex', alignItems: 'flex-end' }}>
+                  <div style={{ width: '100%', height: barH, background: i === monthCounts.length - 1 ? T.cocoa : T.peachDeep }} />
+                </div>
+                <Mono s={10.5} c={i === monthCounts.length - 1 ? T.cocoa : T.g500}>{m.label}</Mono>
+              </div>
+            )
+          })}
+        </div>
+      </V4Card>
+    </div>
+  ) : null
+
   if (loading) {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
@@ -157,22 +197,24 @@ export default function TodayPage() {
     <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
       <SecH right="Ideas" onRightClick={() => navigate('/ideas')}>Saved for later</SecH>
       {isDesktop ? (
-        ideas.slice(0, 3).map((idea, i, arr) => (
-          <button
-            key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)}
-            style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', background: 'none', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
-          >
-            <div style={{ width: 38, height: 47, flexShrink: 0, position: 'relative' }}>
-              <Collage items={collageItems(idea.item_ids)} fill />
-              <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</div>
-              <Mono s={10.5} style={{ marginTop: 2 }}>{idea.occasion ? `${idea.occasion} · ` : ''}saved {new Date(idea.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }).toLowerCase()}</Mono>
-            </div>
-            <V4Icon n="next" s={16} w={1.7} c={T.g400} />
-          </button>
-        ))
+        <div style={{ maxHeight: 260, overflowY: 'auto' }}>
+          {ideas.map((idea, i, arr) => (
+            <button
+              key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)}
+              style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', background: 'none', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+            >
+              <div style={{ width: 38, height: 47, flexShrink: 0, position: 'relative' }}>
+                <Collage items={collageItems(idea.item_ids)} fill />
+                <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</div>
+                <Mono s={10.5} style={{ marginTop: 2 }}>{idea.occasion ? `${idea.occasion} · ` : ''}saved {new Date(idea.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }).toLowerCase()}</Mono>
+              </div>
+              <V4Icon n="next" s={16} w={1.7} c={T.g400} />
+            </button>
+          ))}
+        </div>
       ) : (
         <div style={{ display: 'flex', gap: 10 }}>
           {ideas.slice(0, 3).map(idea => (
@@ -249,19 +291,22 @@ export default function TodayPage() {
       </div>
     )
     const SidebarBlock = (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+      <V4Card pad={18}>
         {WeekStrip}
-        {MonthTrend}
-        {IdeasBlock}
-      </div>
+        {TrendSummary}
+        <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
+      </V4Card>
     )
     return (
       <div style={{ paddingBottom: 32 }}>
         {WeatherHead}
         {isDesktop ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start', padding: '30px 22px 0' }}>
-            {DesktopMain}
-            {SidebarBlock}
+          <div style={{ padding: '30px 22px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start' }}>
+              <V4Card pad={24}>{DesktopMain}</V4Card>
+              {SidebarBlock}
+            </div>
+            {WideTrend}
           </div>
         ) : (
           <>
@@ -307,23 +352,26 @@ export default function TodayPage() {
   )
 
   const EmptySidebar = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+    <V4Card pad={18}>
       {WeekStrip}
-      {MonthTrend}
-      {IdeasBlock}
-    </div>
+      {TrendSummary}
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
+    </V4Card>
   )
 
   return (
     <div style={{ paddingBottom: 32 }}>
       {WeatherHead}
       {isDesktop ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start', padding: '30px 22px 0' }}>
-          <div>
-            {EveningReminder}
-            {EmptyMain}
+        <div style={{ padding: '30px 22px 0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start' }}>
+            <div>
+              {EveningReminder}
+              {EmptyMain}
+            </div>
+            {EmptySidebar}
           </div>
-          {EmptySidebar}
+          {WideTrend}
         </div>
       ) : (
         <>
