@@ -144,11 +144,11 @@ export default function LogOutfitPage() {
   if (step === 'pieces') {
     return (
       <div style={{ paddingBottom: 100 }}>
-        <V4Bar right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 14, color: T.cocoa }}>Cancel</button>} />
+        <V4Bar
+          title="Log outfit"
+          right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
+        />
         <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ padding: '4px 22px 0' }}>
-            <Disp s={24}>What did you wear?</Disp>
-          </div>
           <div style={{ padding: '14px 22px 0' }}>
             {selectedIds.size > 0 && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
