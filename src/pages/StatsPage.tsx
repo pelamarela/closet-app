@@ -4,7 +4,7 @@ import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../components/ui'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
-import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat } from '../design/kit'
+import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat, APP_HEADER_H } from '../design/kit'
 import Collage from '../design/Collage'
 
 type Tab = 'pieces' | 'outfits' | 'colour'
@@ -74,15 +74,15 @@ export default function StatsPage() {
   }
 
   const Head = (
-    <>
-      <V4Bar back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
+    <div style={{ position: 'sticky', top: APP_HEADER_H, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
+      <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
       <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>
         <Pill on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill>
         <Pill on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill>
         <Pill on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill>
       </div>
-    </>
+    </div>
   )
 
   return (
@@ -260,14 +260,15 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
       {combos.length > 0 && (
         <div style={{ marginTop: 28 }}>
           <Disp s={20}>Combinations you repeat</Disp>
-          <div style={{ marginTop: 14 }} />
-          {combos.map((c, i) => (
-            <button key={i} onClick={() => navigate(`/outfits/${c.outfitId}`)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', borderBottom: i < combos.length - 1 ? `1px solid ${T.line}` : 'none', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-              <div style={{ width: 36, height: 45, flexShrink: 0 }}><Collage items={collageItems(c.item_ids)} /></div>
-              <div style={{ flex: 1, fontFamily: fS, fontSize: 13.5, lineHeight: 1.4 }}>{outfitTitle(c.item_ids, items, 'Outfit')}</div>
-              <Mono s={12} c={T.cocoa} style={{ fontWeight: 700 }}>{c.count}×</Mono>
-            </button>
-          ))}
+          <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
+            {combos.map((c, i) => (
+              <button key={i} onClick={() => navigate(`/outfits/${c.outfitId}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}><Collage items={collageItems(c.item_ids)} /></div>
+                <div style={{ textAlign: 'center', marginTop: 6 }}><Mono s={11} c={T.ink} style={{ fontWeight: 700 }}>{c.count}×</Mono></div>
+                <div style={{ marginTop: 2, fontFamily: fS, fontSize: 11, color: T.g500, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(c.item_ids, items, 'Outfit')}</div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

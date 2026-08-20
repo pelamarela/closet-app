@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase'
 import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
 import { catLabel } from '../lib/categoryLabel'
@@ -35,7 +34,6 @@ export default function LogOutfitPage() {
   const { items, loading: itemsLoading } = useItems()
   const { outfits } = useOutfits()
   const { logOutfit, updateOutfit } = useOutfitMutations()
-  const { saveIdea } = useIdeaMutations()
 
   const [step, setStep] = useState<Step>('pieces')
   const [date, setDate] = useState(navState?.date ?? todayStr())
@@ -49,7 +47,6 @@ export default function LogOutfitPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
-  const [savedAsIdea, setSavedAsIdea] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -70,17 +67,11 @@ export default function LogOutfitPage() {
   }, [editId, isEdit])
 
   const occasionPresets = useMemo(() => getOccasionPresets(outfits), [outfits])
-  const lastWornById = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const o of outfits) for (const id of o.item_ids) if (!map[id] || o.date_worn > map[id]) map[id] = o.date_worn
-    return map
-  }, [outfits])
-
   const toggleItem = (id: string) => setSelectedIds(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
-  const picked = items.filter(i => selectedIds.has(i.id)).sort((a, b) => (lastWornById[b.id] ?? '').localeCompare(lastWornById[a.id] ?? ''))
+  const picked = items.filter(i => selectedIds.has(i.id)).sort((a, b) => b.created_at.localeCompare(a.created_at))
   const gridItems = items
     .filter(i => filterCat === 'all' || i.category === filterCat)
-    .sort((a, b) => (lastWornById[b.id] ?? '').localeCompare(lastWornById[a.id] ?? ''))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
 
   const handleSave = async () => {
     if (selectedIds.size === 0) return
@@ -98,11 +89,6 @@ export default function LogOutfitPage() {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     }
     setSaving(false)
-  }
-
-  const handleSaveAsIdea = async () => {
-    await saveIdea(occasion, '', Array.from(selectedIds), notes)
-    setSavedAsIdea(true)
   }
 
   if (loadingEdit) {
@@ -131,9 +117,8 @@ export default function LogOutfitPage() {
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 28 }}>
-            <Btn full kind="peach" icon="bookmark" disabled={savedAsIdea} onClick={handleSaveAsIdea}>{savedAsIdea ? 'Saved as idea' : 'Save it as an idea too'}</Btn>
-            <Btn full kind="quiet" onClick={() => navigate('/')}>Back to today</Btn>
+          <div style={{ marginTop: 28 }}>
+            <Btn full onClick={() => navigate('/')}>Back to today</Btn>
           </div>
         </div>
       </div>
@@ -207,24 +192,19 @@ export default function LogOutfitPage() {
               {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
             </div>
           ))}
-          <button onClick={() => setStep('pieces')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa, marginLeft: 4, flexShrink: 0 }}>Edit</button>
         </div>
       </div>
       <div style={{ padding: '24px 22px 0' }}>
         <SecH>When</SecH>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Pill on={date === todayStr()} onClick={() => setDate(todayStr())}>Today</Pill>
-          <Pill on={date === yesterdayStr()} onClick={() => setDate(yesterdayStr())}>Yesterday</Pill>
-          <label style={{ position: 'relative' }}>
-            <Pill on={date !== todayStr() && date !== yesterdayStr()}>
-              {date !== todayStr() && date !== yesterdayStr() ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : 'Pick a date'}
-            </Pill>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
-          </label>
-        </div>
+        <label style={{ position: 'relative', display: 'inline-block' }}>
+          <Pill on>
+            {date === todayStr() ? 'Today' : date === yesterdayStr() ? 'Yesterday' : new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+          </Pill>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+        </label>
       </div>
       <div style={{ padding: '22px 22px 0' }}>
-        <SecH right="Optional">What for</SecH>
+        <SecH>What for</SecH>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {occasionPresets.map(o => <Pill key={o} on={occasion === o} tone="peach" onClick={() => setOccasion(prev => prev === o ? '' : o)}>{o}</Pill>)}
         </div>
