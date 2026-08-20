@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
-import { AppBar, SectionLabel, UButton, MONO, UI, INK, RULE } from '../components/ui'
 import { catLabel } from '../lib/categoryLabel'
-import Spinner from '../components/Spinner'
+import { T, fS, fM, V4Bar, Pill, Disp, Body, Mono } from '../design/kit'
 import type { Item } from '../types/database'
 
 type ArchivedItem = Item & { signedImageUrl: string | null }
@@ -22,37 +21,21 @@ export default function ArchivedPage() {
 
   const fetchArchived = useCallback(async () => {
     if (!user) return
-    setLoading(true)
-
     const { data } = await supabase
-      .from('items')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'archived')
+      .from('items').select('*').eq('user_id', user.id).eq('status', 'archived')
       .order('created_at', { ascending: false })
 
     const paths = (data ?? []).filter(i => i.image_url).map(i => i.image_url as string)
     const signedUrlMap: Record<string, string> = {}
-
     if (paths.length > 0) {
-      const { data: signed } = await supabase.storage
-        .from('item-photos')
-        .createSignedUrls(paths, 3600)
-      signed?.forEach(({ path, signedUrl }) => {
-        if (path && signedUrl) signedUrlMap[path] = signedUrl
-      })
+      const { data: signed } = await supabase.storage.from('item-photos').createSignedUrls(paths, 3600)
+      signed?.forEach(({ path, signedUrl }) => { if (path && signedUrl) signedUrlMap[path] = signedUrl })
     }
-
-    setItems(
-      (data ?? []).map(item => ({
-        ...item,
-        signedImageUrl: item.image_url ? (signedUrlMap[item.image_url] ?? null) : null,
-      }))
-    )
+    setItems((data ?? []).map(item => ({ ...item, signedImageUrl: item.image_url ? (signedUrlMap[item.image_url] ?? null) : null })))
     setLoading(false)
   }, [user])
 
-  useEffect(() => { fetchArchived() }, [fetchArchived])
+  useEffect(() => { setLoading(true); fetchArchived() }, [fetchArchived])
 
   const handleRestore = async (id: string) => {
     setBusy(id)
@@ -69,97 +52,44 @@ export default function ArchivedPage() {
     setConfirmDelete(null)
   }
 
-  if (loading) return <Spinner />
+  if (loading) {
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
+  }
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      <AppBar title="Archived" back onBack={() => navigate('/settings')} />
-
-      <div style={{ padding: '12px 20px 0' }}>
-        <div style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.06em' }}>
-          // {items.length} archived item{items.length !== 1 ? 's' : ''}
-        </div>
+      <V4Bar back title="Settings" onBack={() => navigate('/settings')} />
+      <div style={{ padding: '4px 22px 0' }}>
+        <Disp s={24}>Archived</Disp>
+        <Body s={13} style={{ marginTop: 6 }}>{items.length} item{items.length !== 1 ? 's' : ''}</Body>
       </div>
 
       {items.length === 0 ? (
-        <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <div style={{ fontFamily: UI, fontSize: 22, fontWeight: 500, letterSpacing: '-0.02em', color: INK }}>
-            Nothing archived.
-          </div>
-          <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 8 }}>
-            archived items appear here — restore or delete permanently
-          </div>
+        <div style={{ padding: '30px 22px 0' }}>
+          <Body s={14}>Nothing archived — items you archive from the Closet show up here to restore or delete permanently.</Body>
         </div>
       ) : (
-        <div style={{ padding: '20px 20px 0' }}>
-          <SectionLabel>items</SectionLabel>
-          {items.map(item => (
-            <div
-              key={item.id}
-              style={{
-                display: 'grid', gridTemplateColumns: '48px 1fr auto',
-                alignItems: 'center', gap: 12,
-                paddingTop: 10, paddingBottom: 10, borderBottom: RULE,
-              }}
-            >
-              {/* Thumbnail */}
-              <div style={{ height: 60, borderRadius: 2, overflow: 'hidden', border: RULE }}>
-                {item.signedImageUrl ? (
-                  <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 8px, #DCD9D3 8px 16px)' }} />
-                )}
+        <div style={{ padding: '22px 22px 0' }}>
+          {items.map((item, i) => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
+              <div style={{ width: 48, height: 60, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               </div>
-
-              {/* Info */}
-              <div>
-                <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 500, letterSpacing: '-0.005em', color: INK }}>{item.name}</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: 'rgba(0,0,0,0.45)', marginTop: 2 }}>
-                  {catLabel(item.category)}{item.color ? ` · ${item.color}` : ''}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
+                <div style={{ marginTop: 2 }}><Mono s={11}>{catLabel(item.category)}{item.color ? ` · ${item.color}` : ''}</Mono></div>
+              </div>
+              {confirmDelete === item.id ? (
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <Pill s="sm" onClick={() => setConfirmDelete(null)}>Cancel</Pill>
+                  <Pill s="sm" tone="peach" on onClick={() => handleDelete(item.id)}>{busy === item.id ? '…' : 'Delete'}</Pill>
                 </div>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 6 }}>
-                {confirmDelete === item.id ? (
-                  <>
-                    <UButton
-                      variant="ghost"
-                      style={{ fontSize: 10, padding: '4px 8px', height: 'auto' }}
-                      onClick={() => setConfirmDelete(null)}
-                    >
-                      Cancel
-                    </UButton>
-                    <UButton
-                      variant="accent"
-                      style={{ fontSize: 10, padding: '4px 8px', height: 'auto' }}
-                      disabled={busy === item.id}
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      {busy === item.id ? '…' : 'Delete'}
-                    </UButton>
-                  </>
-                ) : (
-                  <>
-                    <UButton
-                      variant="ghost"
-                      style={{ fontSize: 10, padding: '4px 8px', height: 'auto' }}
-                      disabled={busy === item.id}
-                      onClick={() => handleRestore(item.id)}
-                    >
-                      {busy === item.id ? '…' : 'Restore'}
-                    </UButton>
-                    <UButton
-                      variant="secondary"
-                      style={{ fontSize: 10, padding: '4px 8px', height: 'auto' }}
-                      disabled={!!busy}
-                      onClick={() => setConfirmDelete(item.id)}
-                    >
-                      Delete
-                    </UButton>
-                  </>
-                )}
-              </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <Pill s="sm" onClick={() => handleRestore(item.id)}>{busy === item.id ? '…' : 'Restore'}</Pill>
+                  <Pill s="sm" onClick={() => setConfirmDelete(item.id)}>Delete</Pill>
+                </div>
+              )}
             </div>
           ))}
         </div>

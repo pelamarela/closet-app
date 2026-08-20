@@ -2,7 +2,6 @@ import type { ComponentType } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import LoginPage from './pages/LoginPage'
-import Layout from './components/Layout'
 import V3Layout from './design/Layout'
 import TodayPage from './pages/TodayPage'
 import MonthPage from './pages/MonthPage'
@@ -69,8 +68,6 @@ export default function App() {
             <Route path="/settings" element={<MePage />} />
             <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
             <Route path="/settings/stats" element={<StatsPage />} />
-          </Route>
-          <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
             <Route path="/settings/password" element={<ChangePasswordPage />} />

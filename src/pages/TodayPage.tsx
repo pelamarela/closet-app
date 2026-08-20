@@ -5,7 +5,7 @@ import { useItems } from '../hooks/useItems'
 import { useIdeas } from '../hooks/useIdeas'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getLogReminderEnabled } from '../lib/settings'
-import { outfitTitle } from '../components/ui'
+import { outfitTitle } from '../lib/outfitTitle'
 import { T, fS, fM, dotted, V4Icon, Btn, RoundBtn, Disp, Body, Mono, SecH, V4Card, Ph, outfitTone, Divider } from '../design/kit'
 import Collage from '../design/Collage'
 

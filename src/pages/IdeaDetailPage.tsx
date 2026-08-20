@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import type { OutfitIdea, Item } from '../types/database'
-import { outfitTitle } from '../components/ui'
+import { outfitTitle } from '../lib/outfitTitle'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
 

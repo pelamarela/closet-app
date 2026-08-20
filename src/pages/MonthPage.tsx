@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
-import { outfitTitle } from '../components/ui'
+import { outfitTitle } from '../lib/outfitTitle'
 import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone, APP_HEADER_H } from '../design/kit'
 import Collage from '../design/Collage'
 

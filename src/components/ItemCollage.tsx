@@ -1,5 +1,5 @@
 import React from 'react'
-import { RULE } from './ui'
+import { T } from '../design/kit'
 
 export type CollageItem = {
   id: string
@@ -114,7 +114,7 @@ export default function ItemCollage({ items, aspectRatio = '1/1', fill = false }
 
   return (
     <div style={{
-      border: RULE, borderRadius: 3, overflow: 'hidden',
+      border: `1px solid ${T.line}`, overflow: 'hidden',
       ...(fill ? { position: 'absolute', inset: 0 } : { width: '100%', aspectRatio }),
     }}>
       {renderInner()}
