@@ -58,6 +58,7 @@ export default function App() {
             <Route path="/outfits/:id" element={<OutfitDetailPage />} />
             <Route path="/wardrobe" element={<WardrobePage />} />
             <Route path="/wardrobe/:id" element={<ItemDetailPage />} />
+            <Route path="/shop" element={<ShopPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
@@ -66,7 +67,6 @@ export default function App() {
             <Route path="/outfits/new" element={<LogOutfitPage />} />
             <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
-            <Route path="/shop" element={<ShopPage />} />
             <Route path="/ideas" element={<IdeasPage />} />
             <Route path="/ideas/:id" element={<IdeaDetailPage />} />
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
