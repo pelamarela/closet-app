@@ -8,7 +8,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
-import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted } from '../design/kit'
+import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted , CONTENT_MAX_W } from '../design/kit'
 import Collage from '../design/Collage'
 
 type Suggestion = { item_ids: string[]; reasoning: string }
@@ -259,7 +259,7 @@ export default function SuggestPage() {
       <div style={{ padding: '18px 22px 0' }}>
         <V4Card fill={T.peach} shadow={false} pad={14} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
           <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
-          <Body s={13.5} c={T.cocoa}>{weather ? `${weather.temp_c}° and ${weather.conditions} — I'll factor that in.` : 'Checking the weather…'}</Body>
+          <Body s={13.5} c={T.cocoa}>{weather ? `${weather.temp_c}° and ${weather.conditions} — I'll factor that in.` : "I'll factor in the weather where you're headed."}</Body>
         </V4Card>
       </div>
       <div style={{ padding: '22px 22px 0' }}>
@@ -310,7 +310,7 @@ export default function SuggestPage() {
         )}
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
           <Body s={12} c={T.g500} style={{ marginBottom: 10 }}>Using how you actually dress, and the weather.</Body>
           <Btn full icon="spark" disabled={(!occasion.trim() && chosenFormality == null) || !weather || items.length === 0} onClick={handleSuggest}>Put together three looks</Btn>

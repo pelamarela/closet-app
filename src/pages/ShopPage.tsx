@@ -6,7 +6,7 @@ import { apiFetch } from '../lib/apiFetch'
 import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
-import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
 
 type PairingItem = { id: string; name: string; reason: string }
 type AnalysisResult = {
@@ -220,7 +220,7 @@ export default function ShopPage() {
         )}
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
           <Btn full icon="spark" disabled={loading || !imagePreview} onClick={handleAnalyze}>{loading ? 'Thinking…' : 'Should I buy it?'}</Btn>
         </div>

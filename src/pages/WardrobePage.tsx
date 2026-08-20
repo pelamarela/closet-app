@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useOutfits } from '../hooks/useOutfits'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import { catLabel } from '../lib/categoryLabel'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, APP_HEADER_H } from '../design/kit'
+import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, APP_HEADER_H, CONTENT_MAX_W } from '../design/kit'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all', label: 'all' },
@@ -26,6 +27,7 @@ export default function WardrobePage() {
   const { items, loading, error } = useItems()
   const { outfits } = useOutfits()
   const { archiveItems } = useItemMutations()
+  const { isDesktop } = useBreakpoint()
   const [filter, setFilter] = useState<'all' | Category>('all')
   const [staleOnly, setStaleOnly] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
@@ -137,7 +139,7 @@ export default function WardrobePage() {
         {filtered.length === 0 ? (
           <Body s={13} style={{ padding: '20px 0' }}>No {filter === 'all' ? 'items' : FILTERS.find(f => f.value === filter)?.label.toLowerCase()}.</Body>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(110px, 1fr))' : 'repeat(4, 1fr)', gap: 8 }}>
             {filtered.map(item => (
               <ItemTile
                 key={item.id}
@@ -163,7 +165,7 @@ export default function WardrobePage() {
       )}
       {selectMode && (
         <div style={{ position: 'fixed', left: 'var(--v3-sidenav-w)', right: 0, bottom: 'var(--v3-sticky-bottom)', padding: '14px 22px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}`, zIndex: 20 }}>
-          <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+          <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
             {confirmArchive ? (
               <>
                 <Mono s={11} c={T.roseDeep} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>archive {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}?</Mono>

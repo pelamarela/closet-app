@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { T, fS, V4Bar, Btn, Disp, Body } from '../design/kit'
+import { T, fS, V4Bar, Btn, Disp, Body , CONTENT_MAX_W } from '../design/kit'
 
 const MIN_LENGTH = 8
 // Matches the project's Auth setting: "Lowercase, uppercase letters, digits and symbols"
@@ -112,7 +112,7 @@ export default function ChangePasswordPage() {
         {/* Submit lives inside the form so Enter and password-manager "fill & submit"
             affordances work, but stays visually pinned via the fixed footer. */}
         <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-          <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+          <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
             <Btn kind="quiet" flex={1} type="button" onClick={() => navigate('/settings')}>Cancel</Btn>
             <Btn flex={1.4} icon="check" type="submit" disabled={saving || !isValid}>
               {saving ? 'Saving…' : needsNonce ? 'Confirm & update' : 'Update password'}

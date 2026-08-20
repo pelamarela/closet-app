@@ -6,7 +6,7 @@ import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
-import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono } from '../design/kit'
+import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono , CONTENT_MAX_W } from '../design/kit'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -326,7 +326,7 @@ export default function BatchUploadPage() {
       </div>
 
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
           {current > 0 ? (
             <Btn kind="quiet" flex={1} onClick={() => setCurrent(c => c - 1)}>Back</Btn>
           ) : (

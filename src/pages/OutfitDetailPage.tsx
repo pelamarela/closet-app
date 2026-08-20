@@ -5,7 +5,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import type { Outfit, Item } from '../types/database'
 import { outfitTitle } from '../lib/outfitTitle'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, APP_HEADER_H } from '../design/kit'
 import Collage from '../design/Collage'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
@@ -18,6 +19,7 @@ export default function OutfitDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { deleteOutfit } = useOutfitMutations()
+  const { isDesktop } = useBreakpoint()
 
   const [outfit, setOutfit] = useState<Outfit | null>(null)
   const [items, setItems] = useState<ItemWithMeta[]>([])
@@ -98,28 +100,19 @@ export default function OutfitDetailPage() {
   const dateLabel = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
   const collageItems = items.map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
-  return (
-    <div style={{ paddingBottom: 40 }}>
-      {deleteError && (
-        <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>
+  const PhotoBlock = (
+    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative' }}>
+      {outfitImageUrl ? (
+        <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      ) : (
+        <Collage items={collageItems} fill />
       )}
-      <V4Bar
-        back title="Month" onBack={() => navigate('/outfits')}
-        right={<>
-          <button onClick={() => navigate(`/outfits/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
-          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
-        </>}
-      />
-      <div style={{ padding: '8px 22px 0' }}>
-        <div style={{ width: '100%', aspectRatio: '4/3', position: 'relative' }}>
-          {outfitImageUrl ? (
-            <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          ) : (
-            <Collage items={collageItems} fill />
-          )}
-        </div>
-      </div>
-      <div style={{ padding: '18px 22px 0' }}>
+    </div>
+  )
+
+  const InfoBlock = (
+    <>
+      <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
           {outfit.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{outfit.occasion}</Mono>}
           <Mono s={11}>{dateLabel} · {dow}</Mono>
@@ -128,18 +121,18 @@ export default function OutfitDetailPage() {
         <Body s={13} style={{ marginTop: 5 }}>{items.length} piece{items.length === 1 ? '' : 's'}</Body>
       </div>
       {outfit.weather && (
-        <div style={{ padding: '18px 22px 0' }}>
+        <div style={{ marginTop: 18 }}>
           <V4Card fill={T.peachSoft} shadow={false} pad={15} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
             <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
             <Body s={13} c={T.cocoa}>{outfit.weather.temp_c}° and {outfit.weather.conditions} that day.{outfit.rating && ` Rated ${outfit.rating}/5.`}</Body>
           </V4Card>
         </div>
       )}
-      <div style={{ padding: '18px 22px 0' }}>
+      <div style={{ marginTop: 18 }}>
         <Btn full icon="repeat" onClick={handleRepeat}>Wear again</Btn>
       </div>
       {items.length > 0 && (
-        <div style={{ padding: '26px 22px 0' }}>
+        <div style={{ marginTop: 26 }}>
           <SecH right={`${items.length} pieces`}>In this look</SecH>
           {items.map((item, i) => (
             <button
@@ -160,12 +153,38 @@ export default function OutfitDetailPage() {
         </div>
       )}
       {outfit.notes && (
-        <div style={{ padding: '20px 22px 0' }}>
+        <div style={{ marginTop: 20 }}>
           <V4Card pad={16}>
             <div style={{ fontFamily: fS, fontSize: 12, fontWeight: 600, color: T.g400, marginBottom: 5 }}>Note</div>
             <Body s={14}>{outfit.notes}</Body>
           </V4Card>
         </div>
+      )}
+    </>
+  )
+
+  return (
+    <div style={{ paddingBottom: 40 }}>
+      {deleteError && (
+        <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>
+      )}
+      <V4Bar
+        back title="Month" onBack={() => navigate('/outfits')}
+        right={<>
+          <button onClick={() => navigate(`/outfits/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
+          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
+        </>}
+      />
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
+          <div style={{ position: 'sticky', top: APP_HEADER_H + 20 }}>{PhotoBlock}</div>
+          <div>{InfoBlock}</div>
+        </div>
+      ) : (
+        <>
+          <div style={{ padding: '8px 22px 0' }}>{PhotoBlock}</div>
+          <div style={{ padding: '18px 22px 0' }}>{InfoBlock}</div>
+        </>
       )}
     </div>
   )

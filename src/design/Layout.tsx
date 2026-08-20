@@ -14,7 +14,7 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, Btn, APP_HEADER_H, type IconName } from './kit'
+import { T, fS, V4Icon, Btn, APP_HEADER_H, CONTENT_MAX_W, type IconName } from './kit'
 
 const TABS: { id: string; label: string; to: string; icon: IconName; active: (p: string) => boolean }[] = [
   { id: 'today', label: 'Today', to: '/', icon: 'home', active: p => p === '/' || p.startsWith('/outfits') },
@@ -130,7 +130,7 @@ export default function V3Layout() {
       <div style={{ minHeight: '100svh', background: T.paper, width: '100%' }}>
         <SideNav />
         <main style={{ marginLeft: SIDENAV_W, padding: '0 44px' }}>
-          <div style={{ maxWidth: 640, margin: '0 auto' }}><Outlet /></div>
+          <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}><Outlet /></div>
         </main>
       </div>
     )

@@ -7,7 +7,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { COLOR_SEASONS } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
-import { T, fS, V4Bar, Btn, Pill, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { T, fS, V4Bar, Btn, Pill, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
 
 export default function StyleProfileEditorPage() {
   const navigate = useNavigate()
@@ -95,7 +95,7 @@ export default function StyleProfileEditorPage() {
         </V4Card>
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '16px 22px 28px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10, position: 'relative' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10, position: 'relative' }}>
           {saveError && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{saveError}</Body>}
           <Btn kind="quiet" flex={1} onClick={() => navigate('/settings')}>Discard</Btn>
           <Btn flex={1.5} icon="check" disabled={saving || !isDirty} onClick={save}>{saving ? 'Saving…' : 'Save'}</Btn>

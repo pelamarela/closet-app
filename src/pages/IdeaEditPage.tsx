@@ -5,7 +5,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
-import { T, fS, fM, V4Bar, Btn, Pill, ItemTile, Body, SecH } from '../design/kit'
+import { T, fS, fM, V4Bar, Btn, Pill, ItemTile, Body, SecH , CONTENT_MAX_W } from '../design/kit'
 
 const CATS: { value: string; label: string }[] = [
   { value: 'all', label: 'all' },
@@ -127,7 +127,7 @@ export default function IdeaEditPage() {
       </div>
 
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
           <div style={{ display: 'flex', gap: 10 }}>
             <Btn kind="quiet" flex={1} onClick={() => navigate(`/ideas/${id}`)}>Cancel</Btn>

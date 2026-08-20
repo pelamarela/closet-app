@@ -5,7 +5,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import type { OutfitIdea, Item } from '../types/database'
 import { outfitTitle } from '../lib/outfitTitle'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, APP_HEADER_H } from '../design/kit'
 import Collage from '../design/Collage'
 
 type ItemWithImage = Item & { signedImageUrl: string | null }
@@ -15,6 +16,7 @@ export default function IdeaDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { deleteIdea } = useIdeaMutations()
+  const { isDesktop } = useBreakpoint()
 
   const [idea, setIdea] = useState<OutfitIdea | null>(null)
   const [items, setItems] = useState<ItemWithImage[]>([])
@@ -69,20 +71,13 @@ export default function IdeaDetailPage() {
   const collageItems = items.map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
   const savedLabel = new Date(idea.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
 
-  return (
-    <div style={{ paddingBottom: 40 }}>
-      {deleteError && <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>}
-      <V4Bar
-        back title="Ideas" onBack={() => navigate('/ideas')}
-        right={<>
-          <button onClick={() => navigate(`/ideas/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
-          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
-        </>}
-      />
-      <div style={{ padding: '8px 22px 0' }}>
-        <div style={{ width: '100%', aspectRatio: '4/3' }}><Collage items={collageItems} fill /></div>
-      </div>
-      <div style={{ padding: '18px 22px 0' }}>
+  const PhotoBlock = (
+    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3' }}><Collage items={collageItems} fill /></div>
+  )
+
+  const InfoBlock = (
+    <>
+      <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
           {idea.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{idea.occasion}</Mono>}
           <Mono s={11}>saved {savedLabel}{idea.reasoning ? ' · suggested' : ''}</Mono>
@@ -90,7 +85,7 @@ export default function IdeaDetailPage() {
         <Disp s={25}>{outfitTitle(items.map(i => i.id), items, 'Outfit idea.')}</Disp>
       </div>
       {(idea.reasoning || idea.notes) && (
-        <div style={{ padding: '18px 22px 0' }}>
+        <div style={{ marginTop: 18 }}>
           <V4Card fill={T.peachSoft} shadow={false} pad={16}>
             {idea.reasoning ? (
               <>
@@ -104,7 +99,7 @@ export default function IdeaDetailPage() {
         </div>
       )}
       {items.length > 0 && (
-        <div style={{ padding: '22px 22px 0' }}>
+        <div style={{ marginTop: 22 }}>
           <SecH right={`${items.length} pieces`}>In this look</SecH>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '9px 0', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
@@ -119,9 +114,33 @@ export default function IdeaDetailPage() {
           ))}
         </div>
       )}
-      <div style={{ padding: '24px 22px 0' }}>
+      <div style={{ marginTop: 24 }}>
         <Btn full icon="check" onClick={handleLog}>Wear it today</Btn>
       </div>
+    </>
+  )
+
+  return (
+    <div style={{ paddingBottom: 40 }}>
+      {deleteError && <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>}
+      <V4Bar
+        back title="Ideas" onBack={() => navigate('/ideas')}
+        right={<>
+          <button onClick={() => navigate(`/ideas/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
+          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
+        </>}
+      />
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
+          <div style={{ position: 'sticky', top: APP_HEADER_H + 20 }}>{PhotoBlock}</div>
+          <div>{InfoBlock}</div>
+        </div>
+      ) : (
+        <>
+          <div style={{ padding: '8px 22px 0' }}>{PhotoBlock}</div>
+          <div style={{ padding: '18px 22px 0' }}>{InfoBlock}</div>
+        </>
+      )}
     </div>
   )
 }

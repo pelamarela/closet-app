@@ -57,6 +57,7 @@ export default function IdeasPage() {
               <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', overflow: 'hidden' }}>
                   <Collage items={collageItems(idea.item_ids)} fill />
+                  <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
                   {idea.occasion && (
                     <div style={{ position: 'absolute', top: 9, left: 9, height: 24, display: 'inline-flex', alignItems: 'center', padding: '0 10px', background: 'rgba(247,246,245,.92)', fontFamily: fS, fontSize: 11.5, fontWeight: 600, textTransform: 'capitalize' }}>{idea.occasion}</div>
                   )}

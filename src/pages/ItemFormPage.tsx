@@ -8,7 +8,7 @@ import { peekSingleFile, clearSingleFile } from '../lib/batchState'
 import { catLabel } from '../lib/categoryLabel'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH , CONTENT_MAX_W } from '../design/kit'
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: catLabel('top') },
@@ -262,7 +262,7 @@ export default function ItemFormPage() {
         </div>
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 10 }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
           {error && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{error}</Body>}
           <Btn kind="quiet" flex={1} onClick={() => navigate('/wardrobe')}>Cancel</Btn>
           <Btn flex={1.6} icon="check" disabled={saving || !form.name.trim()} onClick={handleSubmit}>{saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}</Btn>
