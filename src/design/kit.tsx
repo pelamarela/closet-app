@@ -14,7 +14,7 @@ export const APP_HEADER_H = 58
 // Desktop content column width (design/Layout.tsx). Fixed-position footers
 // on individual pages center their own inner wrapper to this same value so
 // their buttons stay aligned under the content column above them.
-export const CONTENT_MAX_W = 1200
+export const CONTENT_MAX_W = 1320
 
 export const T = {
   paper: '#F7F6F5', white: '#FFFFFF', ink: '#000000',

@@ -1,11 +1,19 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../lib/outfitTitle'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
-import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat } from '../design/kit'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
+
+// Groups a section in its own white card on desktop, matching the Today
+// hero's treatment; mobile keeps the flat, full-bleed layout unchanged.
+function Section({ isDesktop, top = 0, children }: { isDesktop: boolean; top?: number; children: ReactNode }) {
+  if (!isDesktop) return <div style={{ marginTop: top }}>{children}</div>
+  return <div style={{ marginTop: top }}><V4Card pad={22}>{children}</V4Card></div>
+}
 
 type Tab = 'pieces' | 'outfits' | 'colour'
 type Grain = 'Weekly' | 'Monthly' | 'Yearly'
@@ -49,6 +57,7 @@ export default function StatsPage() {
   const navigate = useNavigate()
   const { items } = useItems()
   const { outfits } = useOutfits()
+  const { isDesktop } = useBreakpoint()
   const [tab, setTab] = useState<Tab>('pieces')
   const [grain, setGrain] = useState<Grain>('Monthly')
 
@@ -88,16 +97,16 @@ export default function StatsPage() {
   return (
     <div style={{ paddingBottom: 40 }}>
       {Head}
-      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} navigate={navigate} />}
-      {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} collageItems={collageItems} navigate={navigate} />}
-      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} />}
+      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} collageItems={collageItems} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} isDesktop={isDesktop} />}
     </div>
   )
 }
 
 // ── Pieces ──────────────────────────────────────────────────────────────
-function PiecesTab({ items, wearCount, navigate }: {
-  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void
+function PiecesTab({ items, wearCount, navigate, isDesktop }: {
+  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void; isDesktop: boolean
 }) {
   const wearable = items.filter(i => i.category !== 'fragrance')
   const mostWorn = [...wearable].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, 5)
@@ -123,23 +132,25 @@ function PiecesTab({ items, wearCount, navigate }: {
   )
 
   return (
-    <div style={{ padding: '24px 22px 0' }}>
-      <Disp s={20}>Most and least worn</Disp>
-      <Body s={13.5} style={{ marginTop: 5 }}>Fragrance excluded — this is about what you put on, not what you spritz.</Body>
-      {mostWorn.length > 0 && (
-        <div style={{ marginTop: 18 }}>
-          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-          <div style={{ display: 'flex', gap: 7 }}>{mostWorn.map(i => <Row key={i.id} item={i} />)}</div>
-        </div>
-      )}
-      {leastWorn.length > 0 && (
-        <div style={{ marginTop: 22 }}>
-          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-          <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{leastWorn.map(i => <Row key={i.id} item={i} />)}</div>
-        </div>
-      )}
+    <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
+      <Section isDesktop={isDesktop}>
+        <Disp s={20}>Most and least worn</Disp>
+        <Body s={13.5} style={{ marginTop: 5 }}>Fragrance excluded — this is about what you put on, not what you spritz.</Body>
+        {mostWorn.length > 0 && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
+            <div style={{ display: 'flex', gap: 7 }}>{mostWorn.map(i => <Row key={i.id} item={i} />)}</div>
+          </div>
+        )}
+        {leastWorn.length > 0 && (
+          <div style={{ marginTop: 22 }}>
+            <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
+            <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{leastWorn.map(i => <Row key={i.id} item={i} />)}</div>
+          </div>
+        )}
+      </Section>
       {brands.length > 0 && (
-        <div style={{ marginTop: 32 }}>
+        <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
           <Disp s={20}>Labels you trust</Disp>
           <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>Counted by pieces worn, not pieces owned.</Body>
           {brands.map(([name, v], i) => (
@@ -152,9 +163,9 @@ function PiecesTab({ items, wearCount, navigate }: {
               </div>
             </div>
           ))}
-        </div>
+        </Section>
       )}
-      <div style={{ marginTop: 32 }}>
+      <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
         <Disp s={20}>What the closet is made of</Disp>
         <div style={{ display: 'flex', height: 14, marginTop: 14 }}>
           {catList.map(([cat, v], i) => <div key={cat} style={{ flex: v, background: BRAND_RAMP[i % BRAND_RAMP.length] }} />)}
@@ -168,16 +179,16 @@ function PiecesTab({ items, wearCount, navigate }: {
           ))}
         </div>
         <Mono s={10} style={{ display: 'block', marginTop: 6 }}>{catTotal} pieces total</Mono>
-      </div>
+      </Section>
     </div>
   )
 }
 
 // ── Outfits ─────────────────────────────────────────────────────────────
-function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }: {
+function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, isDesktop }: {
   outfits: OutfitWithItems[]; items: ItemWithSignedUrl[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain
   collageItems: (ids: string[]) => { id: string; name: string; category: string; signedImageUrl: string | null }[]
-  navigate: (path: string) => void
+  navigate: (path: string) => void; isDesktop: boolean
 }) {
   const trend = useMemo(() => {
     const now = new Date()
@@ -228,25 +239,27 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
   }, [outfits, itemById])
 
   return (
-    <div style={{ padding: '24px 22px 0' }}>
-      <Disp s={20}>Logged each {grain === 'Yearly' ? 'year' : grain === 'Weekly' ? 'week' : 'month'}</Disp>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 110, marginTop: 16, overflowX: trend.length > 12 ? 'auto' : 'visible' }}>
-        {trend.map((t, i) => (
-          <div key={i} style={{ flex: 1, minWidth: grain === 'Weekly' ? 26 : undefined, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <Mono s={9.5} c={i === trend.length - 1 ? T.ink : T.g400} style={{ fontWeight: i === trend.length - 1 ? 700 : 400 }}>{t.count}</Mono>
-            <div style={{ width: '100%', height: Math.max((t.count / maxTrend) * 68, 2), background: i === trend.length - 1 ? T.cocoa : T.peachDeep }} />
-            <Mono s={9} style={{ whiteSpace: 'nowrap' }}>{t.label}</Mono>
-          </div>
-        ))}
-      </div>
+    <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
+      <Section isDesktop={isDesktop}>
+        <Disp s={20}>Logged each {grain === 'Yearly' ? 'year' : grain === 'Weekly' ? 'week' : 'month'}</Disp>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 110, marginTop: 16, overflowX: trend.length > 12 ? 'auto' : 'visible' }}>
+          {trend.map((t, i) => (
+            <div key={i} style={{ flex: 1, minWidth: grain === 'Weekly' ? 26 : undefined, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Mono s={9.5} c={i === trend.length - 1 ? T.ink : T.g400} style={{ fontWeight: i === trend.length - 1 ? 700 : 400 }}>{t.count}</Mono>
+              <div style={{ width: '100%', height: Math.max((t.count / maxTrend) * 68, 2), background: i === trend.length - 1 ? T.cocoa : T.peachDeep }} />
+              <Mono s={9} style={{ whiteSpace: 'nowrap' }}>{t.label}</Mono>
+            </div>
+          ))}
+        </div>
+      </Section>
       {occList.length > 0 && (
-        <div style={{ marginTop: 30 }}>
+        <Section isDesktop={isDesktop} top={isDesktop ? 24 : 30}>
           <Disp s={20}>Where you actually go</Disp>
           <div style={{ marginTop: 10 }}>{occList.map(([label, v], i) => <BarStat key={label} label={label} v={v} max={maxOcc} suffix=" looks" tone={i === 0 ? T.cocoa : T.rose} />)}</div>
-        </div>
+        </Section>
       )}
       {weekday.length > 0 && weekend.length > 0 && (
-        <div style={{ marginTop: 26 }}>
+        <Section isDesktop={isDesktop} top={isDesktop ? 24 : 26}>
           <Mono s={11} style={{ display: 'block', marginBottom: 8 }}>weekday vs. weekend</Mono>
           {([['Weekday', weekday], ['Weekend', weekend]] as const).map(([label, list], i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: i === 0 ? `1px solid ${T.line}` : 'none' }}>
@@ -255,10 +268,10 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
               <Mono s={11.5} c={T.cocoa} style={{ flexShrink: 0 }}>{avgPieces(list)} pcs/look</Mono>
             </div>
           ))}
-        </div>
+        </Section>
       )}
       {combos.length > 0 && (
-        <div style={{ marginTop: 28 }}>
+        <Section isDesktop={isDesktop} top={isDesktop ? 24 : 28}>
           <Disp s={20}>Combinations you repeat</Disp>
           <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
             {combos.map((c, i) => (
@@ -269,7 +282,7 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
               </button>
             ))}
           </div>
-        </div>
+        </Section>
       )}
     </div>
   )
@@ -292,7 +305,7 @@ function outfitBuckets(o: OutfitWithItems, itemById: Map<string, ItemWithSignedU
 }
 
 // ── Colour ──────────────────────────────────────────────────────────────
-function ColourTab({ outfits, itemById, grain }: { outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain }) {
+function ColourTab({ outfits, itemById, grain, isDesktop }: { outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain; isDesktop: boolean }) {
   const scoped = useMemo(() => filterByGrain(outfits, grain), [outfits, grain])
 
   const palettes = useMemo(() => {
@@ -333,21 +346,23 @@ function ColourTab({ outfits, itemById, grain }: { outfits: OutfitWithItems[]; i
   }
 
   return (
-    <div style={{ padding: '24px 22px 0' }}>
-      <Disp s={20}>Signature palettes</Disp>
-      <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>The colour combinations you build looks from most.</Body>
-      {palettes.map((p, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '9px 0', borderBottom: i < palettes.length - 1 ? `1px solid ${T.line}` : 'none' }}>
-          <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-            {p.buckets.map(b => <div key={b.key} style={{ width: 38, height: 44, background: b.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.08)' }} />)}
+    <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
+      <Section isDesktop={isDesktop}>
+        <Disp s={20}>Signature palettes</Disp>
+        <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>The colour combinations you build looks from most.</Body>
+        {palettes.map((p, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '9px 0', borderBottom: i < palettes.length - 1 ? `1px solid ${T.line}` : 'none' }}>
+            <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+              {p.buckets.map(b => <div key={b.key} style={{ width: 38, height: 44, background: b.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.08)' }} />)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{p.buckets.map(b => b.label).join(', ')}</div>
+              <div style={{ marginTop: 2 }}><Mono s={11}>worn {p.count} time{p.count === 1 ? '' : 's'}</Mono></div>
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{p.buckets.map(b => b.label).join(', ')}</div>
-            <div style={{ marginTop: 2 }}><Mono s={11}>worn {p.count} time{p.count === 1 ? '' : 's'}</Mono></div>
-          </div>
-        </div>
-      ))}
-      <div style={{ marginTop: 30 }}>
+        ))}
+      </Section>
+      <Section isDesktop={isDesktop} top={isDesktop ? 24 : 30}>
         <Disp s={20}>Colour through the week</Disp>
         <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>Dominant colours logged on each weekday.</Body>
         <div style={{ display: 'flex', gap: 6, height: 140 }}>
@@ -360,7 +375,7 @@ function ColourTab({ outfits, itemById, grain }: { outfits: OutfitWithItems[]; i
             </div>
           ))}
         </div>
-      </div>
+      </Section>
     </div>
   )
 }

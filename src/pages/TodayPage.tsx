@@ -132,12 +132,24 @@ export default function TodayPage() {
 
   const hasTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0
 
-  // Compact text-only summary — used inside the merged desktop sidebar card,
-  // right under the week strip.
-  const TrendSummary = hasTrend ? (
-    <div style={{ padding: '18px 0 0' }}>
-      <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
-      {trendLabel && <Disp s={17} w={400} style={{ marginTop: 4 }}>{trendLabel}</Disp>}
+  // Peach trend card, sized to sit inside the desktop This-week card
+  // (which already has its own padding) rather than the page gutter.
+  const TrendCard = hasTrend ? (
+    <div style={{ marginTop: 18 }}>
+      <V4Card fill={T.peachSoft} shadow={false} pad={16}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14 }}>
+          <div>
+            <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
+            {trendLabel && <Disp s={17} w={400} style={{ marginTop: 4 }}>{trendLabel}</Disp>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 38 }}>
+            {monthCounts.map((c, i) => {
+              const max = Math.max(...monthCounts, 1)
+              return <div key={i} style={{ width: 7, height: `${Math.max((c / max) * 100, 4)}%`, background: i === monthCounts.length - 1 ? T.cocoa : T.peachDeep }} />
+            })}
+          </div>
+        </div>
+      </V4Card>
     </div>
   ) : null
 
@@ -290,19 +302,26 @@ export default function TodayPage() {
       <V4Card pad={18}>
         {PastOutfitsBlock}
         <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
-        <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-          {WeekStrip}
-          {TrendSummary}
-        </div>
       </V4Card>
+    )
+    const ThisWeekCard = (
+      <div style={{ marginTop: 30 }}>
+        <V4Card pad={22}>
+          {WeekStrip}
+          {TrendCard}
+        </V4Card>
+      </div>
     )
     return (
       <div style={{ paddingBottom: 32 }}>
         {WeatherHead}
         {isDesktop ? (
           <div style={{ padding: '30px 22px 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start' }}>
-              <V4Card pad={24}>{DesktopMain}</V4Card>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(480px, 1fr) 400px', gap: 52, alignItems: 'start' }}>
+              <div>
+                <V4Card pad={24}>{DesktopMain}</V4Card>
+                {ThisWeekCard}
+              </div>
               {SidebarBlock}
             </div>
           </div>
@@ -353,11 +372,15 @@ export default function TodayPage() {
     <V4Card pad={18}>
       {PastOutfitsBlock}
       <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
-      <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-        {WeekStrip}
-        {TrendSummary}
-      </div>
     </V4Card>
+  )
+  const EmptyThisWeekCard = (
+    <div style={{ marginTop: 30 }}>
+      <V4Card pad={22}>
+        {WeekStrip}
+        {TrendCard}
+      </V4Card>
+    </div>
   )
 
   return (
@@ -365,10 +388,11 @@ export default function TodayPage() {
       {WeatherHead}
       {isDesktop ? (
         <div style={{ padding: '30px 22px 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(480px, 1fr) 400px', gap: 52, alignItems: 'start' }}>
             <div>
               {EveningReminder}
               {EmptyMain}
+              {EmptyThisWeekCard}
             </div>
             {EmptySidebar}
           </div>
