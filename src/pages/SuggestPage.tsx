@@ -66,6 +66,7 @@ export default function SuggestPage() {
     setPreviousSuggestions(alreadyShown)
 
     const { data: profileData } = await supabase.from('style_profile').select('description').eq('user_id', user!.id).single()
+    const { data: constantsData } = await supabase.from('constants').select('description').eq('user_id', user!.id)
 
     const recent_outfits = outfits.slice(0, 7).map(o => ({
       date: o.date_worn, occasion: o.occasion,
@@ -92,7 +93,7 @@ export default function SuggestPage() {
         items: items.filter(i => i.category !== 'fragrance').map(({ id, name, category, subcategory, color, warmth, formality, sport }) =>
           ({ id, name, category, subcategory, color, warmth, formality, sport })),
         style_profile: profileData?.description ?? '',
-        constants: [],
+        constants: (constantsData ?? []).map(c => c.description),
         recent_outfits, feedback_history, formality: chosenFormality, occasion_history,
         previously_shown: alreadyShown,
         anchor_item: anchorItem ? { id: anchorItem.id, name: anchorItem.name, category: anchorItem.category, subcategory: anchorItem.subcategory, color: anchorItem.color } : undefined,

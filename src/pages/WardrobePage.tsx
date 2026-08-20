@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useOutfits } from '../hooks/useOutfits'
+import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import type { Category } from '../types/database'
 import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono } from '../design/kit'
 
@@ -30,6 +31,15 @@ export default function WardrobePage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [confirmArchive, setConfirmArchive] = useState(false)
   const [archiving, setArchiving] = useState(false)
+  const addFileRef = useRef<HTMLInputElement>(null)
+
+  const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    e.target.value = ''
+    if (files.length === 1) { setSingleFile(files[0]); navigate('/wardrobe/new') }
+    else { setBatchFiles(files); navigate('/wardrobe/batch') }
+  }
 
   // Last-worn date per item, derived client-side from already-loaded outfits —
   // drives both the "recently worn" sort and the stale-item nudge below.
@@ -77,8 +87,9 @@ export default function WardrobePage() {
     <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <Disp s={30}>Closet</Disp>
       <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+        <input ref={addFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFiles} />
         <button onClick={() => navigate('/settings/stats')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="chart" s={22} w={1.6} /></button>
-        <button onClick={() => navigate('/wardrobe/new')} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: `${T.g200}55`, color: T.ink, border: 'none', cursor: 'pointer' }}>
+        <button onClick={() => addFileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: `${T.g200}55`, color: T.ink, border: 'none', cursor: 'pointer' }}>
           <V4Icon n="plus" s={15} w={1.9} /><span style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600 }}>Add</span>
         </button>
         <button onClick={() => navigate('/shop')} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: T.peachSoft, color: T.cocoa, border: 'none', cursor: 'pointer' }}>
@@ -95,7 +106,7 @@ export default function WardrobePage() {
         <div style={{ padding: '30px 22px 0' }}>
           <Disp s={22}>Nothing here yet.</Disp>
           <Body s={14} style={{ marginTop: 8 }}>Add your first piece to start building your closet.</Body>
-          <div style={{ marginTop: 20 }}><Btn full icon="plus" onClick={() => navigate('/wardrobe/new')}>Add first item</Btn></div>
+          <div style={{ marginTop: 20 }}><Btn full icon="plus" onClick={() => addFileRef.current?.click()}>Add first item</Btn></div>
         </div>
       </div>
     )
