@@ -160,27 +160,28 @@ export default function TodayPage() {
     </div>
   ) : null
 
-  // Full main-column width, desktop only — actual outfit history rather
-  // than repeating the sidebar's trend summary.
-  const pastOutfits = outfits.filter(o => o.date_worn !== today).sort((a, b) => b.date_worn.localeCompare(a.date_worn)).slice(0, 10)
+  // Compact sidebar list, desktop only — a handful of recently logged
+  // outfits, styled like the Saved-for-later rows below it.
+  const pastOutfits = outfits.filter(o => o.date_worn !== today).sort((a, b) => b.date_worn.localeCompare(a.date_worn)).slice(0, 4)
   const PastOutfitsBlock = pastOutfits.length > 0 ? (
-    <div style={{ marginTop: 30 }}>
+    <div style={{ padding: '18px 0 0' }}>
       <SecH right="Calendar" onRightClick={() => navigate('/outfits')}>Past outfits</SecH>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 18 }}>
-        {pastOutfits.map(o => {
-          const d = new Date(o.date_worn + 'T00:00:00')
-          return (
-            <button
-              key={o.id} onClick={() => navigate(`/outfits/${o.id}`)}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
-            >
-              <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
-              <div style={{ marginTop: 9, fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
+      {pastOutfits.map((o, i, arr) => {
+        const d = new Date(o.date_worn + 'T00:00:00')
+        return (
+          <button
+            key={o.id} onClick={() => navigate(`/outfits/${o.id}`)}
+            style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', background: 'none', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <div style={{ width: 38, height: 47, flexShrink: 0, position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
               <Mono s={10.5} style={{ marginTop: 2 }}>{DOW[d.getDay()]} {o.date_worn.slice(8, 10)}{o.occasion ? ` · ${o.occasion}` : ''}</Mono>
-            </button>
-          )
-        })}
-      </div>
+            </div>
+            <V4Icon n="next" s={16} w={1.7} c={T.g400} />
+          </button>
+        )
+      })}
     </div>
   ) : null
 
@@ -287,9 +288,12 @@ export default function TodayPage() {
     )
     const SidebarBlock = (
       <V4Card pad={18}>
-        {WeekStrip}
-        {TrendSummary}
+        {PastOutfitsBlock}
         <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
+        <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
+          {WeekStrip}
+          {TrendSummary}
+        </div>
       </V4Card>
     )
     return (
@@ -301,7 +305,6 @@ export default function TodayPage() {
               <V4Card pad={24}>{DesktopMain}</V4Card>
               {SidebarBlock}
             </div>
-            {PastOutfitsBlock}
           </div>
         ) : (
           <>
@@ -348,9 +351,12 @@ export default function TodayPage() {
 
   const EmptySidebar = (
     <V4Card pad={18}>
-      {WeekStrip}
-      {TrendSummary}
+      {PastOutfitsBlock}
       <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>{IdeasBlock}</div>
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
+        {WeekStrip}
+        {TrendSummary}
+      </div>
     </V4Card>
   )
 
@@ -366,7 +372,6 @@ export default function TodayPage() {
             </div>
             {EmptySidebar}
           </div>
-          {PastOutfitsBlock}
         </div>
       ) : (
         <>

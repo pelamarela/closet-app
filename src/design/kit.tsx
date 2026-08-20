@@ -230,16 +230,16 @@ export function V4Bar({ title, back, onBack, right, pad = 22, sticky = true }: {
   )
 }
 
-export function Pill({ children, on = false, tone = 'ink', count, s = 'md', onClick }: {
+export function Pill({ children, on = false, tone = 'ink', count, s = 'md', full = false, onClick }: {
   children: ReactNode; on?: boolean; tone?: 'ink' | 'peach'; count?: number | string
-  s?: 'sm' | 'md' | 'lg'; onClick?: () => void
+  s?: 'sm' | 'md' | 'lg'; full?: boolean; onClick?: () => void
 }) {
   const h = s === 'lg' ? 46 : s === 'sm' ? 34 : 40
   const bg = on ? (tone === 'peach' ? T.peach : T.ink) : 'transparent'
   const fg = on ? (tone === 'peach' ? T.ink : '#fff') : T.g700
   return (
     <button onClick={onClick} className={`ds-pill${on ? ' ds-pill-on' : ''}`} style={{
-      height: h, display: 'inline-flex', alignItems: 'center', gap: 6, padding: `0 ${s === 'sm' ? 13 : 17}px`,
+      height: h, width: full ? '100%' : undefined, display: 'inline-flex', alignItems: 'center', justifyContent: full ? 'center' : 'flex-start', gap: 6, padding: `0 ${s === 'sm' ? 13 : 17}px`,
       borderRadius: 2, background: bg, color: fg, border: on ? 'none' : `1px solid ${T.g200}`,
       fontFamily: fS, fontSize: s === 'sm' ? 12.5 : 14, fontWeight: 400, whiteSpace: 'nowrap', flexShrink: 0,
     }}>

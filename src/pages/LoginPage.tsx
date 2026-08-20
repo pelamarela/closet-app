@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, dotted, Pill, Btn, Disp, Body, V4Card } from '../design/kit'
+import { T, fS, dotted, Pill, Btn, Disp, Body, Mono, V4Card } from '../design/kit'
 
 type Mode = 'signin' | 'signup'
 
@@ -66,6 +66,12 @@ export default function LoginPage() {
 
   const isInfo = error?.startsWith('Account')
 
+  const Footer = (
+    <div style={{ padding: '18px 0', textAlign: 'center' }}>
+      <Mono s={10.5} c={T.g400}>pelamarela closet app v3.0, powered by AI, made with 🤍</Mono>
+    </div>
+  )
+
   const content = (
     <>
       <div style={{ padding: '36px 22px 0', display: 'flex', justifyContent: 'center' }}>
@@ -84,8 +90,8 @@ export default function LoginPage() {
 
       <div style={{ padding: '22px 22px 0' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><Pill s="lg" on={mode === 'signin'} onClick={() => { setMode('signin'); setError(null); setConfirmPassword('') }}>Sign in</Pill></div>
-          <div style={{ flex: 1 }}><Pill s="lg" on={mode === 'signup'} onClick={() => { setMode('signup'); setError(null); setConfirmPassword('') }}>Create account</Pill></div>
+          <div style={{ flex: 1 }}><Pill s="lg" full on={mode === 'signin'} onClick={() => { setMode('signin'); setError(null); setConfirmPassword('') }}>Sign in</Pill></div>
+          <div style={{ flex: 1 }}><Pill s="lg" full on={mode === 'signup'} onClick={() => { setMode('signup'); setError(null); setConfirmPassword('') }}>Create account</Pill></div>
         </div>
       </div>
 
@@ -123,6 +129,7 @@ export default function LoginPage() {
       <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 430 }}>
           <V4Card pad={0} style={{ overflow: 'hidden' }}>{content}</V4Card>
+          {Footer}
         </div>
       </div>
     )
@@ -131,6 +138,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100svh', background: T.paper, maxWidth: 430, margin: '0 auto' }}>
       {content}
+      {Footer}
     </div>
   )
 }
