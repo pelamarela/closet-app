@@ -133,8 +133,7 @@ export default function TodayPage() {
   const hasTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0
 
   // Compact text-only summary — used inside the merged desktop sidebar card,
-  // right under the week strip. The bar chart itself lives in WideTrend,
-  // full-width in the main column, where there's room to actually read it.
+  // right under the week strip.
   const TrendSummary = hasTrend ? (
     <div style={{ padding: '18px 0 0' }}>
       <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
@@ -161,31 +160,27 @@ export default function TodayPage() {
     </div>
   ) : null
 
-  // Wide version of the same trend, full main-column width — desktop only.
-  const WideTrend = hasTrend ? (
+  // Full main-column width, desktop only — actual outfit history rather
+  // than repeating the sidebar's trend summary.
+  const pastOutfits = outfits.filter(o => o.date_worn !== today).sort((a, b) => b.date_worn.localeCompare(a.date_worn)).slice(0, 10)
+  const PastOutfitsBlock = pastOutfits.length > 0 ? (
     <div style={{ marginTop: 30 }}>
-      <V4Card fill={T.peachSoft} shadow={false} pad={22}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20 }}>
-          <div>
-            <Body s={13.5} c={T.cocoa}>{currentMonthCount} outfit{currentMonthCount === 1 ? '' : 's'} logged in {months[months.length - 1].label}</Body>
-            {trendLabel && <Disp s={20} w={400} style={{ marginTop: 4 }}>{trendLabel}</Disp>}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginTop: 22 }}>
-          {months.map((m, i) => {
-            const max = Math.max(...monthCounts, 1)
-            const barH = Math.max((monthCounts[i] / max) * 74, 3)
-            return (
-              <div key={m.prefix} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: '100%', height: 74, display: 'flex', alignItems: 'flex-end' }}>
-                  <div style={{ width: '100%', height: barH, background: i === monthCounts.length - 1 ? T.cocoa : T.peachDeep }} />
-                </div>
-                <Mono s={10.5} c={i === monthCounts.length - 1 ? T.cocoa : T.g500}>{m.label}</Mono>
-              </div>
-            )
-          })}
-        </div>
-      </V4Card>
+      <SecH right="Calendar" onRightClick={() => navigate('/outfits')}>Past outfits</SecH>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 18 }}>
+        {pastOutfits.map(o => {
+          const d = new Date(o.date_worn + 'T00:00:00')
+          return (
+            <button
+              key={o.id} onClick={() => navigate(`/outfits/${o.id}`)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+            >
+              <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+              <div style={{ marginTop: 9, fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
+              <Mono s={10.5} style={{ marginTop: 2 }}>{DOW[d.getDay()]} {o.date_worn.slice(8, 10)}{o.occasion ? ` · ${o.occasion}` : ''}</Mono>
+            </button>
+          )
+        })}
+      </div>
     </div>
   ) : null
 
@@ -306,7 +301,7 @@ export default function TodayPage() {
               <V4Card pad={24}>{DesktopMain}</V4Card>
               {SidebarBlock}
             </div>
-            {WideTrend}
+            {PastOutfitsBlock}
           </div>
         ) : (
           <>
@@ -371,7 +366,7 @@ export default function TodayPage() {
             </div>
             {EmptySidebar}
           </div>
-          {WideTrend}
+          {PastOutfitsBlock}
         </div>
       ) : (
         <>

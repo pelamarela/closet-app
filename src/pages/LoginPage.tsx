@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { T, fS, dotted, Pill, Btn, Disp, Body } from '../design/kit'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { T, fS, dotted, Pill, Btn, Disp, Body, V4Card } from '../design/kit'
 
 type Mode = 'signin' | 'signup'
 
@@ -21,6 +22,7 @@ function Field({ label, type, value, onChange, autoComplete }: {
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { isDesktop } = useBreakpoint()
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -64,15 +66,14 @@ export default function LoginPage() {
 
   const isInfo = error?.startsWith('Account')
 
-  return (
-    <div style={{ minHeight: '100svh', background: T.paper, maxWidth: 430, margin: '0 auto' }}>
-      <div style={{ padding: '18px 22px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <img src="/logo.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', display: 'block' }} />
-        <span style={{ fontFamily: fS, fontSize: 14, fontWeight: 600, letterSpacing: '-.01em', color: T.ink }}>closet</span>
+  const content = (
+    <>
+      <div style={{ padding: '36px 22px 0', display: 'flex', justifyContent: 'center' }}>
+        <img src="/logo.png" alt="closet" style={{ width: 108, height: 108, objectFit: 'contain', display: 'block' }} />
       </div>
 
-      <div style={{ padding: '40px 22px 0' }}>
-        <Disp s={38} style={{ lineHeight: 1.05 }}>Your closet,<br />on every<br />device.</Disp>
+      <div style={{ padding: '22px 22px 0', textAlign: 'center' }}>
+        <Disp s={34} style={{ lineHeight: 1.1 }}>Your closet,<br />on every device.</Disp>
       </div>
 
       <div style={{ padding: '28px 22px 0' }}>
@@ -88,7 +89,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ padding: '22px 22px 0' }}>
+      <form onSubmit={handleSubmit} style={{ padding: '22px 22px 28px' }}>
         <Field label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="Password" type="password" value={password} onChange={setPassword} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
         {mode === 'signup' && (
@@ -114,6 +115,22 @@ export default function LoginPage() {
           </Btn>
         </div>
       </form>
+    </>
+  )
+
+  if (isDesktop) {
+    return (
+      <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 430 }}>
+          <V4Card pad={0} style={{ overflow: 'hidden' }}>{content}</V4Card>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ minHeight: '100svh', background: T.paper, maxWidth: 430, margin: '0 auto' }}>
+      {content}
     </div>
   )
 }
