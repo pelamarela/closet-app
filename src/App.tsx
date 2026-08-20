@@ -59,13 +59,13 @@ export default function App() {
             <Route path="/wardrobe" element={<WardrobePage />} />
             <Route path="/wardrobe/:id" element={<ItemDetailPage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/outfits/new" element={<LogOutfitPage />} />
+            <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
-            <Route path="/outfits/new" element={<LogOutfitPage />} />
-            <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/ideas" element={<IdeasPage />} />
             <Route path="/ideas/:id" element={<IdeaDetailPage />} />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { outfitTitle } from '../components/ui'
+import { calcStreak } from '../lib/streak'
 import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -11,20 +12,6 @@ const DOW_SHORT = ['m', 't', 'w', 't', 'f', 's', 's']
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7 }
-
-function calcStreak(outfits: OutfitWithItems[]): number {
-  const dates = new Set(outfits.map(o => o.date_worn))
-  const today = new Date()
-  let streak = 0
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today)
-    d.setDate(d.getDate() - i)
-    const s = d.toISOString().slice(0, 10)
-    if (dates.has(s)) streak++
-    else if (i > 0) break
-  }
-  return streak
-}
 
 function topOccasions(outfits: OutfitWithItems[], n = 2): string[] {
   const freq: Record<string, number> = {}
