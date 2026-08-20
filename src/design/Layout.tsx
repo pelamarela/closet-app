@@ -107,10 +107,15 @@ function SideNav() {
       </button>
       <div style={{ padding: '0 0 18px' }}><Link to="/outfits/new" style={{ textDecoration: 'none', display: 'block' }}><Btn full icon="cal">Log an outfit</Btn></Link></div>
       {[...TABS, ...SIDENAV_EXTRA].map(tab => {
-        // Closet's own active check also matches /shop for the mobile tab
-        // bar (which has no separate Shop tab) — but the sidebar does have
-        // one, so don't double-highlight Closet while Shop is the real match.
-        const active = tab.id === 'closet' ? pathname.startsWith('/wardrobe') : tab.active(pathname)
+        // Closet/Me's own active checks also match /shop and /settings/stats
+        // respectively, for the mobile tab bar (which has no separate Shop or
+        // Statistics tab) — but the sidebar has both as their own entries, so
+        // don't double-highlight the parent tab while the more specific one
+        // is the real match.
+        const active =
+          tab.id === 'closet' ? pathname.startsWith('/wardrobe') :
+          tab.id === 'me' ? pathname.startsWith('/settings') && !pathname.startsWith('/settings/stats') :
+          tab.active(pathname)
         return (
           <Link key={tab.id} to={tab.to} style={{
             height: 46, borderRadius: 2, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 11,

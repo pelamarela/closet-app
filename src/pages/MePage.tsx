@@ -51,13 +51,16 @@ export default function MePage() {
         <Disp s={30}>Me</Disp><Mono s={11}>v3.0</Mono>
       </div>
       <div style={{ padding: '20px 22px 0' }}>
-        <V4Card fill={T.peach} shadow={false} pad={18} style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-          <div style={{ width: 58, height: 58, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fS, fontSize: 21, fontWeight: 600, flexShrink: 0 }}>{initial}</div>
-          <div style={{ minWidth: 0 }}>
-            <Disp s={19}>{user?.email?.split('@')[0] ?? 'You'}</Disp>
-            <div style={{ marginTop: 3 }}><Mono s={11} c={T.cocoa}>{user?.email}</Mono></div>
-            {memberSince && <div style={{ marginTop: 2 }}><Mono s={10.5} c={T.cocoaSoft}>keeping track since {memberSince}</Mono></div>}
+        <V4Card fill={T.peach} shadow={false} pad={18} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 15 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 15, minWidth: 0 }}>
+            <div style={{ width: 58, height: 58, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fS, fontSize: 21, fontWeight: 600, flexShrink: 0 }}>{initial}</div>
+            <div style={{ minWidth: 0 }}>
+              <Disp s={19}>{user?.email?.split('@')[0] ?? 'You'}</Disp>
+              <div style={{ marginTop: 3 }}><Mono s={11} c={T.cocoa}>{user?.email}</Mono></div>
+              {memberSince && <div style={{ marginTop: 2 }}><Mono s={10.5} c={T.cocoaSoft}>keeping track since {memberSince}</Mono></div>}
+            </div>
           </div>
+          <button onClick={signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.cocoaDeep }}>sign out</button>
         </V4Card>
       </div>
       <div style={{ padding: '16px 22px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 11 }}>

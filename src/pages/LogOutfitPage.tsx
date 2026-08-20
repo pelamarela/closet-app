@@ -7,6 +7,7 @@ import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
 import { catLabel } from '../lib/categoryLabel'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, CONTENT_MAX_W } from '../design/kit'
 
 const CATS: { value: string; label: string }[] = [
@@ -34,6 +35,7 @@ export default function LogOutfitPage() {
   const { items, loading: itemsLoading } = useItems()
   const { outfits } = useOutfits()
   const { logOutfit, updateOutfit } = useOutfitMutations()
+  const { isDesktop } = useBreakpoint()
 
   const [step, setStep] = useState<Step>('pieces')
   const [date, setDate] = useState(navState?.date ?? todayStr())
@@ -127,6 +129,60 @@ export default function LogOutfitPage() {
 
   // ── Step 1 — pieces ──────────────────────────────────────────────────────
   if (step === 'pieces') {
+    const Grid = itemsLoading ? (
+      <Body s={13}>loading…</Body>
+    ) : gridItems.length === 0 ? (
+      <Body s={13}>No items here.</Body>
+    ) : (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
+        {gridItems.map(item => (
+          <ItemTile key={item.id} src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
+        ))}
+      </div>
+    )
+
+    if (isDesktop) {
+      return (
+        <div style={{ paddingBottom: 40 }}>
+          <V4Bar
+            title="Log outfit"
+            right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 44, alignItems: 'start', padding: '10px 22px 0' }}>
+            <div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
+                {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
+              </div>
+              {Grid}
+            </div>
+            <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600 }}>{selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'} on</div>
+                {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
+              </div>
+              {picked.length === 0 ? (
+                <Body s={13}>Tap pieces to add them here.</Body>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {picked.map(item => (
+                    <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+                      {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                      <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <V4Icon n="close" s={11} w={2.4} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ marginTop: 22 }}>
+                <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div style={{ paddingBottom: 100 }}>
         <V4Bar
@@ -156,19 +212,7 @@ export default function LogOutfitPage() {
             {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
-        <div style={{ padding: '16px 22px 0' }}>
-          {itemsLoading ? (
-            <Body s={13}>loading…</Body>
-          ) : gridItems.length === 0 ? (
-            <Body s={13}>No items here.</Body>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
-              {gridItems.map(item => (
-                <ItemTile key={item.id} src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
-              ))}
-            </div>
-          )}
-        </div>
+        <div style={{ padding: '16px 22px 0' }}>{Grid}</div>
         <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
             <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
@@ -179,22 +223,19 @@ export default function LogOutfitPage() {
   }
 
   // ── Step 2 — context ─────────────────────────────────────────────────────
-  return (
-    <div style={{ paddingBottom: 100 }}>
-      <V4Bar back onBack={() => setStep('pieces')} />
-      <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>{isEdit ? 'Update this outfit' : <>Anything to<br />remember about it?</>}</Disp>
-      </div>
-      <div style={{ padding: '18px 22px 0' }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto' }}>
-          {picked.slice(0, 6).map(item => (
-            <div key={item.id} style={{ width: 46, height: 58, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-              {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-            </div>
-          ))}
+  const PiecesPreview = (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: isDesktop ? undefined : 'auto', flexWrap: isDesktop ? 'wrap' : undefined }}>
+      {picked.slice(0, isDesktop ? 12 : 6).map(item => (
+        <div key={item.id} style={{ width: 46, height: 58, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+          {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
         </div>
-      </div>
-      <div style={{ padding: '24px 22px 0' }}>
+      ))}
+    </div>
+  )
+
+  const FormFields = (
+    <>
+      <div>
         <SecH>When</SecH>
         <label style={{ position: 'relative', display: 'inline-block' }}>
           <Pill on>
@@ -203,7 +244,7 @@ export default function LogOutfitPage() {
           <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
         </label>
       </div>
-      <div style={{ padding: '22px 22px 0' }}>
+      <div style={{ marginTop: 22 }}>
         <SecH>What for</SecH>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {occasionPresets.map(o => <Pill key={o} on={occasion === o} tone="peach" onClick={() => setOccasion(prev => prev === o ? '' : o)}>{o}</Pill>)}
@@ -214,7 +255,7 @@ export default function LogOutfitPage() {
           style={{ width: '100%', fontFamily: fS, fontSize: 14, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '10px 0 6px', marginTop: 10 }}
         />
       </div>
-      <div style={{ padding: '22px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ marginTop: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500 }}>How did it feel</span>
         <div style={{ display: 'flex', gap: 5 }}>
           {[1, 2, 3, 4, 5].map(n => (
@@ -229,19 +270,51 @@ export default function LogOutfitPage() {
           ))}
         </div>
       </div>
-      <div style={{ padding: '22px 22px 0' }}>
+      <div style={{ marginTop: 22 }}>
         <SecH right="Optional">A note</SecH>
         <textarea
           value={notes} onChange={e => setNotes(e.target.value)} placeholder="Too warm for the waistcoat by noon…" rows={3}
           style={{ width: '100%', boxSizing: 'border-box', minHeight: 62, background: T.white, boxShadow: `inset 0 0 0 1px ${T.line}`, padding: 15, fontFamily: fS, fontSize: 14, color: T.ink, border: 'none', outline: 'none', resize: 'none' }}
         />
       </div>
-      <div style={{ padding: '20px 22px 0' }}>
+      <div style={{ marginTop: 20 }}>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
         <button onClick={() => fileInputRef.current?.click()} style={{ width: '100%', border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: fS, fontSize: 13, color: T.g500 }}>
           <V4Icon n="cam" s={17} w={1.5} />{imageFile ? imageFile.name : 'Add a photo of the full look (optional)'}
         </button>
       </div>
+    </>
+  )
+
+  if (isDesktop) {
+    return (
+      <div style={{ paddingBottom: 40 }}>
+        <V4Bar back onBack={() => setStep('pieces')} />
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 44, alignItems: 'start', padding: '10px 22px 0' }}>
+          <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PiecesPreview}</div>
+          <div>
+            <Disp s={24}>{isEdit ? 'Update this outfit' : 'Anything to remember about it?'}</Disp>
+            <div style={{ marginTop: 24 }}>{FormFields}</div>
+            {error && <Body s={12.5} c={T.roseDeep} style={{ marginTop: 16 }}>{error}</Body>}
+            <div style={{ marginTop: 24 }}>
+              <Btn icon="check" disabled={saving} onClick={handleSave}>
+                {saving ? 'Saving…' : isEdit ? 'Save changes' : `Save to ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}`}
+              </Btn>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ paddingBottom: 100 }}>
+      <V4Bar back onBack={() => setStep('pieces')} />
+      <div style={{ padding: '4px 22px 0' }}>
+        <Disp s={24}>{isEdit ? 'Update this outfit' : <>Anything to<br />remember about it?</>}</Disp>
+      </div>
+      <div style={{ padding: '18px 22px 0' }}>{PiecesPreview}</div>
+      <div style={{ padding: '24px 22px 0' }}>{FormFields}</div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
