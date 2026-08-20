@@ -6,6 +6,7 @@ import { useIdeas } from '../hooks/useIdeas'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
 import { getLogReminderEnabled } from '../lib/settings'
 import { outfitTitle } from '../lib/outfitTitle'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, dotted, V4Icon, Btn, RoundBtn, Disp, Body, Mono, SecH, V4Card, Ph, outfitTone, Divider } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -45,6 +46,7 @@ export default function TodayPage() {
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
   const { ideas } = useIdeas()
+  const { isDesktop } = useBreakpoint()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
   useEffect(() => {
@@ -56,6 +58,12 @@ export default function TodayPage() {
   const todayOutfit = outfits.find(o => o.date_worn === today)
   const week = useMemo(() => weekDates(now), [today])
   const months = useMemo(() => trailingMonths(now, 6), [today])
+
+  const wearCountById = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const o of outfits) for (const id of o.item_ids) map[id] = (map[id] ?? 0) + 1
+    return map
+  }, [outfits])
 
   const monthCounts = months.map(m => outfits.filter(o => o.date_worn.startsWith(m.prefix)).length)
   const currentMonthCount = monthCounts[monthCounts.length - 1]
@@ -72,22 +80,31 @@ export default function TodayPage() {
     .map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
 
-  const WeatherHead = (
+  const weatherLine = weather && `${weather.conditions.charAt(0).toUpperCase()}${weather.conditions.slice(1)} — ${weather.temp_c}°.`
+  const monthShortLabel = now.toLocaleDateString('en-US', { month: 'short' }).toLowerCase()
+
+  const WeatherHead = isDesktop ? (
+    <div style={{ padding: '4px 0 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
+        <Mono s={12} c={T.cocoa}>{DOW[now.getDay()]} {String(now.getDate()).padStart(2, '0')} {monthShortLabel}</Mono>
+      </div>
+      <Disp s={40}>{weatherLine ?? 'Today.'}</Disp>
+    </div>
+  ) : (
     <div style={{ padding: '4px 22px 0' }}>
       <Disp s={30}>Today.</Disp>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '14px 0 7px' }}>
         <V4Icon n="sun" s={16} w={1.7} c={T.cocoa} />
-        <Mono s={11.5} c={T.cocoa}>{DOW[now.getDay()]} {String(now.getDate()).padStart(2, '0')} {now.toLocaleDateString('en-US', { month: 'short' }).toLowerCase()}</Mono>
+        <Mono s={11.5} c={T.cocoa}>{DOW[now.getDay()]} {String(now.getDate()).padStart(2, '0')} {monthShortLabel}</Mono>
       </div>
-      {weather && (
-        <Disp s={26}>{weather.conditions.charAt(0).toUpperCase()}{weather.conditions.slice(1)} — {weather.temp_c}°.</Disp>
-      )}
+      {weatherLine && <Disp s={26}>{weatherLine}</Disp>}
     </div>
   )
 
   const WeekStrip = (
-    <div style={{ padding: '0 22px' }}>
-      <SecH right="Month" onRightClick={() => navigate('/outfits')}>This week</SecH>
+    <div style={{ padding: isDesktop ? 0 : '0 22px' }}>
+      <SecH right={isDesktop ? monthShortLabel : 'Month'} onRightClick={() => navigate('/outfits')}>This week</SecH>
       <div style={{ display: 'flex', gap: 7 }}>
         {week.map((d, i) => {
           const ds = dstr(d)
@@ -114,7 +131,7 @@ export default function TodayPage() {
   )
 
   const MonthTrend = currentMonthCount > 0 || (priorAvg ?? 0) > 0 ? (
-    <div style={{ padding: '18px 22px 0' }}>
+    <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
       <V4Card fill={T.peachSoft} shadow={false} pad={16}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14 }}>
           <div>
@@ -136,84 +153,188 @@ export default function TodayPage() {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
 
+  const IdeasBlock = ideas.length > 0 && (
+    <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
+      <SecH right="Ideas" onRightClick={() => navigate('/ideas')}>Saved for later</SecH>
+      {isDesktop ? (
+        ideas.slice(0, 3).map((idea, i, arr) => (
+          <button
+            key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)}
+            style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '10px 0', background: 'none', border: 'none', borderBottom: i < arr.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <div style={{ width: 38, height: 47, flexShrink: 0, position: 'relative' }}>
+              <Collage items={collageItems(idea.item_ids)} fill />
+              <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</div>
+              <Mono s={10.5} style={{ marginTop: 2 }}>{idea.occasion ? `${idea.occasion} · ` : ''}saved {new Date(idea.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }).toLowerCase()}</Mono>
+            </div>
+            <V4Icon n="next" s={16} w={1.7} c={T.g400} />
+          </button>
+        ))
+      ) : (
+        <div style={{ display: 'flex', gap: 10 }}>
+          {ideas.slice(0, 3).map(idea => (
+            <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+              <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}>
+                <Collage items={collageItems(idea.item_ids)} fill />
+                <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
+              </div>
+              <Body s={12} style={{ marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</Body>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   if (todayOutfit) {
     const time = new Date(todayOutfit.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    const todayItems = todayOutfit.item_ids.map(id => items.find(i => i.id === id)).filter((i): i is NonNullable<typeof i> => !!i)
+    const handleRepeat = () => navigate('/outfits/new', { state: { preselectedIds: todayOutfit.item_ids, occasion: todayOutfit.occasion ?? '', date: today } })
+
+    const DesktopMain = (
+      <div style={{ display: 'flex', gap: 26 }}>
+        <div style={{ width: 340, flexShrink: 0, position: 'relative' }}>
+          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', height: 400, background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
+            <Collage items={collageItems(todayOutfit.item_ids)} fill />
+          </button>
+          {todayOutfit.occasion && (
+            <div style={{ position: 'absolute', top: 14, left: 14, height: 30, display: 'inline-flex', alignItems: 'center', padding: '0 13px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize', pointerEvents: 'none' }}>{todayOutfit.occasion}</div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Disp s={26}>{outfitTitle(todayOutfit.item_ids, items, 'Outfit logged.')}</Disp>
+          <Body s={14} style={{ marginTop: 6 }}>{todayOutfit.item_ids.length} pieces · logged at {time}</Body>
+          <div style={{ marginTop: 22 }}>
+            {todayItems.map((item, i) => (
+              <button
+                key={item.id} onClick={() => navigate(`/wardrobe/${item.id}`)}
+                style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < todayItems.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+              >
+                <div style={{ width: 34, height: 42, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                  {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
+                <div style={{ flex: 1, fontFamily: fS, fontSize: 14 }}>{item.name}</div>
+                <Mono s={10.5}>{item.category}</Mono>
+                <Mono s={11} c={T.cocoa} style={{ fontWeight: 700 }}>{wearCountById[item.id] ?? 0}×</Mono>
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+            <Btn kind="quiet" icon="repeat" onClick={handleRepeat}>Wear again</Btn>
+          </div>
+        </div>
+      </div>
+    )
+
+    const MobileMain = (
+      <div style={{ padding: '20px 22px 0' }}>
+        <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{ width: '100%', aspectRatio: '4/3' }}><Collage items={collageItems(todayOutfit.item_ids)} fill /></div>
+            {todayOutfit.occasion && (
+              <div style={{ position: 'absolute', top: 14, left: 14, height: 30, display: 'inline-flex', alignItems: 'center', padding: '0 13px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize' }}>{todayOutfit.occasion}</div>
+            )}
+          </div>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14, marginTop: 16 }}>
+          <div style={{ minWidth: 0 }}>
+            <Disp s={21}>{outfitTitle(todayOutfit.item_ids, items, 'Outfit logged.')}</Disp>
+            <Body s={13} style={{ marginTop: 5 }}>{todayOutfit.item_ids.length} pieces · logged at {time}</Body>
+          </div>
+          <RoundBtn icon="next" onClick={() => navigate(`/outfits/${todayOutfit.id}`)} />
+        </div>
+      </div>
+    )
+    const SidebarBlock = (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+        {WeekStrip}
+        {MonthTrend}
+        {IdeasBlock}
+      </div>
+    )
     return (
       <div style={{ paddingBottom: 32 }}>
         {WeatherHead}
-        <div style={{ padding: '20px 22px 0' }}>
-          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ width: '100%', aspectRatio: '4/3' }}><Collage items={collageItems(todayOutfit.item_ids)} fill /></div>
-              {todayOutfit.occasion && (
-                <div style={{ position: 'absolute', top: 14, left: 14, height: 30, display: 'inline-flex', alignItems: 'center', padding: '0 13px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize' }}>{todayOutfit.occasion}</div>
-              )}
-            </div>
-          </button>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14, marginTop: 16 }}>
-            <div style={{ minWidth: 0 }}>
-              <Disp s={21}>{outfitTitle(todayOutfit.item_ids, items, 'Outfit logged.')}</Disp>
-              <Body s={13} style={{ marginTop: 5 }}>{todayOutfit.item_ids.length} pieces · logged at {time}</Body>
-            </div>
-            <RoundBtn icon="next" onClick={() => navigate(`/outfits/${todayOutfit.id}`)} />
+        {isDesktop ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start', padding: '30px 22px 0' }}>
+            {DesktopMain}
+            {SidebarBlock}
           </div>
-        </div>
-        <Divider />
-        <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
-        {MonthTrend && <Divider />}
-        {MonthTrend}
+        ) : (
+          <>
+            {MobileMain}
+            <Divider />
+            <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
+            {MonthTrend && <Divider />}
+            {MonthTrend}
+            {IdeasBlock && <Divider />}
+            {IdeasBlock}
+          </>
+        )}
       </div>
     )
   }
 
   const showEveningReminder = now.getHours() >= 21 && getLogReminderEnabled()
 
+  const EmptyMain = (
+    <div style={{ padding: isDesktop ? '20px 0 0' : '20px 22px 0' }}>
+      <div style={{ ...dotted, padding: '30px 24px 26px', border: `1px solid ${T.line}` }}>
+        <img src="/brand/wave.png" alt="" style={{ width: 92, display: 'block', marginBottom: 18, opacity: .95 }} />
+        <Disp s={22}>Nothing on today yet.</Disp>
+        <Body s={14} style={{ marginTop: 8, maxWidth: 280 }}>
+          You can log it yourself or I can pull something together from your closet.
+        </Body>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
+          <Btn full icon="cal" onClick={() => navigate('/outfits/new', { state: { date: today } })}>Log what I'm wearing</Btn>
+          <Btn full kind="peach" icon="spark" onClick={() => navigate('/suggest')}>Suggest three looks</Btn>
+        </div>
+      </div>
+    </div>
+  )
+
+  const EveningReminder = showEveningReminder && (
+    <div style={{ padding: isDesktop ? '16px 0 0' : '16px 22px 0' }}>
+      <V4Card fill={T.peach} shadow={false} pad={14} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <V4Icon n="cal" s={18} w={1.7} c={T.cocoa} />
+        <Body s={13.5} c={T.cocoa} style={{ flex: 1 }}>Haven't logged today — quick, before you forget?</Body>
+        <button onClick={() => navigate('/outfits/new', { state: { date: today } })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>Log</button>
+      </V4Card>
+    </div>
+  )
+
+  const EmptySidebar = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
+      {WeekStrip}
+      {MonthTrend}
+      {IdeasBlock}
+    </div>
+  )
+
   return (
     <div style={{ paddingBottom: 32 }}>
       {WeatherHead}
-      {showEveningReminder && (
-        <div style={{ padding: '16px 22px 0' }}>
-          <V4Card fill={T.peach} shadow={false} pad={14} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <V4Icon n="cal" s={18} w={1.7} c={T.cocoa} />
-            <Body s={13.5} c={T.cocoa} style={{ flex: 1 }}>Haven't logged today — quick, before you forget?</Body>
-            <button onClick={() => navigate('/outfits/new', { state: { date: today } })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>Log</button>
-          </V4Card>
-        </div>
-      )}
-      <div style={{ padding: '20px 22px 0' }}>
-        <div style={{ ...dotted, padding: '30px 24px 26px', border: `1px solid ${T.line}` }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 92, display: 'block', marginBottom: 18, opacity: .95 }} />
-          <Disp s={22}>Nothing on today yet.</Disp>
-          <Body s={14} style={{ marginTop: 8, maxWidth: 280 }}>
-            You can log it yourself or I can pull something together from your closet.
-          </Body>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
-            <Btn full icon="cal" onClick={() => navigate('/outfits/new', { state: { date: today } })}>Log what I'm wearing</Btn>
-            <Btn full kind="peach" icon="spark" onClick={() => navigate('/suggest')}>Suggest three looks</Btn>
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 52, alignItems: 'start', padding: '30px 22px 0' }}>
+          <div>
+            {EveningReminder}
+            {EmptyMain}
           </div>
+          {EmptySidebar}
         </div>
-      </div>
-      <Divider />
-      <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
-      {MonthTrend && <Divider />}
-      {MonthTrend}
-      {ideas.length > 0 && (
+      ) : (
         <>
+          {EveningReminder}
+          {EmptyMain}
           <Divider />
-          <div style={{ padding: '18px 22px 0' }}>
-            <SecH right="Ideas" onRightClick={() => navigate('/ideas')}>Saved for later</SecH>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {ideas.slice(0, 3).map(idea => (
-                <button key={idea.id} onClick={() => navigate(`/ideas/${idea.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}>
-                    <Collage items={collageItems(idea.item_ids)} />
-                    <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
-                  </div>
-                  <Body s={12} style={{ marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(idea.item_ids, items, idea.occasion ?? 'Idea')}</Body>
-                </button>
-              ))}
-            </div>
-          </div>
+          <div style={{ padding: '18px 0 0' }}>{WeekStrip}</div>
+          {MonthTrend && <Divider />}
+          {MonthTrend}
+          {IdeasBlock && <Divider />}
+          {IdeasBlock}
         </>
       )}
     </div>

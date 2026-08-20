@@ -265,8 +265,8 @@ export default function BatchUploadPage() {
   const progress = ((current + 1) / drafts.length) * 100
 
   const PhotoBlock = (
-    <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
-      <img src={draft.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    <div style={{ width: '100%', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}`, ...(isDesktop ? {} : { aspectRatio: '4/3' }) }}>
+      <img src={draft.preview} alt="" style={isDesktop ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
     </div>
   )
 

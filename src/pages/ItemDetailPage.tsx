@@ -102,7 +102,7 @@ export default function ItemDetailPage() {
         {wornIn.slice(0, 4).map(o => (
           <button key={o.id} onClick={() => navigate(`/outfits/${o.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
             <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}>
-              <Collage items={collageItems(o.item_ids)} />
+              <Collage items={collageItems(o.item_ids)} fill />
               <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 1px ${T.line}`, pointerEvents: 'none' }} />
             </div>
             <div style={{ marginTop: 5 }}><Mono s={10}>{o.date_worn.slice(8, 10)} {o.date_worn.slice(5, 7)}</Mono></div>

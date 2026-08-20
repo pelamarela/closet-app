@@ -263,7 +263,7 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate }:
           <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
             {combos.map((c, i) => (
               <button key={i} onClick={() => navigate(`/outfits/${c.outfitId}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}><Collage items={collageItems(c.item_ids)} /></div>
+                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative', background: T.g200 }}><Collage items={collageItems(c.item_ids)} fill /></div>
                 <div style={{ textAlign: 'center', marginTop: 6 }}><Mono s={11} c={T.ink} style={{ fontWeight: 700 }}>{c.count}×</Mono></div>
                 <div style={{ marginTop: 2, fontFamily: fS, fontSize: 11, color: T.g500, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(c.item_ids, items, 'Outfit')}</div>
               </button>

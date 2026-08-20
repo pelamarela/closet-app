@@ -86,10 +86,20 @@ export default function WardrobePage() {
   if (loading) return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   if (error) return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.roseDeep }}>{error}</div>
 
+  const SelectToggle = selectMode ? (
+    <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>Cancel</button>
+  ) : (
+    <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>{isDesktop ? 'Select' : `${items.length} items · select`}</button>
+  )
+
   const Header = (
-    <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Disp s={30}>Closet</Disp>
+    <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: isDesktop ? 'flex-end' : 'center', justifyContent: 'space-between' }}>
+      <div>
+        <Disp s={30}>Closet</Disp>
+        {isDesktop && <Body s={14} style={{ marginTop: 6 }}>{items.length} pieces</Body>}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+        {isDesktop && SelectToggle}
         <input ref={addFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFiles} />
         <button onClick={() => addFileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: `${T.g200}55`, color: T.ink, border: 'none', cursor: 'pointer' }}>
           <V4Icon n="plus" s={15} w={1.9} /><span style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600 }}>Add</span>
@@ -118,13 +128,11 @@ export default function WardrobePage() {
     <div style={{ paddingBottom: 32 }}>
       <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
         {Header}
-        <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          {selectMode ? (
-            <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>Cancel</button>
-          ) : (
-            <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>{items.length} items · select</button>
-          )}
-        </div>
+        {!isDesktop && (
+          <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            {SelectToggle}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
           {FILTERS.map(f => (
             <Pill key={f.value} on={filter === f.value} s="sm" count={countFor(f.value)} onClick={() => setFilter(f.value)}>{f.label}</Pill>

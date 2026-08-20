@@ -22,6 +22,13 @@ const TABS: { id: string; label: string; to: string; icon: IconName; active: (p:
   { id: 'ideas', label: 'Ideas', to: '/ideas', icon: 'bulb', active: p => p.startsWith('/ideas') },
   { id: 'me', label: 'Me', to: '/settings', icon: 'user', active: p => p.startsWith('/settings') },
 ]
+// Desktop-only secondary links — not primary IA (no room on the mobile tab
+// bar's 4 slots), but worth a permanent spot in the sidebar's extra space
+// rather than being buried a click deeper in Me/Closet.
+const SIDENAV_EXTRA: { id: string; label: string; to: string; icon: IconName; active: (p: string) => boolean }[] = [
+  { id: 'stats', label: 'Statistics', to: '/settings/stats', icon: 'chart', active: p => p.startsWith('/settings/stats') },
+  { id: 'shop', label: 'Shop', to: '/shop', icon: 'bag', active: p => p === '/shop' },
+]
 const SIDENAV_W = 236
 
 function Header() {
@@ -99,7 +106,7 @@ function SideNav() {
         <span style={{ fontFamily: fS, fontSize: 15, fontWeight: 600, color: T.ink }}>closet</span>
       </button>
       <div style={{ padding: '0 0 18px' }}><Link to="/outfits/new" style={{ textDecoration: 'none', display: 'block' }}><Btn full icon="cal">Log an outfit</Btn></Link></div>
-      {TABS.map(tab => {
+      {[...TABS, ...SIDENAV_EXTRA].map(tab => {
         const active = tab.active(pathname)
         return (
           <Link key={tab.id} to={tab.to} style={{

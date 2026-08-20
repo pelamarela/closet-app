@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { outfitTitle } from '../lib/outfitTitle'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone } from '../design/kit'
 import Collage from '../design/Collage'
 
@@ -16,6 +17,7 @@ export default function MonthPage() {
   const navigate = useNavigate()
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
+  const { isDesktop } = useBreakpoint()
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState(now.getMonth())
@@ -66,67 +68,100 @@ export default function MonthPage() {
           <RoundBtn icon="next" onClick={nextMonth} />
         </div>
       </div>
-      <div style={{ padding: '18px 22px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
-          {DOW_SHORT.map((d, i) => <div key={i} style={{ textAlign: 'center' }}><Mono s={10} style={{ textTransform: 'uppercase' }}>{d}</Mono></div>)}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
-          {cells.map((day, i) => {
-            if (day == null) return <div key={`b${i}`} />
-            const ds = toDateStr(day)
-            const dayOutfits = outfitsByDate[ds] ?? []
-            const isToday = ds === todayStr
-            const isSelected = selectedDate === ds
-            return (
-              <button
-                key={ds}
-                onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
-                style={{
-                  position: 'relative', aspectRatio: '3/4', overflow: 'hidden', padding: 0, cursor: 'pointer',
-                  background: dayOutfits.length ? 'none' : T.white,
-                  boxShadow: dayOutfits.length || isSelected ? 'none' : `inset 0 0 0 1px ${T.line}`,
-                }}
-              >
-                {dayOutfits.length > 0 && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: 1 }}>
-                    {dayOutfits.slice(0, 3).map(o => <div key={o.id} style={{ flex: 1, height: '100%' }}><Ph tone={outfitTone(o.id)} /></div>)}
+      {(() => {
+        const CalendarBlock = (
+          <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
+              {DOW_SHORT.map((d, i) => <div key={i} style={{ textAlign: 'center' }}><Mono s={10} style={{ textTransform: 'uppercase' }}>{d}</Mono></div>)}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
+              {cells.map((day, i) => {
+                if (day == null) return <div key={`b${i}`} />
+                const ds = toDateStr(day)
+                const dayOutfits = outfitsByDate[ds] ?? []
+                const isToday = ds === todayStr
+                const isSelected = selectedDate === ds
+                return (
+                  <button
+                    key={ds}
+                    onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
+                    style={{
+                      position: 'relative', aspectRatio: '3/4', overflow: 'hidden', padding: 0, cursor: 'pointer',
+                      background: dayOutfits.length ? 'none' : T.white,
+                      boxShadow: dayOutfits.length || isSelected ? 'none' : `inset 0 0 0 1px ${T.line}`,
+                    }}
+                  >
+                    {dayOutfits.length > 0 && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: 1 }}>
+                        {dayOutfits.slice(0, 3).map(o => <div key={o.id} style={{ flex: 1, height: '100%' }}><Ph tone={outfitTone(o.id)} /></div>)}
+                      </div>
+                    )}
+                    {dayOutfits.length > 0 && <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 13, background: 'rgba(247,246,245,.9)' }} />}
+                    <div style={{ position: 'absolute', top: 3, left: 4, fontFamily: fM, fontSize: 9.5, fontWeight: isToday ? 700 : 400, color: dayOutfits.length ? 'rgba(0,0,0,.7)' : T.g400 }}>{day}</div>
+                    {/* Painted last so it sits above the tone strips instead of underneath — an inset
+                        box-shadow on the button itself gets fully covered by an opaque full-bleed child. */}
+                    {isSelected && <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 2px ${T.ink}`, pointerEvents: 'none' }} />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+
+        const ListBlock = (
+          <div style={{ padding: isDesktop ? '18px 0 0' : '26px 22px 0' }}>
+            <SecH right={selectedDate ? 'Clear' : `All ${outfits.length}`} onRightClick={() => selectedDate ? setSelectedDate(null) : navigate('/settings/stats')}>
+              {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : `Logged in ${MONTH_FULL[viewMonth]}`}
+            </SecH>
+            {visibleOutfits.length === 0 ? (
+              <Body s={13} style={{ padding: '10px 0' }}>No outfits {selectedDate ? 'this day' : 'this month'}.</Body>
+            ) : isDesktop && selectedDate && visibleOutfits.length === 1 ? (() => {
+              const o = visibleOutfits[0]
+              const d = new Date(o.date_worn + 'T00:00:00')
+              const dow = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][d.getDay()]
+              return (
+                <button
+                  onClick={() => navigate(`/outfits/${o.id}`)}
+                  style={{ display: 'block', width: '100%', maxWidth: 320, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+                  <Disp s={19} style={{ marginTop: 14 }}>{outfitTitle(o.item_ids, items, 'Outfit')}</Disp>
+                  <div style={{ marginTop: 5 }}><Mono s={11.5}>{dow}{o.occasion ? ` · ${o.occasion}` : ''} · {o.item_ids.length} pieces</Mono></div>
+                </button>
+              )
+            })() : visibleOutfits.map((o, i) => {
+              const d = new Date(o.date_worn + 'T00:00:00')
+              const dow = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][d.getDay()]
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => navigate(`/outfits/${o.id}`)}
+                  style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < visibleOutfits.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <div style={{ width: 38, height: 48, flexShrink: 0, position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
+                    <div style={{ marginTop: 2 }}><Mono s={11}>{o.date_worn.slice(8, 10)} {dow}{o.occasion ? ` · ${o.occasion}` : ''} · {o.item_ids.length} pieces</Mono></div>
                   </div>
-                )}
-                {dayOutfits.length > 0 && <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 13, background: 'rgba(247,246,245,.9)' }} />}
-                <div style={{ position: 'absolute', top: 3, left: 4, fontFamily: fM, fontSize: 9.5, fontWeight: isToday ? 700 : 400, color: dayOutfits.length ? 'rgba(0,0,0,.7)' : T.g400 }}>{day}</div>
-                {/* Painted last so it sits above the tone strips instead of underneath — an inset
-                    box-shadow on the button itself gets fully covered by an opaque full-bleed child. */}
-                {isSelected && <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 2px ${T.ink}`, pointerEvents: 'none' }} />}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      <div style={{ padding: '26px 22px 0' }}>
-        <SecH right={selectedDate ? 'Clear' : `All ${outfits.length}`} onRightClick={() => selectedDate ? setSelectedDate(null) : navigate('/settings/stats')}>
-          {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : `Logged in ${MONTH_FULL[viewMonth]}`}
-        </SecH>
-        {visibleOutfits.length === 0 ? (
-          <Body s={13} style={{ padding: '10px 0' }}>No outfits {selectedDate ? 'this day' : 'this month'}.</Body>
-        ) : visibleOutfits.map((o, i) => {
-          const d = new Date(o.date_worn + 'T00:00:00')
-          const dow = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][d.getDay()]
-          return (
-            <button
-              key={o.id}
-              onClick={() => navigate(`/outfits/${o.id}`)}
-              style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < visibleOutfits.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
-            >
-              <div style={{ width: 38, height: 48, flexShrink: 0 }}><Collage items={collageItems(o.item_ids)} /></div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
-                <div style={{ marginTop: 2 }}><Mono s={11}>{o.date_worn.slice(8, 10)} {dow}{o.occasion ? ` · ${o.occasion}` : ''} · {o.item_ids.length} pieces</Mono></div>
-              </div>
-              <V4Icon n="next" s={16} w={1.7} c={T.g400} />
-            </button>
-          )
-        })}
-      </div>
+                  <V4Icon n="next" s={16} w={1.7} c={T.g400} />
+                </button>
+              )
+            })}
+          </div>
+        )
+
+        return isDesktop ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 44, alignItems: 'start', padding: '0 22px' }}>
+            <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{CalendarBlock}</div>
+            {ListBlock}
+          </div>
+        ) : (
+          <>
+            {CalendarBlock}
+            {ListBlock}
+          </>
+        )
+      })()}
     </div>
   )
 }

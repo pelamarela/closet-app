@@ -199,11 +199,15 @@ export default function ItemFormPage() {
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0] ?? null; setImageFile(f); if (f) analyzePhoto(f) }} />
       <button
         type="button" onClick={() => fileInputRef.current?.click()}
-        style={{ width: '100%', aspectRatio: '4/3', border: 'none', padding: 0, cursor: 'pointer', position: 'relative', overflow: 'hidden', boxShadow: imagePreview ? `inset 0 0 0 1px ${T.line}` : 'none', background: imagePreview ? 'none' : T.white }}
+        style={{
+          width: '100%', border: 'none', padding: 0, cursor: 'pointer', position: 'relative', overflow: 'hidden',
+          boxShadow: imagePreview ? `inset 0 0 0 1px ${T.line}` : 'none', background: imagePreview ? 'none' : T.white,
+          ...(isDesktop && imagePreview ? {} : { aspectRatio: '4/3' }),
+        }}
       >
         {imagePreview ? (
           <>
-            <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src={imagePreview} alt="" style={isDesktop ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>{analyzing ? 'Analyzing…' : 'Change photo'}</span>
             </div>
