@@ -5,6 +5,7 @@ import { useItems } from '../hooks/useItems'
 import { useIdeas } from '../hooks/useIdeas'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather'
+import { getLogReminderEnabled } from '../lib/settings'
 import { outfitTitle } from '../components/ui'
 import { T, fS, fM, dotted, V4Icon, Btn, RoundBtn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
@@ -174,9 +175,20 @@ export default function TodayPage() {
     )
   }
 
+  const showEveningReminder = now.getHours() >= 21 && getLogReminderEnabled()
+
   return (
     <div style={{ paddingBottom: 32 }}>
       {WeatherHead}
+      {showEveningReminder && (
+        <div style={{ padding: '16px 22px 0' }}>
+          <V4Card fill={T.peach} shadow={false} pad={14} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <V4Icon n="cal" s={18} w={1.7} c={T.cocoa} />
+            <Body s={13.5} c={T.cocoa} style={{ flex: 1 }}>Haven't logged today — quick, before you forget?</Body>
+            <button onClick={() => navigate('/outfits/new', { state: { date: today } })} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>Log</button>
+          </V4Card>
+        </div>
+      )}
       <div style={{ padding: '20px 22px 0' }}>
         <div style={{ ...dotted, padding: '30px 24px 26px', border: `1px solid ${T.line}` }}>
           <img src="/brand/wave.png" alt="" style={{ width: 92, display: 'block', marginBottom: 18, opacity: .95 }} />

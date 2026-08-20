@@ -14,7 +14,7 @@ import OutfitDetailPage from './pages/OutfitDetailPage'
 import SuggestPage from './pages/SuggestPage'
 import ShopPage from './pages/ShopPage'
 import BatchUploadPage from './pages/BatchUploadPage'
-import SettingsPage from './pages/SettingsPage'
+import MePage from './pages/MePage'
 import StyleProfileEditorPage from './pages/StyleProfileEditorPage'
 import ChangePasswordPage from './pages/ChangePasswordPage'
 import IdeasPage from './pages/IdeasPage'
@@ -64,14 +64,14 @@ export default function App() {
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/ideas" element={<IdeasPage />} />
             <Route path="/ideas/:id" element={<IdeaDetailPage />} />
+            <Route path="/settings" element={<MePage />} />
+            <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe/new" element={<ItemFormPage />} />
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
             <Route path="/ideas/:id/edit" element={<IdeaEditPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/settings/profile" element={<StyleProfileEditorPage />} />
             <Route path="/settings/password" element={<ChangePasswordPage />} />
             <Route path="/settings/archived" element={<ArchivedPage />} />
             <Route path="/settings/stats" element={<StatsPage />} />
