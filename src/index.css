@@ -32,11 +32,20 @@
      content column starts to the right of the sidebar. */
   --v3-sticky-bottom: var(--nav-h);
   --v3-sidenav-w: 0px;
+  /* Height of the persistent app header (mobile only — desktop uses SideNav
+     instead, which has no top header to clear). Every sticky sub-header
+     (V4Bar and each page's own extra sticky layer) offsets from this, via
+     calc(), instead of the old hardcoded APP_HEADER_H — that constant was
+     mobile's value applied unconditionally, which made sticky headers on
+     desktop clamp 58px below their reserved flow space and overlap the
+     content right after them. */
+  --v3-header-h: 58px;
 }
 @media (min-width: 768px) {
   :root {
     --v3-sticky-bottom: 0px;
     --v3-sidenav-w: 236px;
+    --v3-header-h: 0px;
   }
 }
 

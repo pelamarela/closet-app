@@ -3,7 +3,7 @@ import { useItems } from '../hooks/useItems'
 import { useOutfits } from '../hooks/useOutfits'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Row4, DotScale, Disp, Mono, SecH, V4Card, APP_HEADER_H } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Row4, DotScale, Disp, Mono, SecH, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
 
 const GARMENT_CAT = new Set(['top', 'bottom', 'one-piece', 'outerwear'])
@@ -123,7 +123,7 @@ export default function ItemDetailPage() {
       />
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
-          <div style={{ position: 'sticky', top: APP_HEADER_H + 20 }}>{PhotoBlock}</div>
+          <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
           <div>
             {InfoBlock}
             {WornWith}

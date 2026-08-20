@@ -6,7 +6,8 @@ import { takeBatchFiles } from '../lib/batchState'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
-import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono , CONTENT_MAX_W } from '../design/kit'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -84,6 +85,7 @@ export default function BatchUploadPage() {
   const navigate = useNavigate()
   const { addItem } = useItemMutations()
   const { items: existingItems } = useItems()
+  const { isDesktop } = useBreakpoint()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [stage, setStage] = useState<Stage>('pick')
@@ -262,6 +264,57 @@ export default function BatchUploadPage() {
   const draft = drafts[current]
   const progress = ((current + 1) / drafts.length) * 100
 
+  const PhotoBlock = (
+    <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
+      <img src={draft.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+  )
+
+  const FormBlock = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Name</div>
+        {draft.isDuplicate && <Mono s={9.5} c={T.roseDeep} style={{ textTransform: 'uppercase' }}>already in closet</Mono>}
+      </div>
+      <input
+        type="text" value={draft.name} onChange={e => update('name', e.target.value)} placeholder="e.g. Black linen blazer" autoFocus
+        style={{ width: '100%', fontFamily: fS, fontSize: 15, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '4px 0 8px' }}
+      />
+
+      <div style={{ marginTop: 20, marginBottom: 20 }}>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={draft.category === c.value} onClick={() => update('category', c.value)}>{c.label}</Pill>)}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
+          <Mono s={11}>1 = light · 5 = heavy</Mono>
+        </div>
+        <DotPicker value={draft.warmth} onChange={v => update('warmth', v)} />
+      </div>
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
+          <Mono s={11}>1 = casual · 5 = formal</Mono>
+        </div>
+        <DotPicker value={draft.formality} onChange={v => update('formality', v)} tone={T.roseDeep} />
+      </div>
+
+      <div style={{ marginTop: 14 }}>
+        <Field label="Colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />
+        <Field label="Brand" value={draft.brand} onChange={v => update('brand', v)} placeholder="e.g. Toteme" />
+        <Field label="Material" value={draft.material} onChange={v => update('material', v)} placeholder="cotton, wool, silk…" />
+        <Field label="Pattern" value={draft.pattern} onChange={v => update('pattern', v)} placeholder="solid, stripe, floral…" />
+        <Field label="Subcategory" value={draft.subcategory} onChange={v => update('subcategory', v)} placeholder="e.g. blazer, midi skirt…" />
+      </div>
+
+      {error && <Body s={12} c={T.roseDeep}>{error}</Body>}
+    </>
+  )
+
   return (
     <div style={{ paddingBottom: 120 }}>
       <div style={{ padding: '16px 22px 0' }}>
@@ -276,54 +329,17 @@ export default function BatchUploadPage() {
         </div>
       </div>
 
-      <div style={{ padding: '18px 22px 0' }}>
-        <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
-          <img src={draft.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 44, alignItems: 'start', padding: '18px 22px 0' }}>
+          <div style={{ position: 'sticky', top: 20 }}>{PhotoBlock}</div>
+          <div>{FormBlock}</div>
         </div>
-      </div>
-
-      <div style={{ padding: '22px 22px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Name</div>
-          {draft.isDuplicate && <Mono s={9.5} c={T.roseDeep} style={{ textTransform: 'uppercase' }}>already in closet</Mono>}
-        </div>
-        <input
-          type="text" value={draft.name} onChange={e => update('name', e.target.value)} placeholder="e.g. Black linen blazer" autoFocus
-          style={{ width: '100%', fontFamily: fS, fontSize: 15, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '4px 0 8px' }}
-        />
-
-        <div style={{ marginTop: 20, marginBottom: 20 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={draft.category === c.value} onClick={() => update('category', c.value)}>{c.label}</Pill>)}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
-            <Mono s={11}>1 = light · 5 = heavy</Mono>
-          </div>
-          <DotPicker value={draft.warmth} onChange={v => update('warmth', v)} />
-        </div>
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
-            <Mono s={11}>1 = casual · 5 = formal</Mono>
-          </div>
-          <DotPicker value={draft.formality} onChange={v => update('formality', v)} tone={T.roseDeep} />
-        </div>
-
-        <div style={{ marginTop: 14 }}>
-          <Field label="Colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />
-          <Field label="Brand" value={draft.brand} onChange={v => update('brand', v)} placeholder="e.g. Toteme" />
-          <Field label="Material" value={draft.material} onChange={v => update('material', v)} placeholder="cotton, wool, silk…" />
-          <Field label="Pattern" value={draft.pattern} onChange={v => update('pattern', v)} placeholder="solid, stripe, floral…" />
-          <Field label="Subcategory" value={draft.subcategory} onChange={v => update('subcategory', v)} placeholder="e.g. blazer, midi skirt…" />
-        </div>
-
-        {error && <Body s={12} c={T.roseDeep}>{error}</Body>}
-      </div>
+      ) : (
+        <>
+          <div style={{ padding: '18px 22px 0' }}>{PhotoBlock}</div>
+          <div style={{ padding: '22px 22px 0' }}>{FormBlock}</div>
+        </>
+      )}
 
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>

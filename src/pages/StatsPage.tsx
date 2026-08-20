@@ -4,7 +4,7 @@ import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../lib/outfitTitle'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
-import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat, APP_HEADER_H } from '../design/kit'
+import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat } from '../design/kit'
 import Collage from '../design/Collage'
 
 type Tab = 'pieces' | 'outfits' | 'colour'
@@ -74,7 +74,7 @@ export default function StatsPage() {
   }
 
   const Head = (
-    <div style={{ position: 'sticky', top: APP_HEADER_H, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
+    <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
       <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>

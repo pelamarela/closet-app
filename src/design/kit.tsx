@@ -14,7 +14,7 @@ export const APP_HEADER_H = 58
 // Desktop content column width (design/Layout.tsx). Fixed-position footers
 // on individual pages center their own inner wrapper to this same value so
 // their buttons stay aligned under the content column above them.
-export const CONTENT_MAX_W = 900
+export const CONTENT_MAX_W = 1200
 
 export const T = {
   paper: '#F7F6F5', white: '#FFFFFF', ink: '#000000',
@@ -215,7 +215,7 @@ export function V4Bar({ title, back, onBack, right, pad = 22, sticky = true }: {
   return (
     <div style={{
       height: 44, padding: `0 ${pad}px`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: T.ink,
-      ...(sticky ? { position: 'sticky' as const, top: APP_HEADER_H, zIndex: 25, background: T.paper } : {}),
+      ...(sticky ? { position: 'sticky' as const, top: 'var(--v3-header-h)', zIndex: 25, background: T.paper } : {}),
     }}>
       {back ? (
         <button onClick={onBack} style={{

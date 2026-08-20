@@ -129,7 +129,7 @@ export default function V3Layout() {
     return (
       <div style={{ minHeight: '100svh', background: T.paper, width: '100%' }}>
         <SideNav />
-        <main style={{ marginLeft: SIDENAV_W, padding: '0 44px' }}>
+        <main style={{ marginLeft: SIDENAV_W, padding: '30px 44px 0' }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}><Outlet /></div>
         </main>
       </div>

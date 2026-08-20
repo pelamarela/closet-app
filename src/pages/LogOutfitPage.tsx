@@ -7,7 +7,7 @@ import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
 import { catLabel } from '../lib/categoryLabel'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, APP_HEADER_H , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, CONTENT_MAX_W } from '../design/kit'
 
 const CATS: { value: string; label: string }[] = [
   { value: 'all', label: 'all' },
@@ -133,7 +133,7 @@ export default function LogOutfitPage() {
           title="Log outfit"
           right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
         />
-        <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
+        <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
           <div style={{ padding: '14px 22px 0' }}>
             {selectedIds.size > 0 && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { outfitTitle } from '../lib/outfitTitle'
-import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone, APP_HEADER_H } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone } from '../design/kit'
 import Collage from '../design/Collage'
 
 const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -56,7 +56,7 @@ export default function MonthPage() {
   return (
     <div style={{ paddingBottom: 32 }}>
       <V4Bar back title="Today" onBack={() => navigate('/')} />
-      <div style={{ position: 'sticky', top: APP_HEADER_H + 44, zIndex: 24, background: T.paper, padding: '10px 22px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', borderBottom: `1px solid ${T.line}` }}>
+      <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, padding: '10px 22px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', borderBottom: `1px solid ${T.line}` }}>
         <div>
           <Mono s={11.5} c={T.cocoa}>{viewYear}</Mono>
           <Disp s={30} style={{ marginTop: 4 }}>{MONTH_FULL[viewMonth]}</Disp>

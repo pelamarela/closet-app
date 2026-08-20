@@ -7,7 +7,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import { setBatchFiles, setSingleFile } from '../lib/batchState'
 import { catLabel } from '../lib/categoryLabel'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, APP_HEADER_H, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, Btn, Pill, ItemTile, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
 
 const FILTERS: { value: 'all' | Category; label: string }[] = [
   { value: 'all', label: 'all' },
@@ -116,7 +116,7 @@ export default function WardrobePage() {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <div style={{ position: 'sticky', top: APP_HEADER_H, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
+      <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
         {Header}
         <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           {selectMode ? (

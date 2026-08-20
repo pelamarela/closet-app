@@ -6,9 +6,10 @@ import { useAuth } from '../hooks/useAuth'
 import { useItemMutations } from '../hooks/useItemMutations'
 import { peekSingleFile, clearSingleFile } from '../lib/batchState'
 import { catLabel } from '../lib/categoryLabel'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: catLabel('top') },
@@ -55,6 +56,7 @@ export default function ItemFormPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addItem, updateItem, archiveItem } = useItemMutations()
+  const { isDesktop } = useBreakpoint()
 
   const [preloadedFile] = useState<File | null>(() => isEdit ? null : peekSingleFile())
   const [form, setForm] = useState<ItemFormData>(() => {
@@ -192,6 +194,72 @@ export default function ItemFormPage() {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
 
+  const PhotoBlock = (
+    <>
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0] ?? null; setImageFile(f); if (f) analyzePhoto(f) }} />
+      <button
+        type="button" onClick={() => fileInputRef.current?.click()}
+        style={{ width: '100%', aspectRatio: '4/3', border: 'none', padding: 0, cursor: 'pointer', position: 'relative', overflow: 'hidden', boxShadow: imagePreview ? `inset 0 0 0 1px ${T.line}` : 'none', background: imagePreview ? 'none' : T.white }}
+      >
+        {imagePreview ? (
+          <>
+            <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>{analyzing ? 'Analyzing…' : 'Change photo'}</span>
+            </div>
+          </>
+        ) : (
+          <div style={{ width: '100%', height: '100%', border: `1.5px dashed ${T.g200}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <V4Icon n="cam" s={26} w={1.4} c={T.g400} />
+            <Body s={13.5} c={T.ink}>Tap to add a photo</Body>
+            <Mono s={10}>max 1200px · ~300 KB · JPEG</Mono>
+            {analyzing && <Body s={12} c={T.cocoa} style={{ marginTop: 4 }}>Analyzing with AI…</Body>}
+          </div>
+        )}
+      </button>
+      {analyzeError && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{analyzeError}</Body>}
+    </>
+  )
+
+  const FormBlock = (
+    <>
+      <SecH>Attributes</SecH>
+      <Field label="Name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" />
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={form.category === c.value} onClick={() => setForm(f => ({ ...f, category: c.value }))}>{c.label}</Pill>)}
+        </div>
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
+          <Mono s={11}>1 = light · 5 = heavy</Mono>
+        </div>
+        <DotPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} />
+      </div>
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
+          <Mono s={11}>1 = casual · 5 = formal</Mono>
+        </div>
+        <DotPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} tone={T.roseDeep} />
+      </div>
+      <Row4
+        label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
+        value={form.sport ? 'On' : 'Off'} chev={false}
+        onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
+      />
+      <div style={{ marginTop: 6 }}>
+        <Field label="Colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
+        <Field label="Brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
+        <Field label="Material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />
+        <Field label="Pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" />
+        <Field label="Subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" />
+      </div>
+    </>
+  )
+
   return (
     <div style={{ paddingBottom: 100 }}>
       <V4Bar
@@ -201,66 +269,17 @@ export default function ItemFormPage() {
       <div style={{ padding: '4px 22px 0' }}>
         <Disp s={24}>{isEdit ? 'Edit item' : 'Add an item'}</Disp>
       </div>
-      <div style={{ padding: '18px 22px 0' }}>
-        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0] ?? null; setImageFile(f); if (f) analyzePhoto(f) }} />
-        <button
-          type="button" onClick={() => fileInputRef.current?.click()}
-          style={{ width: '100%', aspectRatio: '4/3', border: 'none', padding: 0, cursor: 'pointer', position: 'relative', overflow: 'hidden', boxShadow: imagePreview ? `inset 0 0 0 1px ${T.line}` : 'none', background: imagePreview ? 'none' : T.white }}
-        >
-          {imagePreview ? (
-            <>
-              <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>{analyzing ? 'Analyzing…' : 'Change photo'}</span>
-              </div>
-            </>
-          ) : (
-            <div style={{ width: '100%', height: '100%', border: `1.5px dashed ${T.g200}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <V4Icon n="cam" s={26} w={1.4} c={T.g400} />
-              <Body s={13.5} c={T.ink}>Tap to add a photo</Body>
-              <Mono s={10}>max 1200px · ~300 KB · JPEG</Mono>
-              {analyzing && <Body s={12} c={T.cocoa} style={{ marginTop: 4 }}>Analyzing with AI…</Body>}
-            </div>
-          )}
-        </button>
-        {analyzeError && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{analyzeError}</Body>}
-      </div>
-      <div style={{ padding: '26px 22px 0' }}>
-        <SecH>Attributes</SecH>
-        <Field label="Name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" />
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={form.category === c.value} onClick={() => setForm(f => ({ ...f, category: c.value }))}>{c.label}</Pill>)}
-          </div>
+      {isDesktop ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 44, alignItems: 'start', padding: '18px 22px 0' }}>
+          <div style={{ position: 'sticky', top: 20 }}>{PhotoBlock}</div>
+          <div>{FormBlock}</div>
         </div>
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
-            <Mono s={11}>1 = light · 5 = heavy</Mono>
-          </div>
-          <DotPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} />
-        </div>
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
-            <Mono s={11}>1 = casual · 5 = formal</Mono>
-          </div>
-          <DotPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} tone={T.roseDeep} />
-        </div>
-        <Row4
-          label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
-          value={form.sport ? 'On' : 'Off'} chev={false}
-          onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
-        />
-        <div style={{ marginTop: 6 }}>
-          <Field label="Colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
-          <Field label="Brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
-          <Field label="Material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />
-          <Field label="Pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" />
-          <Field label="Subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" />
-        </div>
-      </div>
+      ) : (
+        <>
+          <div style={{ padding: '18px 22px 0' }}>{PhotoBlock}</div>
+          <div style={{ padding: '26px 22px 0' }}>{FormBlock}</div>
+        </>
+      )}
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
           {error && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{error}</Body>}
