@@ -161,6 +161,25 @@ export function SecH({ children, right, onRightClick, style }: {
   )
 }
 
+// Contextual bar under the persistent header — back button + title + right-side icon(s).
+export function V4Bar({ title, back, onBack, right, pad = 22 }: {
+  title?: ReactNode; back?: boolean; onBack?: () => void; right?: ReactNode; pad?: number
+}) {
+  return (
+    <div style={{ height: 44, padding: `0 ${pad}px`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: T.ink }}>
+      {back ? (
+        <button onClick={onBack} style={{
+          display: 'flex', alignItems: 'center', gap: 6, marginLeft: -6, background: 'none', border: 'none',
+          padding: '4px 6px', cursor: 'pointer', fontFamily: fS, fontSize: 14, fontWeight: 500, color: T.ink,
+        }}><V4Icon n="back" s={20} w={1.7} />{title}</button>
+      ) : (
+        <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{title}</div>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>{right}</div>
+    </div>
+  )
+}
+
 export function Pill({ children, on = false, tone = 'ink', count, s = 'md', onClick }: {
   children: ReactNode; on?: boolean; tone?: 'ink' | 'peach'; count?: number | string
   s?: 'sm' | 'md' | 'lg'; onClick?: () => void

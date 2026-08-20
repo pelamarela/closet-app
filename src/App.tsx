@@ -5,10 +5,10 @@ import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import V3Layout from './design/Layout'
 import TodayPage from './pages/TodayPage'
+import MonthPage from './pages/MonthPage'
 import WardrobePage from './pages/WardrobePage'
 import ItemFormPage from './pages/ItemFormPage'
 import ItemDetailPage from './pages/ItemDetailPage'
-import OutfitsPage from './pages/OutfitsPage'
 import LogOutfitPage from './pages/LogOutfitPage'
 import OutfitDetailPage from './pages/OutfitDetailPage'
 import SuggestPage from './pages/SuggestPage'
@@ -54,6 +54,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedShell Shell={V3Layout} />}>
             <Route path="/" element={<TodayPage />} />
+            <Route path="/outfits" element={<MonthPage />} />
+            <Route path="/outfits/:id" element={<OutfitDetailPage />} />
           </Route>
           <Route element={<ProtectedShell Shell={Layout} />}>
             <Route path="/wardrobe" element={<WardrobePage />} />
@@ -61,10 +63,7 @@ export default function App() {
             <Route path="/wardrobe/batch" element={<BatchUploadPage />} />
             <Route path="/wardrobe/:id" element={<ItemDetailPage />} />
             <Route path="/wardrobe/:id/edit" element={<ItemFormPage />} />
-            <Route path="/outfits" element={<OutfitsPage />} />
             <Route path="/outfits/new" element={<LogOutfitPage />} />
-            <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
-            <Route path="/outfits/:id" element={<OutfitDetailPage />} />
             <Route path="/outfits/:id/edit" element={<LogOutfitPage />} />
             <Route path="/suggest" element={<SuggestPage />} />
             <Route path="/shop" element={<ShopPage />} />

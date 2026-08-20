@@ -3,24 +3,20 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useOutfitMutations } from '../hooks/useOutfitMutations'
-import { useBreakpoint } from '../hooks/useBreakpoint'
-import { AppBar, SectionLabel, Icon, MonoKV, MONO, UI, INK, RULE, BLUSH, ACCENT, TOPBAR_H } from '../components/ui'
 import type { Outfit, Item } from '../types/database'
-import ItemCollage from '../components/ItemCollage'
-import PieceRow from '../components/PieceRow'
-import Spinner from '../components/Spinner'
-import FixedBar from '../components/FixedBar'
-import LogOutfitButton from '../components/LogOutfitButton'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import Collage from '../design/Collage'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
 type RawOutfit = Outfit & { outfit_items: { item_id: string }[] }
+
+const DOW = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 export default function OutfitDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { deleteOutfit } = useOutfitMutations()
-  const { isDesktop } = useBreakpoint()
 
   const [outfit, setOutfit] = useState<Outfit | null>(null)
   const [items, setItems] = useState<ItemWithMeta[]>([])
@@ -65,7 +61,7 @@ export default function OutfitDetailPage() {
           ...item,
           signedImageUrl: item.image_url ? (urlMap[item.image_url] ?? null) : null,
           wearCount: wearCount[item.id] ?? 0,
-        }))
+        })).sort((a, b) => itemIds.indexOf(a.id) - itemIds.indexOf(b.id))
       )
       setLoading(false)
     }
@@ -89,176 +85,86 @@ export default function OutfitDetailPage() {
     })
   }
 
-  if (loading) return <Spinner />
+  if (loading) {
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
+  }
+  if (!outfit) {
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>Not found.</div>
+  }
 
-  if (!outfit) return <div style={{ padding: '20px', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>Not found.</div>
+  const d = new Date(outfit.date_worn + 'T00:00:00')
+  const dow = DOW[d.getDay()]
+  const dateLabel = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
+  const collageItems = items.map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
-  const dateStr = outfit.date_worn
-  const d = new Date(dateStr + 'T00:00:00')
-  const dow = ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]
-
-  const clothingItems = items.filter(i => i.category !== 'fragrance')
-  const fragranceItems = items.filter(i => i.category === 'fragrance')
-
-  // ── Items collage ────────────────────────────────────────────────────────────
-  const Collage = (
-    <div style={{ position: 'relative' }}>
-      <ItemCollage items={items} />
-      {!outfitImageUrl && outfit.weather && (
-        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-          <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-          <MonoKV k="cond" v={outfit.weather.conditions} />
-          {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
+  return (
+    <div style={{ paddingBottom: 40 }}>
+      {deleteError && (
+        <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>
+      )}
+      <V4Bar
+        back title="Month" onBack={() => navigate('/outfits')}
+        right={<>
+          <button onClick={() => navigate(`/outfits/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
+          <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.g400, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
+        </>}
+      />
+      <div style={{ padding: '8px 22px 0' }}>
+        <div style={{ width: '100%', aspectRatio: '4/3', position: 'relative' }}>
+          {outfitImageUrl ? (
+            <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          ) : (
+            <Collage items={collageItems} fill />
+          )}
+        </div>
+      </div>
+      <div style={{ padding: '18px 22px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+          {outfit.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{outfit.occasion}</Mono>}
+          <Mono s={11}>{dateLabel} · {dow}</Mono>
+        </div>
+        <Disp s={25}>{outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}</Disp>
+        <Body s={13} style={{ marginTop: 5 }}>{items.length} piece{items.length === 1 ? '' : 's'}</Body>
+      </div>
+      {outfit.weather && (
+        <div style={{ padding: '18px 22px 0' }}>
+          <V4Card fill={T.peachSoft} shadow={false} pad={15} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
+            <Body s={13} c={T.cocoa}>{outfit.weather.temp_c}° and {outfit.weather.conditions} that day.{outfit.rating && ` Rated ${outfit.rating}/5.`}</Body>
+          </V4Card>
         </div>
       )}
-    </div>
-  )
-
-  // ── Title + meta ─────────────────────────────────────────────────────────────
-  const TitleBlock = (
-    <div>
-      <div style={{
-        display: 'flex', alignItems: 'baseline', gap: 8,
-        fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.55)',
-        textTransform: 'uppercase', letterSpacing: '0.08em',
-      }}>
-        {dateStr} · {dow}
-        {outfit.occasion && (
-          <>
-            <div style={{ width: 4, height: 4, background: BLUSH, display: 'inline-block', flexShrink: 0 }} />
-            {outfit.occasion}
-          </>
-        )}
+      <div style={{ padding: '18px 22px 0' }}>
+        <Btn full icon="repeat" onClick={handleRepeat}>Wear again</Btn>
       </div>
-      <div style={{ fontFamily: UI, fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 8, lineHeight: 1.05 }}>
-        {outfit.occasion ? `${outfit.occasion}.` : 'Outfit.'}
-      </div>
-      {outfit.notes && (
-        <div style={{ fontFamily: UI, fontSize: 13, color: 'rgba(0,0,0,0.6)', marginTop: 10, fontStyle: 'italic' }}>"{outfit.notes}"</div>
-      )}
-    </div>
-  )
-
-  // ── Pieces list ──────────────────────────────────────────────────────────────
-  const PiecesList = items.length > 0 ? (
-    <div style={{ marginTop: isDesktop ? 24 : 0 }}>
-      <SectionLabel>pieces ({clothingItems.length})</SectionLabel>
-      {clothingItems.map(item => (
-        <PieceRow key={item.id} item={item} right={`worn ${item.wearCount}×`} />
-      ))}
-      {fragranceItems.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <SectionLabel>fragrance ({fragranceItems.length})</SectionLabel>
-          {fragranceItems.map(item => (
-            <PieceRow key={item.id} item={item} right={`worn ${item.wearCount}×`} />
+      {items.length > 0 && (
+        <div style={{ padding: '26px 22px 0' }}>
+          <SecH right={`${items.length} pieces`}>In this look</SecH>
+          {items.map((item, i) => (
+            <button
+              key={item.id}
+              onClick={() => navigate(`/wardrobe/${item.id}`)}
+              style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
+            >
+              <div style={{ width: 36, height: 45, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                <div style={{ marginTop: 2 }}><Mono s={10.5}>{item.category}</Mono></div>
+              </div>
+              <Mono s={11} c={T.cocoa} style={{ fontWeight: 700 }}>{item.wearCount}×</Mono>
+            </button>
           ))}
         </div>
       )}
-    </div>
-  ) : null
-
-  return (
-    <div style={{ paddingBottom: isDesktop ? 40 : 100 }}>
-      {deleteError && (
-        <div style={{ padding: '8px 20px', fontFamily: MONO, fontSize: 10, color: ACCENT, background: 'rgba(156,85,68,0.07)' }}>
-          {deleteError}
+      {outfit.notes && (
+        <div style={{ padding: '20px 22px 0' }}>
+          <V4Card pad={16}>
+            <div style={{ fontFamily: fS, fontSize: 12, fontWeight: 600, color: T.g400, marginBottom: 5 }}>Note</div>
+            <Body s={14}>{outfit.notes}</Body>
+          </V4Card>
         </div>
-      )}
-      <AppBar
-        title="Library"
-        back
-        onBack={() => navigate('/outfits')}
-        right={
-          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-            <button
-              onClick={() => navigate(`/outfits/${id}/edit`)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: INK, padding: 4 }}
-            >
-              <Icon name="edit" size={17} stroke={1.4} />
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.45)', padding: 4, opacity: deleting ? 0.4 : 1 }}
-            >
-              <Icon name="trash" size={16} stroke={1.4} />
-            </button>
-          </div>
-        }
-      />
-
-      {isDesktop ? (
-        // Anchored to the viewport (top bar to bottom nav), same pattern as
-        // Suggest/Log-outfit, so the collage fills the actual available
-        // screen height instead of just matching whatever height its sibling
-        // column happens to need — a short pieces list was leaving a large
-        // blank gap between the content and the bottom nav.
-        <div style={{
-          position: 'fixed',
-          top: `calc(var(--safe-t) + ${TOPBAR_H}px)`,
-          bottom: 'var(--nav-h)',
-          left: 20, right: 20,
-          display: 'flex',
-          overflow: 'hidden',
-        }}>
-          {/* Left: collage (fills full height) + optional outfit photo */}
-          <div style={{ width: '55%', flexShrink: 0, minWidth: 0, paddingRight: 28, paddingTop: 20, height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-              <ItemCollage items={items} fill />
-              {!outfitImageUrl && outfit.weather && (
-                <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-                  <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-                  <MonoKV k="cond" v={outfit.weather.conditions} />
-                  {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
-                </div>
-              )}
-            </div>
-            {outfitImageUrl && (
-              <div style={{ marginTop: 16, width: '100%', aspectRatio: '5/4', flexShrink: 0, border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-                <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                {outfit.weather && (
-                  <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-                    <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-                    <MonoKV k="cond" v={outfit.weather.conditions} />
-                    {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          {/* Right: title + pieces — scrolls independently if it overflows */}
-          <div style={{ width: '45%', minWidth: 0, height: '100%', paddingTop: 20, overflowY: 'auto' }}>
-            {TitleBlock}
-            {PiecesList}
-            <div style={{ marginTop: 24, paddingBottom: 20 }}>
-              <LogOutfitButton full onClick={handleRepeat}>Repeat outfit</LogOutfitButton>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Mobile: stacked */
-        <>
-          <div style={{ padding: '20px 20px 0' }}>{TitleBlock}</div>
-          <div style={{ padding: '16px 20px 0' }}>{Collage}</div>
-          {PiecesList && <div style={{ padding: '20px 20px 0' }}>{PiecesList}</div>}
-          {outfitImageUrl && (
-            <div style={{ padding: '20px 20px 0' }}>
-              <div style={{ width: '100%', aspectRatio: '5/4', border: RULE, borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
-                <img src={outfitImageUrl} alt="Outfit" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                {outfit.weather && (
-                  <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', padding: '4px 6px' }}>
-                    <MonoKV k="temp" v={`${outfit.weather.temp_c}°`} />
-                    <MonoKV k="cond" v={outfit.weather.conditions} />
-                    {outfit.rating && <MonoKV k="rate" v={`${outfit.rating}/5`} accent />}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          <FixedBar>
-            <LogOutfitButton full onClick={handleRepeat}>Repeat outfit</LogOutfitButton>
-          </FixedBar>
-        </>
       )}
     </div>
   )
