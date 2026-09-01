@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, Scrim, Sheet, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, Scrim, Sheet, CONTENT_MAX_W } from '../design/kit'
 
 type PairingItem = { id: string; name: string; reason: string }
 type AnalysisResult = {
@@ -27,6 +27,8 @@ const VERDICT_HEADLINE: Record<AnalysisResult['verdict'], string> = {
   skip: "Probably don't.",
 }
 
+const LOADING_STEPS = ['Eyeing it up', 'Cross-checking your closet', 'Making the call']
+
 export default function ShopPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -35,10 +37,10 @@ export default function ShopPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const { saveIdea } = useIdeaMutations()
 
-  const [view, setView] = useState<'input' | 'result'>('input')
+  const [view, setView] = useState<'input' | 'loading' | 'result'>('input')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -70,7 +72,8 @@ export default function ShopPage() {
 
   const handleAnalyze = async () => {
     if (!imageFile || !imagePreview) return
-    setLoading(true); setError(null)
+    setError(null); setView('loading'); setLoadingStep(0)
+    const stepTimers = [setTimeout(() => setLoadingStep(1), 900), setTimeout(() => setLoadingStep(2), 1900)]
     try {
       const { data: profileData } = await supabase
         .from('style_profile').select('description, color_season').eq('user_id', user!.id).single()
@@ -89,12 +92,40 @@ export default function ShopPage() {
       setView('result')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
+      setView('input')
     }
-    setLoading(false)
+    stepTimers.forEach(clearTimeout)
   }
 
   const reset = () => {
     setView('input'); setImageFile(null); setImagePreview(null); setResult(null); setError(null); setSavedIdeas(new Set())
+  }
+
+  // ── Loading ───────────────────────────────────────────────────────────────
+  if (view === 'loading') {
+    return (
+      <div style={{ ...dotted, minHeight: '70vh' }}>
+        <V4Bar right={<button onClick={() => setView('input')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
+        <div style={{ padding: '40px 40px 0' }}>
+          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <Disp s={26}>Sizing it up.</Disp>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
+            {LOADING_STEPS.map((label, i) => {
+              const done = i < loadingStep
+              const active = i === loadingStep
+              return (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
+                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {done && <V4Icon n="check" s={11} w={2.8} />}
+                  </div>
+                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // ── Result ────────────────────────────────────────────────────────────────
@@ -230,7 +261,7 @@ export default function ShopPage() {
   const CTA = (
     <>
       {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-      <Btn full icon="spark" disabled={loading || !imagePreview} loading={loading} loadingLabels={['Eyeing it up', 'Cross-checking your closet', 'Making the call']} onClick={handleAnalyze}>Should I buy it?</Btn>
+      <Btn full icon="spark" disabled={!imagePreview} onClick={handleAnalyze}>Should I buy it?</Btn>
     </>
   )
 
@@ -243,11 +274,11 @@ export default function ShopPage() {
             onClick={e => e.stopPropagation()}
             title={<Disp s={22}>Thinking about<br />something?</Disp>}
             right={<button onClick={() => navigate('/wardrobe')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={20} w={1.8} /></button>}
+            footer={CTA}
           >
             <div style={{ padding: '18px 22px 26px' }}>
               <Body s={14}>Upload a photo of something you're considering. I'll check it against your style and what you already own.</Body>
               <div style={{ marginTop: 20 }}>{UploadArea}</div>
-              <div style={{ marginTop: 22 }}>{CTA}</div>
             </div>
           </Sheet>
         </Scrim>

@@ -147,19 +147,16 @@ export default function LogOutfitPage() {
     )
 
     // Fragrance isn't filterable with the clothing grid above — it's a small,
-    // always-visible strip of its own so it never gets lost behind a category chip.
-    const FragranceStrip = fragranceItems.length > 0 ? (
-      <div style={{ marginTop: 22 }}>
-        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {fragranceItems.map(item => (
-            <div key={item.id} style={{ width: 68 }}>
-              <ItemTile src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
-            </div>
-          ))}
-        </div>
+    // always-visible strip of its own tiles.
+    const FragranceTiles = (
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {fragranceItems.map(item => (
+          <div key={item.id} style={{ width: 68 }}>
+            <ItemTile src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
+          </div>
+        ))}
       </div>
-    ) : null
+    )
 
     if (isDesktop) {
       return (
@@ -169,12 +166,21 @@ export default function LogOutfitPage() {
             right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
           />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 44, alignItems: 'start', padding: '10px 22px 0' }}>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
                 {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
               </div>
-              {Grid}
-              {FragranceStrip}
+              {/* Bounded + independently scrollable — with a big wardrobe the
+                  grid alone could run to hundreds of tiles, which used to bury
+                  fragrance at the very bottom of the page. This keeps it one
+                  short scroll away instead of a very long one. */}
+              <div style={{ maxHeight: '54vh', overflowY: 'auto', paddingRight: 4 }}>{Grid}</div>
+              {fragranceItems.length > 0 && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '24vh', overflowY: 'auto' }}>
+                  <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
+                  {FragranceTiles}
+                </div>
+              )}
             </div>
             <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -265,7 +271,15 @@ export default function LogOutfitPage() {
             {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
-        <div style={{ padding: '16px 22px 0' }}>{Grid}{FragranceStrip}</div>
+        <div style={{ padding: '16px 22px 0' }}>
+          <div style={{ maxHeight: '44vh', overflowY: 'auto' }}>{Grid}</div>
+          {fragranceItems.length > 0 && (
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '20vh', overflowY: 'auto' }}>
+              <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
+              {FragranceTiles}
+            </div>
+          )}
+        </div>
         <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
             <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>

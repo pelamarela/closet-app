@@ -251,7 +251,7 @@ export default function ItemFormPage() {
       </div>
       <Row4
         label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
-        value={form.sport ? 'On' : 'Off'} chev={false}
+        toggle={form.sport}
         onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
       />
       <div style={{ marginTop: 6 }}>

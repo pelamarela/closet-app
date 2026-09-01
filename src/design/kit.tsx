@@ -336,15 +336,31 @@ export function V4Card({ children, fill = T.white, pad = 16, shadow = true, styl
   return <div style={{ background: fill, borderRadius: 0, padding: pad, boxShadow: shadow ? '0 2px 10px rgba(0,0,0,.045)' : 'none', ...style }}>{children}</div>
 }
 
-export function Row4({ label, value, chev = true, sub, last, onClick }: {
-  label: ReactNode; value?: ReactNode; chev?: boolean; sub?: ReactNode; last?: boolean; onClick?: () => void
+// Pill track + sliding thumb — purely visual, the tap target is the whole
+// Row4 row. Used instead of a plain "On/Off" text value for boolean settings.
+export function Switch({ on }: { on: boolean }) {
+  return (
+    <div style={{
+      width: 40, height: 24, borderRadius: 12, padding: 2, flexShrink: 0, boxSizing: 'border-box',
+      background: on ? T.ink : T.g200, display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start',
+      transition: 'background .15s ease',
+    }}>
+      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+    </div>
+  )
+}
+
+export function Row4({ label, value, chev = true, sub, last, toggle, onClick }: {
+  label: ReactNode; value?: ReactNode; chev?: boolean; sub?: ReactNode; last?: boolean; toggle?: boolean; onClick?: () => void
 }) {
   const content = (
     <>
       <div><div style={{ fontFamily: fS, fontSize: 15 }}>{label}</div>{sub && <div style={{ fontFamily: fS, fontSize: 12, color: T.g400, marginTop: 1 }}>{sub}</div>}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: T.g400 }}>
-        {value != null && <span style={{ fontFamily: fM, fontSize: 12.5 }}>{value}</span>}
-        {chev && <V4Icon n="next" s={16} w={1.8} />}
+        {toggle != null ? <Switch on={toggle} /> : <>
+          {value != null && <span style={{ fontFamily: fM, fontSize: 12.5 }}>{value}</span>}
+          {chev && <V4Icon n="next" s={16} w={1.8} />}
+        </>}
       </div>
     </>
   )
@@ -363,9 +379,9 @@ export function Scrim({ children, onClick }: { children: ReactNode; onClick?: ()
     </div>
   )
 }
-export function Sheet({ children, title, right, step, maxHeight = '92svh', onClick }: {
+export function Sheet({ children, title, right, step, maxHeight = '92svh', footer, onClick }: {
   children: ReactNode; title?: ReactNode; right?: ReactNode; step?: [number, number]
-  maxHeight?: string | number; onClick?: (e: React.MouseEvent) => void
+  maxHeight?: string | number; footer?: ReactNode; onClick?: (e: React.MouseEvent) => void
 }) {
   return (
     <div onClick={onClick} style={{
@@ -380,6 +396,9 @@ export function Sheet({ children, title, right, step, maxHeight = '92svh', onCli
         </div>
       )}
       <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>{children}</div>
+      {/* Fixed within the sheet — stays put while `children` scrolls, same
+          role as the position:fixed CTA bar full pages use. */}
+      {footer && <div style={{ flexShrink: 0, padding: '14px 22px 20px', borderTop: `1px solid ${T.line}` }}>{footer}</div>}
     </div>
   )
 }

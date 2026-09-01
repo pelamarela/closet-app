@@ -318,7 +318,7 @@ export default function BatchUploadPage() {
       </div>
       <Row4
         label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
-        value={draft.sport ? 'On' : 'Off'} chev={false}
+        toggle={draft.sport}
         onClick={() => update('sport', !draft.sport)}
       />
 

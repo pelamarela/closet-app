@@ -140,24 +140,21 @@ function SideNav() {
 export default function V3Layout() {
   const { isDesktop } = useBreakpoint()
 
-  if (isDesktop) {
-    return (
-      <div style={{ minHeight: '100svh', background: T.paper, width: '100%' }}>
-        <SideNav />
-        <main style={{ marginLeft: SIDENAV_W, padding: '30px 44px 0' }}>
-          <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}><Outlet /></div>
-        </main>
-      </div>
-    )
-  }
-
+  // One shared tree instead of two early-return branches — resizing across
+  // the breakpoint used to swap in a differently-shaped tree around
+  // <Outlet/> (an extra wrapping <div> on desktop that mobile didn't have),
+  // which made React treat it as a different element and remount the whole
+  // current route, wiping out any in-progress page state (e.g. a half-filled
+  // form). <main>'s child is now always the same <div><Outlet/></div> shape
+  // on both sides — only its styling changes — so Outlet, and the route it's
+  // rendering, survive the resize.
   return (
-    <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <Header />
-      <main style={{ flex: 1, paddingTop: APP_HEADER_H, paddingBottom: 'var(--nav-h)' }}>
-        <Outlet />
+    <div style={{ minHeight: '100svh', background: T.paper, width: '100%', ...(isDesktop ? {} : { display: 'flex', flexDirection: 'column' }) }}>
+      {isDesktop ? <SideNav /> : <Header />}
+      <main style={isDesktop ? { marginLeft: SIDENAV_W, padding: '30px 44px 0' } : { flex: 1, paddingTop: APP_HEADER_H, paddingBottom: 'var(--nav-h)' }}>
+        <div style={isDesktop ? { maxWidth: CONTENT_MAX_W, margin: '0 auto' } : undefined}><Outlet /></div>
       </main>
-      <TabBar />
+      {!isDesktop && <TabBar />}
     </div>
   )
 }

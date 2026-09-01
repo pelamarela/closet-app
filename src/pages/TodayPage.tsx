@@ -46,7 +46,7 @@ export default function TodayPage() {
   const { outfits, loading } = useOutfits()
   const { items } = useItems()
   const { ideas } = useIdeas()
-  const { isDesktop } = useBreakpoint()
+  const { isDesktop, width } = useBreakpoint()
   const [weather, setWeather] = useState<WeatherData | null>(null)
 
   useEffect(() => {
@@ -244,10 +244,15 @@ export default function TodayPage() {
     const todayItems = todayOutfit.item_ids.map(id => items.find(i => i.id === id)).filter((i): i is NonNullable<typeof i> => !!i)
     const handleRepeat = () => navigate('/outfits/new', { state: { preselectedIds: todayOutfit.item_ids, occasion: todayOutfit.occasion ?? '', date: today } })
 
+    // A photo-beside-text hero needs real room either side (a real photo, a
+    // legible pieces list) — below ~1180px, with the sidebar column also
+    // taking its share, there isn't enough left to do that without squeezing
+    // one side unreadably. Stack instead of forcing it, same as mobile does.
+    const stackHero = isDesktop && width < 1180
     const DesktopMain = (
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 42fr) minmax(220px, 58fr)', gap: 26 }}>
-        <div style={{ position: 'relative' }}>
-          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', aspectRatio: '340 / 400', background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: stackHero ? '1fr' : 'minmax(160px, 42fr) minmax(220px, 58fr)', gap: 26 }}>
+        <div style={{ position: 'relative', minWidth: 0 }}>
+          <button onClick={() => navigate(`/outfits/${todayOutfit.id}`)} style={{ display: 'block', width: '100%', aspectRatio: stackHero ? '16 / 9' : '340 / 400', background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'relative' }}>
             <Collage items={collageItems(todayOutfit.item_ids)} fill />
           </button>
           {todayOutfit.occasion && (
@@ -315,11 +320,11 @@ export default function TodayPage() {
         {isDesktop ? (
           <div style={{ padding: '30px 22px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 58fr) minmax(200px, 42fr)', gap: 52, alignItems: 'start' }}>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <V4Card pad={24} style={{ overflow: 'hidden' }}>{DesktopMain}</V4Card>
                 {ThisWeekCard}
               </div>
-              {SidebarBlock}
+              <div style={{ minWidth: 0 }}>{SidebarBlock}</div>
             </div>
           </div>
         ) : (
@@ -386,12 +391,12 @@ export default function TodayPage() {
       {isDesktop ? (
         <div style={{ padding: '30px 22px 0' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 58fr) minmax(200px, 42fr)', gap: 52, alignItems: 'start' }}>
-            <div>
+            <div style={{ minWidth: 0 }}>
               {EveningReminder}
               {EmptyMain}
               {EmptyThisWeekCard}
             </div>
-            {EmptySidebar}
+            <div style={{ minWidth: 0 }}>{EmptySidebar}</div>
           </div>
         </div>
       ) : (

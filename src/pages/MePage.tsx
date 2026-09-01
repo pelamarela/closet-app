@@ -91,7 +91,7 @@ export default function MePage() {
       <div style={{ padding: '26px 22px 0' }}>
         <SecH>Account</SecH>
         <Row4 label="Change password" onClick={() => navigate('/settings/password')} />
-        <Row4 label="Notifications" sub="A nudge if you haven't logged by 9pm" value={reminderOn ? 'On' : 'Off'} chev={false} onClick={toggleReminder} />
+        <Row4 label="Notifications" sub="A nudge if you haven't logged by 9pm" toggle={reminderOn} onClick={toggleReminder} />
         <a href="mailto:spela@pelamarela.com?subject=Closet%20app%20support" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
           <Row4 label="Email me" sub="Bugs, ideas, anything" last chev={false} />
         </a>
