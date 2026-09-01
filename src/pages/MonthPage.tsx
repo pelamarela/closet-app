@@ -4,7 +4,7 @@ import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { useItems } from '../hooks/useItems'
 import { outfitTitle } from '../lib/outfitTitle'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Disp, Body, Mono, SecH, Ph, outfitTone } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Btn, Disp, Body, Mono, SecH, Ph, outfitTone } from '../design/kit'
 import Collage from '../design/Collage'
 
 const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -147,6 +147,11 @@ export default function MonthPage() {
                 </button>
               )
             })}
+            {/* Logs in retrospect for whatever day is selected — falls back to
+                today when nothing's selected, same as the sidebar/tab-bar action. */}
+            <div style={{ marginTop: 20 }}>
+              <Btn full icon="cal" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>Log outfit</Btn>
+            </div>
           </div>
         )
 

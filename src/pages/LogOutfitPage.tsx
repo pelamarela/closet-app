@@ -10,6 +10,8 @@ import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, CONTENT_MAX_W } from '../design/kit'
 
+// Fragrance isn't a "piece worn on the body" — it gets its own always-visible
+// strip below the grid instead of a filter chip in with clothing/accessories.
 const CATS: { value: string; label: string }[] = [
   { value: 'all', label: 'all' },
   { value: 'top', label: catLabel('top') },
@@ -18,7 +20,6 @@ const CATS: { value: string; label: string }[] = [
   { value: 'outerwear', label: catLabel('outerwear') },
   { value: 'shoes', label: catLabel('shoes') },
   { value: 'accessory', label: catLabel('accessory') },
-  { value: 'fragrance', label: catLabel('fragrance') },
 ]
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
@@ -71,7 +72,11 @@ export default function LogOutfitPage() {
   const occasionPresets = useMemo(() => getOccasionPresets(outfits), [outfits])
   const toggleItem = (id: string) => setSelectedIds(s => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n })
   const picked = items.filter(i => selectedIds.has(i.id)).sort((a, b) => b.created_at.localeCompare(a.created_at))
-  const gridItems = items
+  const pickedWorn = picked.filter(i => i.category !== 'fragrance')
+  const pickedFragrance = picked.filter(i => i.category === 'fragrance')
+  const clothingItems = items.filter(i => i.category !== 'fragrance')
+  const fragranceItems = items.filter(i => i.category === 'fragrance').sort((a, b) => b.created_at.localeCompare(a.created_at))
+  const gridItems = clothingItems
     .filter(i => filterCat === 'all' || i.category === filterCat)
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
 
@@ -141,6 +146,21 @@ export default function LogOutfitPage() {
       </div>
     )
 
+    // Fragrance isn't filterable with the clothing grid above — it's a small,
+    // always-visible strip of its own so it never gets lost behind a category chip.
+    const FragranceStrip = fragranceItems.length > 0 ? (
+      <div style={{ marginTop: 22 }}>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {fragranceItems.map(item => (
+            <div key={item.id} style={{ width: 68 }}>
+              <ItemTile src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null
+
     if (isDesktop) {
       return (
         <div style={{ paddingBottom: 40 }}>
@@ -154,25 +174,45 @@ export default function LogOutfitPage() {
                 {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
               </div>
               {Grid}
+              {FragranceStrip}
             </div>
             <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600 }}>{selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'} on</div>
+                <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600 }}>{pickedWorn.length} piece{pickedWorn.length === 1 ? '' : 's'} on</div>
                 {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
               </div>
               {picked.length === 0 ? (
                 <Body s={13}>Tap pieces to add them here.</Body>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                  {picked.map(item => (
-                    <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
-                      {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-                      <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <V4Icon n="close" s={11} w={2.4} />
-                      </button>
+                <>
+                  {pickedWorn.length > 0 && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                      {pickedWorn.map(item => (
+                        <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+                          {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                          <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <V4Icon n="close" s={11} w={2.4} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                  {pickedFragrance.length > 0 && (
+                    <div style={{ marginTop: pickedWorn.length > 0 ? 16 : 0 }}>
+                      <div style={{ fontFamily: fS, fontSize: 12, color: T.g400, marginBottom: 8 }}>+ fragrance</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                        {pickedFragrance.map(item => (
+                          <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+                            {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                            <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <V4Icon n="close" s={11} w={2.4} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
               <div style={{ marginTop: 22 }}>
                 <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
@@ -197,7 +237,7 @@ export default function LogOutfitPage() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
-              {picked.map(item => (
+              {pickedWorn.map(item => (
                 <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
                   {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                   <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -206,13 +246,26 @@ export default function LogOutfitPage() {
                 </div>
               ))}
               <div style={{ width: 60, height: 74, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
+              {pickedFragrance.length > 0 && (
+                <>
+                  <div style={{ width: 1, flexShrink: 0, background: T.line, margin: '4px 2px' }} />
+                  {pickedFragrance.map(item => (
+                    <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                      {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                      <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <V4Icon n="close" s={11} w={2.4} />
+                      </button>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
             {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
-        <div style={{ padding: '16px 22px 0' }}>{Grid}</div>
+        <div style={{ padding: '16px 22px 0' }}>{Grid}{FragranceStrip}</div>
         <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
             <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>

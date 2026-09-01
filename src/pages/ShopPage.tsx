@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, Scrim, Sheet, CONTENT_MAX_W } from '../design/kit'
 
 type PairingItem = { id: string; name: string; reason: string }
 type AnalysisResult = {
@@ -174,7 +174,7 @@ export default function ShopPage() {
           </div>
         )}
         <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
-          <Btn kind="quiet" flex={1} icon="cam" onClick={reset}>Analyze another</Btn>
+          <Btn kind="quiet" flex={1} icon="cam" onClick={reset}>New photo</Btn>
           <Btn flex={1} icon="hanger" onClick={() => { if (imageFile) setSingleFile(imageFile); navigate('/wardrobe/new') }}>Add to closet</Btn>
         </div>
       </>
@@ -199,46 +199,73 @@ export default function ShopPage() {
   }
 
   // ── Input ─────────────────────────────────────────────────────────────────
+  const fileInput = <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
+
+  const UploadArea = imagePreview ? (
+    <div style={{ position: 'relative', maxWidth: 280, margin: '0 auto' }}>
+      <div style={{ aspectRatio: '3/4', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
+        <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      </div>
+      <button onClick={reset} style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, background: 'rgba(0,0,0,.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <V4Icon n="close" s={14} w={2} />
+      </button>
+    </div>
+  ) : (
+    <div
+      onClick={() => fileRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragging(true) }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      style={{
+        border: `1.5px dashed ${dragging ? T.ink : T.g200}`, background: dragging ? 'rgba(0,0,0,.03)' : 'transparent',
+        padding: '56px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer',
+      }}
+    >
+      <V4Icon n="cam" s={30} w={1.4} c={T.g400} />
+      <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, color: T.ink }}>Upload photo</div>
+      <Mono s={10.5} style={{ textAlign: 'center' }}>tap to select or drag & drop</Mono>
+    </div>
+  )
+
+  const CTA = (
+    <>
+      {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
+      <Btn full icon="spark" disabled={loading || !imagePreview} loading={loading} loadingLabels={['Eyeing it up', 'Cross-checking your closet', 'Making the call']} onClick={handleAnalyze}>Should I buy it?</Btn>
+    </>
+  )
+
+  if (!isDesktop) {
+    return (
+      <>
+        {fileInput}
+        <Scrim onClick={() => navigate('/wardrobe')}>
+          <Sheet
+            onClick={e => e.stopPropagation()}
+            title={<Disp s={22}>Thinking about<br />something?</Disp>}
+            right={<button onClick={() => navigate('/wardrobe')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={20} w={1.8} /></button>}
+          >
+            <div style={{ padding: '18px 22px 26px' }}>
+              <Body s={14}>Upload a photo of something you're considering. I'll check it against your style and what you already own.</Body>
+              <div style={{ marginTop: 20 }}>{UploadArea}</div>
+              <div style={{ marginTop: 22 }}>{CTA}</div>
+            </div>
+          </Sheet>
+        </Scrim>
+      </>
+    )
+  }
+
   return (
     <div style={{ paddingBottom: 40 }}>
+      {fileInput}
       <V4Bar right={<button onClick={() => navigate('/wardrobe')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
       <div style={{ padding: '4px 22px 0' }}>
         <Disp s={25}>Thinking about<br />something?</Disp>
         <Body s={14} style={{ marginTop: 8 }}>Upload a photo of something you're considering. I'll check it against your style and what you already own.</Body>
       </div>
-      <div style={{ padding: '22px 22px 0' }}>
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
-        {imagePreview ? (
-          <div style={{ position: 'relative', maxWidth: 280, margin: '0 auto' }}>
-            <div style={{ aspectRatio: '3/4', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
-              <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-            <button onClick={reset} style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, background: 'rgba(0,0,0,.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <V4Icon n="close" s={14} w={2} />
-            </button>
-          </div>
-        ) : (
-          <div
-            onClick={() => fileRef.current?.click()}
-            onDragOver={e => { e.preventDefault(); setDragging(true) }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            style={{
-              border: `1.5px dashed ${dragging ? T.ink : T.g200}`, background: dragging ? 'rgba(0,0,0,.03)' : 'transparent',
-              padding: '56px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer',
-            }}
-          >
-            <V4Icon n="cam" s={30} w={1.4} c={T.g400} />
-            <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, color: T.ink }}>Upload photo</div>
-            <Mono s={10.5} style={{ textAlign: 'center' }}>tap to select or drag & drop</Mono>
-          </div>
-        )}
-      </div>
+      <div style={{ padding: '22px 22px 0' }}>{UploadArea}</div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
-          {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-          <Btn full icon="spark" disabled={loading || !imagePreview} loading={loading} loadingLabels={['Eyeing it up', 'Cross-checking your closet', 'Making the call']} onClick={handleAnalyze}>Should I buy it?</Btn>
-        </div>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>{CTA}</div>
       </div>
     </div>
   )

@@ -100,15 +100,19 @@ export default function OutfitDetailPage() {
   const dateLabel = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
   const collageItems = items.map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
 
-  const PhotoBlock = (
+  // Always show both: the item collage (what was actually worn, piece by
+  // piece — includes things a photo wouldn't capture, like fragrance) and,
+  // if there is one, the real photo underneath it — never one instead of the other.
+  const CollageBlock = (
     <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative' }}>
-      {outfitImageUrl ? (
-        <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-      ) : (
-        <Collage items={collageItems} fill />
-      )}
+      <Collage items={collageItems} fill />
     </div>
   )
+  const PhotoBlock = outfitImageUrl ? (
+    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative', marginTop: 16 }}>
+      <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+  ) : null
 
   const InfoBlock = (
     <>
@@ -177,12 +181,12 @@ export default function OutfitDetailPage() {
       />
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
-          <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
+          <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{CollageBlock}{PhotoBlock}</div>
           <div>{InfoBlock}</div>
         </div>
       ) : (
         <>
-          <div style={{ padding: '8px 22px 0' }}>{PhotoBlock}</div>
+          <div style={{ padding: '8px 22px 0' }}>{CollageBlock}{PhotoBlock}</div>
           <div style={{ padding: '18px 22px 0' }}>{InfoBlock}</div>
         </>
       )}

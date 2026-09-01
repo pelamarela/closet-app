@@ -7,7 +7,7 @@ import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, V4Icon, Btn, Pill, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, dotted, V4Bar, V4Icon, Btn, Pill, Row4, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -22,7 +22,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
 
 interface Draft {
   file: File; preview: string; name: string; category: Category
-  warmth: number; formality: number; color: string; brand: string
+  warmth: number; formality: number; sport: boolean; color: string; brand: string
   material: string; pattern: string; subcategory: string; isDuplicate?: boolean
 }
 
@@ -120,7 +120,7 @@ export default function BatchUploadPage() {
       const name = parseName(file)
       return {
         file, preview: URL.createObjectURL(file), name, isDuplicate: checkDuplicate(name),
-        category: 'top' as Category, warmth: 3, formality: 3,
+        category: 'top' as Category, warmth: 3, formality: 3, sport: false,
         color: parseColor(name), brand: parseBrand(name), material: '', pattern: '', subcategory: '',
       }
     })
@@ -193,7 +193,7 @@ export default function BatchUploadPage() {
         await addItem(
           {
             name: draft.name.trim(), category: draft.category,
-            warmth: draft.warmth, formality: draft.formality, sport: false,
+            warmth: draft.warmth, formality: draft.formality, sport: draft.sport,
             subcategory: draft.subcategory, color: draft.color,
             pattern: draft.pattern, material: draft.material, brand: draft.brand,
           },
@@ -226,22 +226,36 @@ export default function BatchUploadPage() {
   if (stage === 'analyzing') {
     const pct = analyzeProgress.total > 0 ? (analyzeProgress.done / analyzeProgress.total) * 100 : 0
     return (
-      <div style={centered}>
-        <Mono s={11} style={{ marginBottom: 20 }}>AI is reading your photos</Mono>
-        <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
-          <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
+      <div style={{ ...dotted, minHeight: '100svh' }}>
+        <V4Bar />
+        <div style={{ padding: '40px 40px 0' }}>
+          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <Disp s={26}>Reading your photos.</Disp>
+          <div style={{ marginTop: 28, maxWidth: 280 }}>
+            <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
+              <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
+            </div>
+            <Body s={14}>{analyzeProgress.done} of {analyzeProgress.total} analyzed…</Body>
+          </div>
         </div>
-        <Body s={13}>{analyzeProgress.done} of {analyzeProgress.total} analyzed…</Body>
       </div>
     )
   }
 
   if (stage === 'saving') {
+    const pct = drafts.length > 0 ? (savedCount / drafts.length) * 100 : 0
     return (
-      <div style={centered}>
-        <Body s={13} style={{ marginBottom: 16 }}>saving {savedCount + 1} of {drafts.length}…</Body>
-        <div style={{ width: 200, height: 2, background: T.g200 }}>
-          <div style={{ height: '100%', background: T.ink, width: `${(savedCount / drafts.length) * 100}%`, transition: 'width .3s' }} />
+      <div style={{ ...dotted, minHeight: '100svh' }}>
+        <V4Bar />
+        <div style={{ padding: '40px 40px 0' }}>
+          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <Disp s={26}>Adding to your closet.</Disp>
+          <div style={{ marginTop: 28, maxWidth: 280 }}>
+            <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
+              <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
+            </div>
+            <Body s={14}>saving {Math.min(savedCount + 1, drafts.length)} of {drafts.length}…</Body>
+          </div>
         </div>
       </div>
     )
@@ -302,6 +316,11 @@ export default function BatchUploadPage() {
         </div>
         <DotPicker value={draft.formality} onChange={v => update('formality', v)} tone={T.roseDeep} />
       </div>
+      <Row4
+        label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
+        value={draft.sport ? 'On' : 'Off'} chev={false}
+        onClick={() => update('sport', !draft.sport)}
+      />
 
       <div style={{ marginTop: 14 }}>
         <Field label="Colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />

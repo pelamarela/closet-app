@@ -291,7 +291,7 @@ export function Btn({ children, kind = 'primary', icon, full, flex, disabled = f
   return (
     <button type={type} disabled={disabled} onClick={onClick} className={`ds-btn ds-btn-${kind}`} style={{
       height: 52, padding: '0 22px', borderRadius: 2, cursor: disabled ? 'not-allowed' : 'pointer',
-      width: full ? '100%' : undefined, flex, fontFamily: fS, fontSize: 14.5, fontWeight: 400,
+      width: full ? '100%' : undefined, flex, minWidth: 0, fontFamily: fS, fontSize: 14.5, fontWeight: 400,
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, overflow: 'hidden',
       WebkitTapHighlightColor: 'transparent', ...BTN_KIND[kind], ...style,
     }}>
@@ -302,7 +302,11 @@ export function Btn({ children, kind = 'primary', icon, full, flex, disabled = f
         </>
       ) : (
         <>
-          {icon && <V4Icon n={icon} s={19} w={1.9} />}{children}
+          {icon && <V4Icon n={icon} s={19} w={1.9} style={{ flexShrink: 0 }} />}
+          {/* nowrap + ellipsis so a long label truncates on one line instead of
+              wrapping to a second — flex-shrink + overflow:hidden on the button
+              otherwise let the browser wrap at a word boundary instead. */}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{children}</span>
         </>
       )}
     </button>
@@ -366,7 +370,7 @@ export function Sheet({ children, title, right, step, maxHeight = '92svh', onCli
   return (
     <div onClick={onClick} style={{
       position: 'fixed', left: 0, right: 0, bottom: 0, maxHeight, background: T.paper,
-      boxShadow: '0 -14px 40px rgba(0,0,0,.16)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 41,
+      borderRadius: '16px 16px 0 0', boxShadow: '0 -14px 40px rgba(0,0,0,.16)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 41,
     }}>
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, flexShrink: 0 }}><div style={{ width: 40, height: 4, borderRadius: 2, background: T.g200 }} /></div>
       {(title || right) && (

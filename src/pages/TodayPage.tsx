@@ -314,7 +314,7 @@ export default function TodayPage() {
         {WeatherHead}
         {isDesktop ? (
           <div style={{ padding: '30px 22px 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(480px, 1fr) 400px', gap: 52, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 58fr) minmax(200px, 42fr)', gap: 52, alignItems: 'start' }}>
               <div>
                 <V4Card pad={24} style={{ overflow: 'hidden' }}>{DesktopMain}</V4Card>
                 {ThisWeekCard}
@@ -385,7 +385,7 @@ export default function TodayPage() {
       {WeatherHead}
       {isDesktop ? (
         <div style={{ padding: '30px 22px 0' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(480px, 1fr) 400px', gap: 52, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 58fr) minmax(200px, 42fr)', gap: 52, alignItems: 'start' }}>
             <div>
               {EveningReminder}
               {EmptyMain}
