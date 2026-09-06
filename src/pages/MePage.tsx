@@ -28,9 +28,6 @@ export default function MePage() {
   }, [user])
 
   const initial = user?.email?.charAt(0).toUpperCase() ?? '?'
-  const memberSince = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toLowerCase()
-    : null
 
   const cards: { label: string; sub: string; icon: IconName; to: string }[] = [
     { label: 'Statistics', sub: `${outfits.length} outfits`, icon: 'chart', to: '/settings/stats' },
@@ -57,13 +54,12 @@ export default function MePage() {
             <div style={{ minWidth: 0 }}>
               <Disp s={19}>{user?.email?.split('@')[0] ?? 'You'}</Disp>
               <div style={{ marginTop: 3 }}><Mono s={11} c={T.cocoa}>{user?.email}</Mono></div>
-              {memberSince && <div style={{ marginTop: 2 }}><Mono s={10.5} c={T.cocoaSoft}>keeping track since {memberSince}</Mono></div>}
             </div>
           </div>
           {/* flex-start, not center — sign-out is one short line next to a
-              three-line block (name/email/member-since); centering against
-              the whole block crowded it against the email line instead of
-              sitting cleanly in the card's top-right corner. */}
+              two-line block (name/email); centering against the whole block
+              crowded it against the email line instead of sitting cleanly
+              in the card's top-right corner. */}
           <button onClick={signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.cocoaDeep }}>sign out</button>
         </V4Card>
       </div>
