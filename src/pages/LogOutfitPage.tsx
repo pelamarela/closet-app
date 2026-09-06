@@ -239,23 +239,23 @@ export default function LogOutfitPage() {
           title="Log outfit"
           right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
         />
-        <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ padding: '14px 22px 0' }}>
+        <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, paddingBottom: 8, borderBottom: `1px solid ${T.line}` }}>
+          <div style={{ padding: '10px 22px 0' }}>
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
               {pickedWorn.map(item => (
-                <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                <div key={item.id} style={{ position: 'relative', width: 52, height: 64, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
                   {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                   <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <V4Icon n="close" s={11} w={2.4} />
                   </button>
                 </div>
               ))}
-              <div style={{ width: 60, height: 74, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
+              <div style={{ width: 52, height: 64, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
               {pickedFragrance.length > 0 && (
                 <>
                   <div style={{ width: 1, flexShrink: 0, background: T.line, margin: '4px 2px' }} />
                   {pickedFragrance.map(item => (
-                    <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
+                    <div key={item.id} style={{ position: 'relative', width: 52, height: 64, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
                       {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                       <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <V4Icon n="close" s={11} w={2.4} />
@@ -266,18 +266,19 @@ export default function LogOutfitPage() {
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: 8, padding: '10px 22px 0', overflowX: 'auto' }}>
             {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
-        <div style={{ padding: '16px 22px 0' }}>
-          {/* Shorter than desktop's — with the sticky header above and the
-              fixed CTA below, 44vh was pushing fragrance below the fold on
-              most phones. Smaller tiles (denser grid) partly compensate by
-              showing more per row within the smaller box. */}
-          <div style={{ maxHeight: '30vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
+        <div style={{ padding: '14px 22px 0' }}>
+          {/* Fixed pixel height, not vh — vh is relative to the viewport, which
+              varies a lot device to device (and iOS Safari's address bar makes
+              it unreliable besides), so a percentage never reliably left room
+              for fragrance below. ~150px is about 2 rows, enough to browse a
+              few pieces before the fragrance strip is reached, on any phone. */}
+          <div style={{ maxHeight: 150, overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
           {fragranceItems.length > 0 && (
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '20vh', overflowY: 'auto' }}>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}` }}>
               <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
               {FragranceTiles}
             </div>
