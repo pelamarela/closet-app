@@ -7,7 +7,7 @@ import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, dotted, V4Bar, V4Icon, Btn, Pill, Row4, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, dotted, V4Bar, V4Icon, Btn, Pill, Switch, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -316,13 +316,20 @@ export default function BatchUploadPage() {
         </div>
         <DotPicker value={draft.formality} onChange={v => update('formality', v)} tone={T.roseDeep} />
       </div>
-      <Row4
-        label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
-        toggle={draft.sport}
-        onClick={() => update('sport', !draft.sport)}
-      />
+      {/* Matches the Warmth/Formality label style (12.5px, gray) rather than
+          Row4's settings-list look, which read as a bigger, differently
+          weighted heading dropped into the middle of this field group. */}
+      <div style={{ marginTop: 20, marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Sport / gym only</div>
+          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>Excluded from everyday outfit suggestions</div>
+        </div>
+        <button type="button" onClick={() => update('sport', !draft.sport)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
+          <Switch on={draft.sport} />
+        </button>
+      </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div>
         <Field label="Colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />
         <Field label="Brand" value={draft.brand} onChange={v => update('brand', v)} placeholder="e.g. Toteme" />
         <Field label="Material" value={draft.material} onChange={v => update('material', v)} placeholder="cotton, wool, silk…" />

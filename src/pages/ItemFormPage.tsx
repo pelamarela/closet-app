@@ -9,7 +9,7 @@ import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import { T, fS, fM, dotted, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, dotted, V4Icon, V4Bar, Btn, Pill, Switch, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
 
 const ANALYZE_STEPS = ['Reading the photo', 'Identifying the piece', 'Filling in the details']
 
@@ -284,12 +284,19 @@ export default function ItemFormPage() {
         </div>
         <DotPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} tone={T.roseDeep} />
       </div>
-      <Row4
-        label="Sport / gym only" sub="Excluded from everyday outfit suggestions"
-        toggle={form.sport}
-        onClick={() => setForm(f => ({ ...f, sport: !f.sport }))}
-      />
-      <div style={{ marginTop: 6 }}>
+      {/* Matches the Warmth/Formality label style (12.5px, gray) rather than
+          Row4's settings-list look, which read as a bigger, differently
+          weighted heading dropped into the middle of this field group. */}
+      <div style={{ marginTop: 20, marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Sport / gym only</div>
+          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>Excluded from everyday outfit suggestions</div>
+        </div>
+        <button type="button" onClick={() => setForm(f => ({ ...f, sport: !f.sport }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
+          <Switch on={form.sport} />
+        </button>
+      </div>
+      <div>
         <Field label="Colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
         <Field label="Brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
         <Field label="Material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />

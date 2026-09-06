@@ -139,7 +139,7 @@ export default function LogOutfitPage() {
     ) : gridItems.length === 0 ? (
       <Body s={13}>No items here.</Body>
     ) : (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: 8 }}>
         {gridItems.map(item => (
           <ItemTile key={item.id} src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
         ))}
@@ -241,11 +241,6 @@ export default function LogOutfitPage() {
         />
         <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
           <div style={{ padding: '14px 22px 0' }}>
-            {selectedIds.size > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-                <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>
-              </div>
-            )}
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
               {pickedWorn.map(item => (
                 <div key={item.id} style={{ position: 'relative', width: 60, height: 74, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
@@ -276,7 +271,11 @@ export default function LogOutfitPage() {
           </div>
         </div>
         <div style={{ padding: '16px 22px 0' }}>
-          <div style={{ maxHeight: '44vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
+          {/* Shorter than desktop's — with the sticky header above and the
+              fixed CTA below, 44vh was pushing fragrance below the fold on
+              most phones. Smaller tiles (denser grid) partly compensate by
+              showing more per row within the smaller box. */}
+          <div style={{ maxHeight: '30vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
           {fragranceItems.length > 0 && (
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '20vh', overflowY: 'auto' }}>
               <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
