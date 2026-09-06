@@ -147,11 +147,12 @@ export default function LogOutfitPage() {
     )
 
     // Fragrance isn't filterable with the clothing grid above — it's a small,
-    // always-visible strip of its own tiles.
+    // always-visible strip of its own, one row deep, scrolling sideways
+    // instead of wrapping into a second grid that reads as more clothing.
     const FragranceTiles = (
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: 4 }}>
         {fragranceItems.map(item => (
-          <div key={item.id} style={{ width: 68 }}>
+          <div key={item.id} style={{ width: 68, flexShrink: 0 }}>
             <ItemTile src={item.signedImageUrl} alt={item.name} sel={selectedIds.has(item.id)} onClick={() => toggleItem(item.id)} />
           </div>
         ))}
@@ -174,7 +175,10 @@ export default function LogOutfitPage() {
                   grid alone could run to hundreds of tiles, which used to bury
                   fragrance at the very bottom of the page. This keeps it one
                   short scroll away instead of a very long one. */}
-              <div style={{ maxHeight: '54vh', overflowY: 'auto', paddingRight: 4 }}>{Grid}</div>
+              {/* Uniform 4px padding, not just paddingRight — a scrollable box
+                  otherwise clips the selected-tile ring wherever a tile sits
+                  flush against its edge (top row, last column). */}
+              <div style={{ maxHeight: '54vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
               {fragranceItems.length > 0 && (
                 <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '24vh', overflowY: 'auto' }}>
                   <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
@@ -272,7 +276,7 @@ export default function LogOutfitPage() {
           </div>
         </div>
         <div style={{ padding: '16px 22px 0' }}>
-          <div style={{ maxHeight: '44vh', overflowY: 'auto' }}>{Grid}</div>
+          <div style={{ maxHeight: '44vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
           {fragranceItems.length > 0 && (
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '20vh', overflowY: 'auto' }}>
               <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>

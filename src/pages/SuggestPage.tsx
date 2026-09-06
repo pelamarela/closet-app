@@ -211,7 +211,11 @@ export default function SuggestPage() {
         )}
         {suggestions.length > 1 && (
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            {suggestions.map((_, i) => <Pill key={i} on={i === selectedOption} s="sm" onClick={() => setSelectedOption(i)}>Look {i + 1}</Pill>)}
+            {suggestions.map((_, i) => (
+              <div key={i} style={{ flex: 1 }}>
+                <Pill on={i === selectedOption} s="sm" full onClick={() => setSelectedOption(i)}>Look {i + 1}</Pill>
+              </div>
+            ))}
           </div>
         )}
       </>

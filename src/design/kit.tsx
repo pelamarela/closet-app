@@ -364,7 +364,11 @@ export function Row4({ label, value, chev = true, sub, last, toggle, onClick }: 
       </div>
     </>
   )
-  const rowStyle: CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 54, borderBottom: last ? 'none' : `1px solid ${T.line}`, width: '100%' }
+  // flex-start, not center: with a two-line label (title + sub), centering
+  // against the whole block lands the switch/chevron in the gap between the
+  // two lines instead of against the title — this keeps it pinned to the top,
+  // level with the title, whether or not a sub caption is present.
+  const rowStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, minHeight: 54, paddingTop: 15, borderBottom: last ? 'none' : `1px solid ${T.line}`, width: '100%' }
   if (onClick) {
     return <button className="ds-row4" onClick={onClick} style={{ ...rowStyle, background: 'none', border: 'none', borderBottom: rowStyle.borderBottom, textAlign: 'left', cursor: 'pointer', padding: '0 12px', margin: '0 -12px' }}>{content}</button>
   }

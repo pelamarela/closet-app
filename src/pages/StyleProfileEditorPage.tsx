@@ -7,7 +7,9 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { COLOR_SEASONS } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
-import { T, fS, V4Bar, Btn, Pill, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, dotted, V4Bar, V4Icon, Btn, Pill, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
+
+const GENERATE_STEPS = ['Going through your outfits', 'Spotting your patterns', 'Writing it up']
 
 export default function StyleProfileEditorPage() {
   const navigate = useNavigate()
@@ -21,6 +23,7 @@ export default function StyleProfileEditorPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [generating, setGenerating] = useState(false)
+  const [generateStep, setGenerateStep] = useState(0)
   const [generateError, setGenerateError] = useState<string | null>(null)
 
   const isDirty = text !== original || colorSeason !== originalColorSeason
@@ -38,7 +41,8 @@ export default function StyleProfileEditorPage() {
 
   const generateFromOutfits = async () => {
     if (outfits.length < 5) { setGenerateError('Log at least 5 outfits first so I have enough to work with.'); return }
-    setGenerating(true); setGenerateError(null)
+    setGenerating(true); setGenerateStep(0); setGenerateError(null)
+    const stepTimers = [setTimeout(() => setGenerateStep(1), 900), setTimeout(() => setGenerateStep(2), 1900)]
     try {
       const res = await apiFetch('/api/generate-profile', {
         outfits: outfits.map(o => ({ date: o.date_worn, occasion: o.occasion, item_ids: o.item_ids })),
@@ -49,7 +53,33 @@ export default function StyleProfileEditorPage() {
       if (data.profile) setText(data.profile)
     } catch (e) {
       setGenerateError(e instanceof Error ? e.message : 'Generation failed')
-    } finally { setGenerating(false) }
+    } finally { stepTimers.forEach(clearTimeout); setGenerating(false) }
+  }
+
+  if (generating) {
+    return (
+      <div style={{ ...dotted, minHeight: '100svh' }}>
+        <V4Bar />
+        <div style={{ padding: '40px 40px 0' }}>
+          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <Disp s={26}>Reading your outfits.</Disp>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
+            {GENERATE_STEPS.map((label, i) => {
+              const done = i < generateStep
+              const active = i === generateStep
+              return (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
+                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {done && <V4Icon n="check" s={11} w={2.8} />}
+                  </div>
+                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const save = async () => {
@@ -91,7 +121,7 @@ export default function StyleProfileEditorPage() {
           <Disp s={17}>Or let me write it.</Disp>
           <Body s={13.5} c={T.cocoa} style={{ marginTop: 6 }}>I'll read your {outfits.length} logged outfits and draft this for you to edit.</Body>
           {generateError && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{generateError}</Body>}
-          <div style={{ marginTop: 15 }}><Btn kind="white" icon="spark" disabled={generating} style={{ height: 46, fontSize: 14 }} onClick={generateFromOutfits}>{generating ? 'Reading your looks…' : 'Draft from my history'}</Btn></div>
+          <div style={{ marginTop: 15 }}><Btn kind="white" icon="spark" style={{ height: 46, fontSize: 14 }} onClick={generateFromOutfits}>Draft from my history</Btn></div>
         </V4Card>
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '16px 22px 28px', background: T.paper, borderTop: `1px solid ${T.line}` }}>

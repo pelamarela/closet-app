@@ -9,7 +9,9 @@ import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, dotted, V4Icon, V4Bar, Btn, Pill, Row4, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
+
+const ANALYZE_STEPS = ['Reading the photo', 'Identifying the piece', 'Filling in the details']
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: catLabel('top') },
@@ -70,6 +72,7 @@ export default function ItemFormPage() {
   const [loadingItem, setLoadingItem] = useState(isEdit)
   const [saving, setSaving] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeStep, setAnalyzeStep] = useState(0)
   const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -85,7 +88,8 @@ export default function ItemFormPage() {
   const toCategory = (raw: string): Category => VALID_CATS.has(raw) ? raw as Category : 'top'
 
   const analyzePhoto = async (file: File) => {
-    setAnalyzing(true); setAnalyzeError(null)
+    setAnalyzing(true); setAnalyzeStep(0); setAnalyzeError(null)
+    const stepTimers = [setTimeout(() => setAnalyzeStep(1), 700), setTimeout(() => setAnalyzeStep(2), 1500)]
     try {
       const compressed = await import('../lib/imageUtils').then(m => m.compressImage(file))
       const reader = new FileReader()
@@ -113,6 +117,7 @@ export default function ItemFormPage() {
         formality: typeof ai.formality === 'number' ? ai.formality : prev.formality,
       }))
     } catch { setAnalyzeError('AI analysis unavailable — fill in manually') } finally {
+      stepTimers.forEach(clearTimeout)
       setAnalyzing(false)
     }
   }
@@ -140,6 +145,8 @@ export default function ItemFormPage() {
     if (!preloadedFile) return
     clearSingleFile()
     async function analyze() {
+      setAnalyzing(true); setAnalyzeStep(0); setAnalyzeError(null)
+      const stepTimers = [setTimeout(() => setAnalyzeStep(1), 700), setTimeout(() => setAnalyzeStep(2), 1500)]
       try {
         const { compressImage } = await import('../lib/imageUtils')
         const compressed = await compressImage(preloadedFile!)
@@ -161,7 +168,10 @@ export default function ItemFormPage() {
           ...(ai.pattern ? { pattern: ai.pattern } : {}),
           ...(ai.subcategory ? { subcategory: ai.subcategory } : {}),
         }))
-      } catch { setAnalyzeError('AI analysis unavailable — fill in manually') }
+      } catch { setAnalyzeError('AI analysis unavailable — fill in manually') } finally {
+        stepTimers.forEach(clearTimeout)
+        setAnalyzing(false)
+      }
     }
     analyze()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,6 +204,32 @@ export default function ItemFormPage() {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
 
+  if (analyzing) {
+    return (
+      <div style={{ ...dotted, minHeight: '100svh' }}>
+        <V4Bar />
+        <div style={{ padding: '40px 40px 0' }}>
+          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <Disp s={26}>Reading your photo.</Disp>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
+            {ANALYZE_STEPS.map((label, i) => {
+              const done = i < analyzeStep
+              const active = i === analyzeStep
+              return (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
+                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {done && <V4Icon n="check" s={11} w={2.8} />}
+                  </div>
+                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const PhotoBlock = (
     <>
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0] ?? null; setImageFile(f); if (f) analyzePhoto(f) }} />
@@ -209,7 +245,7 @@ export default function ItemFormPage() {
           <>
             <img src={imagePreview} alt="" style={isDesktop ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>{analyzing ? 'Analyzing…' : 'Change photo'}</span>
+              <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>Change photo</span>
             </div>
           </>
         ) : (
@@ -217,7 +253,6 @@ export default function ItemFormPage() {
             <V4Icon n="cam" s={26} w={1.4} c={T.g400} />
             <Body s={13.5} c={T.ink}>Tap to add a photo</Body>
             <Mono s={10}>max 1200px · ~300 KB · JPEG</Mono>
-            {analyzing && <Body s={12} c={T.cocoa} style={{ marginTop: 4 }}>Analyzing with AI…</Body>}
           </div>
         )}
       </button>

@@ -51,7 +51,7 @@ export default function MePage() {
         <Disp s={30}>Me</Disp><Mono s={11}>v3.0</Mono>
       </div>
       <div style={{ padding: '20px 22px 0' }}>
-        <V4Card fill={T.peach} shadow={false} pad={18} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 15 }}>
+        <V4Card fill={T.peach} shadow={false} pad={18} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 15 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 15, minWidth: 0 }}>
             <div style={{ width: 58, height: 58, background: T.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fS, fontSize: 21, fontWeight: 600, flexShrink: 0 }}>{initial}</div>
             <div style={{ minWidth: 0 }}>
@@ -60,6 +60,10 @@ export default function MePage() {
               {memberSince && <div style={{ marginTop: 2 }}><Mono s={10.5} c={T.cocoaSoft}>keeping track since {memberSince}</Mono></div>}
             </div>
           </div>
+          {/* flex-start, not center — sign-out is one short line next to a
+              three-line block (name/email/member-since); centering against
+              the whole block crowded it against the email line instead of
+              sitting cleanly in the card's top-right corner. */}
           <button onClick={signOut} style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.cocoaDeep }}>sign out</button>
         </V4Card>
       </div>
