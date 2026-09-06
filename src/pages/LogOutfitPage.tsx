@@ -234,7 +234,7 @@ export default function LogOutfitPage() {
     }
 
     return (
-      <div style={{ paddingBottom: 100 }}>
+      <div>
         <V4Bar
           title="Log outfit"
           right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
@@ -270,15 +270,21 @@ export default function LogOutfitPage() {
             {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
-        <div style={{ padding: '14px 22px 0' }}>
-          {/* Fixed pixel height, not vh — vh is relative to the viewport, which
-              varies a lot device to device (and iOS Safari's address bar makes
-              it unreliable besides), so a percentage never reliably left room
-              for fragrance below. ~150px is about 2 rows, enough to browse a
-              few pieces before the fragrance strip is reached, on any phone. */}
-          <div style={{ maxHeight: 150, overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
+        {/* A fixed pane, not normal page flow — the picked-tray + category
+            pills above are a constant 126px (10 pad + 64 tray + 10 pad + 34
+            pills + 8 pad), and the CTA bar below is a constant 86px (14 + 52
+            + 20), so this box's own height is exactly "whatever's left" on
+            any phone. The clothing grid flexes to fill it and scrolls
+            internally; the fragrance strip is flexShrink:0 so it always
+            renders at its natural, constant height instead of being pushed
+            off or squeezed — this is what "vh" guessing could never give us. */}
+        <div style={{
+          position: 'fixed', top: 'calc(var(--v3-header-h) + 170px)', bottom: 'calc(var(--v3-sticky-bottom) + 86px)',
+          left: 'var(--v3-sidenav-w)', right: 0, display: 'flex', flexDirection: 'column', padding: '14px 22px 0',
+        }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
           {fragranceItems.length > 0 && (
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}` }}>
+            <div style={{ flexShrink: 0, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}` }}>
               <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
               {FragranceTiles}
             </div>
