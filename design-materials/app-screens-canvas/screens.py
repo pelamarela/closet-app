@@ -475,11 +475,24 @@ def screen_statistics():
         f'<div style="height:6px;background:{T["g200"]}"><div style="height:6px;width:{v}%;background:{T["cocoa"]}"></div></div></div>'
         for b, v in brands
     )
+    # Hierarchy change: the page title collapses into the sticky breadcrumb
+    # (Me / Statistics) instead of a separate large heading, and the Monthly
+    # grain-selector moves down to sit directly above the content it filters
+    # instead of tucked into the top bar.
+    crumb = (
+        f'<div style="height:44px;padding:0 22px;display:flex;align-items:center;gap:7px;'
+        f'position:sticky;top:0;background:{T["paper"]};z-index:5">'
+        f'{icon("back",20,1.7,T["ink"])}'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g400"]}">Me</span>'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g200"]}">/</span>'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:600;color:{T["ink"]}">Statistics</span>'
+        f'</div>'
+    )
     content = (
-        v4bar('Me', True, mono('Monthly &#9662;', 13)) +
-        f'<div style="padding:8px 22px 0">{disp("Statistics", 29)}</div>'
+        crumb +
         f'<div style="display:flex;gap:8px;padding:14px 22px 0">{pill("Pieces", True, "ink", "sm")}{pill("Outfits", False, "ink", "sm")}{pill("Colour", False, "ink", "sm")}</div>'
-        f'<div style="padding:20px 22px 0">{secH("Most worn", "All")}{rows}</div>'
+        f'<div style="padding:18px 22px 0;display:flex;justify-content:flex-end">{mono("Monthly &#9662;", 13)}</div>'
+        f'<div style="padding:10px 22px 0">{secH("Most worn", "All")}{rows}</div>'
         f'<div style="padding:22px 22px 0">{secH("Top brands")}{brand_rows}</div>'
     )
     return shell('Statistics', content, 'user')

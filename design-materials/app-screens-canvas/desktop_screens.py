@@ -315,9 +315,22 @@ def d_statistics():
                           f'<div style="height:6px;background:{T["g200"]}"><div style="height:6px;width:{v}%;background:{T["cocoa"]}"></div></div></div>' for b, v in brands)
     left = card(secH("Most worn", "All") + rows, T['white'], 22, True)
     right = card(secH("Top brands") + brand_rows, T['white'], 22, True)
-    content = (v4bar('Me', True, mono('Monthly &#9662;', 13)) + f'<div>{disp("Statistics", 29)}</div>'
+    # Same hierarchy change as the mobile screen: title collapses into the
+    # sticky breadcrumb (Me / Statistics), Monthly moves down to sit right
+    # above the content it filters instead of the top bar.
+    crumb = (
+        f'<div style="height:44px;display:flex;align-items:center;gap:7px;'
+        f'position:sticky;top:0;background:{T["paper"]};z-index:5">'
+        f'{icon("back",20,1.7,T["ink"])}'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g400"]}">Me</span>'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g200"]}">/</span>'
+        f'<span style="font-family:{fS};font-size:14px;font-weight:600;color:{T["ink"]}">Statistics</span>'
+        f'</div>'
+    )
+    content = (crumb
                + f'<div style="display:flex;gap:8px;margin-top:14px">{pill("Pieces", True, "ink", "sm")}{pill("Outfits", False, "ink", "sm")}{pill("Colour", False, "ink", "sm")}</div>'
-               + f'<div style="margin-top:20px">{split(left, right)}</div>')
+               + f'<div style="margin-top:18px;display:flex;justify-content:flex-end">{mono("Monthly &#9662;", 13)}</div>'
+               + f'<div style="margin-top:10px">{split(left, right)}</div>')
     return desktop_shell(content, 'chart', h=980)
 
 # ── Today empty / Log saved (desktop, single column) ────────────────────────
