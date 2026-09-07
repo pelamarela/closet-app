@@ -142,6 +142,16 @@ export default function StatsPage() {
     </div>
   )
 
+  // Mobile pills get their own full-width row, so they fill it evenly
+  // instead of sitting left-aligned with dead space to the right.
+  const PillsRowFill = (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ flex: 1 }}><Pill full on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill></div>
+      <div style={{ flex: 1 }}><Pill full on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill></div>
+      <div style={{ flex: 1 }}><Pill full on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill></div>
+    </div>
+  )
+
   // Desktop: back link / [title —— nav + pills] / grain dropdown — title and
   // the view switcher share a row, matching the wide header's proportions;
   // mobile keeps everything stacked full-width instead.
@@ -156,7 +166,7 @@ export default function StatsPage() {
         <Disp s={29}>Statistics</Disp>
         {PillsRow}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '10px 22px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 22px 0' }}>
         <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
         {PeriodNav}
       </div>
@@ -164,13 +174,11 @@ export default function StatsPage() {
   ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 22px 0' }}>
-        <Disp s={29}>Statistics</Disp>
-        {PeriodNav}
-      </div>
-      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
-      <div style={{ padding: '12px 22px 0' }}>
+      <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
+      <div style={{ padding: '14px 22px 0' }}>{PillsRowFill}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 22px 0' }}>
         <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+        {PeriodNav}
       </div>
     </div>
   )
