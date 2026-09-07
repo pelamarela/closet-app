@@ -1,4 +1,4 @@
-import { useState, useMemo, type ReactNode } from 'react'
+import { useState, useMemo, type ReactNode, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
@@ -85,7 +85,7 @@ export default function StatsPage() {
   }
 
   const Head = (
-    <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
+    <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
       <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>
@@ -128,8 +128,12 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
   const catTotal = items.length || 1
   const catList = Object.entries(catCounts).sort((a, b) => b[1] - a[1])
 
+  const rowStyle: CSSProperties = isDesktop
+    ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(76px, 108px))', gap: 7 }
+    : { display: 'flex', gap: 7 }
+
   const Row = ({ item }: { item: ItemWithSignedUrl }) => (
-    <button onClick={() => navigate(`/wardrobe/${item.id}`)} style={{ flex: isDesktop ? '0 0 84px' : 1, width: isDesktop ? 84 : undefined, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+    <button onClick={() => navigate(`/wardrobe/${item.id}`)} style={{ flex: isDesktop ? undefined : 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
       <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
         {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
       </div>
@@ -143,7 +147,6 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
         <Disp s={20}>Most and least worn</Disp>
         {mainCatGroups.length > 0 && (
           <div style={{ marginTop: 20 }}>
-            <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Main pieces</Mono>
             {mainCatGroups.map((g, ci) => {
               const most = mostWorn(g.list)
               const least = leastWorn(g.list)
@@ -154,13 +157,13 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
                   {most.length > 0 && (
                     <div>
                       <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-                      <div style={{ display: 'flex', gap: 7 }}>{most.map(i => <Row key={i.id} item={i} />)}</div>
+                      <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
                     </div>
                   )}
                   {least.length > 0 && (
                     <div style={{ marginTop: 16 }}>
                       <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-                      <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
+                      <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
                     </div>
                   )}
                 </div>
@@ -178,13 +181,13 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
               {most.length > 0 && (
                 <div>
                   <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-                  <div style={{ display: 'flex', gap: 7 }}>{most.map(i => <Row key={i.id} item={i} />)}</div>
+                  <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
                 </div>
               )}
               {least.length > 0 && (
                 <div style={{ marginTop: 22 }}>
                   <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-                  <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
+                  <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
                 </div>
               )}
             </div>
