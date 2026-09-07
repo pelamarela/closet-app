@@ -19,6 +19,7 @@ type Tab = 'pieces' | 'outfits' | 'colour'
 type Grain = 'Weekly' | 'Monthly' | 'Yearly'
 const GARMENT_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
+const MAIN_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
 const DOW_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const BRAND_RAMP = [T.cocoaDeep, T.cocoa, T.cocoaSoft, '#A47A61', T.roseDeep, T.rose, '#E5C3B6', '#EFD8C9']
 
@@ -109,8 +110,10 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
   items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void; isDesktop: boolean
 }) {
   const wearable = items.filter(i => i.category !== 'fragrance')
-  const mostWorn = [...wearable].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, 5)
-  const leastWorn = [...wearable].sort((a, b) => (wearCount[a.id] ?? 0) - (wearCount[b.id] ?? 0)).slice(0, 5)
+  const mainPieces = wearable.filter(i => MAIN_CATS.has(i.category))
+  const accessories = wearable.filter(i => i.category === 'accessory')
+  const mostWorn = (list: ItemWithSignedUrl[]) => [...list].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, 5)
+  const leastWorn = (list: ItemWithSignedUrl[]) => [...list].sort((a, b) => (wearCount[a.id] ?? 0) - (wearCount[b.id] ?? 0)).slice(0, 5)
 
   const brandTotals: Record<string, number> = {}
   for (const i of wearable) if (i.brand) brandTotals[i.brand] = (brandTotals[i.brand] ?? 0) + (wearCount[i.id] ?? 0)
@@ -136,18 +139,28 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
       <Section isDesktop={isDesktop}>
         <Disp s={20}>Most and least worn</Disp>
         <Body s={13.5} style={{ marginTop: 5 }}>Fragrance excluded — this is about what you put on, not what you spritz.</Body>
-        {mostWorn.length > 0 && (
-          <div style={{ marginTop: 18 }}>
-            <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-            <div style={{ display: 'flex', gap: 7 }}>{mostWorn.map(i => <Row key={i.id} item={i} />)}</div>
-          </div>
-        )}
-        {leastWorn.length > 0 && (
-          <div style={{ marginTop: 22 }}>
-            <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-            <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{leastWorn.map(i => <Row key={i.id} item={i} />)}</div>
-          </div>
-        )}
+        {([['Main pieces', mainPieces], ['Accessories', accessories]] as const).map(([groupLabel, list], gi) => {
+          const most = mostWorn(list)
+          const least = leastWorn(list)
+          if (most.length === 0 && least.length === 0) return null
+          return (
+            <div key={groupLabel} style={{ marginTop: gi === 0 ? 20 : 30, paddingTop: gi === 0 ? 0 : 20, borderTop: gi === 0 ? 'none' : `1px solid ${T.line}` }}>
+              <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{groupLabel}</Mono>
+              {most.length > 0 && (
+                <div>
+                  <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
+                  <div style={{ display: 'flex', gap: 7 }}>{most.map(i => <Row key={i.id} item={i} />)}</div>
+                </div>
+              )}
+              {least.length > 0 && (
+                <div style={{ marginTop: 22 }}>
+                  <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
+                  <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </Section>
       {brands.length > 0 && (
         <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
