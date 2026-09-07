@@ -141,6 +141,23 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
     </button>
   )
 
+  const MostLeast = ({ most, least }: { most: ItemWithSignedUrl[]; least: ItemWithSignedUrl[] }) => (
+    <div style={isDesktop ? { display: 'flex', gap: 40 } : undefined}>
+      {most.length > 0 && (
+        <div style={isDesktop ? { flex: 1, minWidth: 0 } : undefined}>
+          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
+          <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
+        </div>
+      )}
+      {least.length > 0 && (
+        <div style={isDesktop ? { flex: 1, minWidth: 0 } : { marginTop: 16 }}>
+          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
+          <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
@@ -154,18 +171,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
               return (
                 <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 22 }}>
                   <div style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600, color: T.g500, marginBottom: 8 }}>{g.label}</div>
-                  {most.length > 0 && (
-                    <div>
-                      <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-                      <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
-                    </div>
-                  )}
-                  {least.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                      <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-                      <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
-                    </div>
-                  )}
+                  <MostLeast most={most} least={least} />
                 </div>
               )
             })}
@@ -178,18 +184,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
           return (
             <div style={{ marginTop: 30, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
               <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Accessories</Mono>
-              {most.length > 0 && (
-                <div>
-                  <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
-                  <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
-                </div>
-              )}
-              {least.length > 0 && (
-                <div style={{ marginTop: 22 }}>
-                  <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
-                  <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
-                </div>
-              )}
+              <MostLeast most={most} least={least} />
             </div>
           )
         })()}
