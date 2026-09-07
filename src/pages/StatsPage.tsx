@@ -186,7 +186,7 @@ export default function StatsPage() {
   return (
     <div style={{ paddingBottom: 40 }}>
       {Head}
-      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} periodStr={periodStr} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} navigate={navigate} isDesktop={isDesktop} />}
       {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} offset={offset} periodEnd={periodEnd} collageItems={collageItems} navigate={navigate} isDesktop={isDesktop} />}
       {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} offset={offset} periodStr={periodStr} isDesktop={isDesktop} />}
     </div>
@@ -194,8 +194,8 @@ export default function StatsPage() {
 }
 
 // ── Pieces ──────────────────────────────────────────────────────────────
-function PiecesTab({ items, wearCount, periodStr, navigate, isDesktop }: {
-  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; periodStr: string; navigate: (path: string) => void; isDesktop: boolean
+function PiecesTab({ items, wearCount, navigate, isDesktop }: {
+  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void; isDesktop: boolean
 }) {
   const wearable = items.filter(i => i.category !== 'fragrance')
   const accessories = wearable.filter(i => i.category === 'accessory')
@@ -249,7 +249,6 @@ function PiecesTab({ items, wearCount, periodStr, navigate, isDesktop }: {
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
         <Disp s={20}>Most and least worn</Disp>
-        <Body s={13.5} style={{ marginTop: 5 }}>Wear counts are for {periodStr}.</Body>
         {mainCatGroups.length > 0 && (
           <div style={{ marginTop: 20 }}>
             {mainCatGroups.map((g, ci) => {
