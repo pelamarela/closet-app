@@ -20,6 +20,8 @@ type Grain = 'Weekly' | 'Monthly' | 'Yearly'
 const GARMENT_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
 const MAIN_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
+const MAIN_CAT_ORDER = ['top', 'bottom', 'one-piece', 'outerwear', 'shoes']
+const MAIN_CAT_LABELS: Record<string, string> = { top: 'Tops', bottom: 'Bottoms', 'one-piece': 'One-pieces', outerwear: 'Outerwear', shoes: 'Shoes' }
 const DOW_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const BRAND_RAMP = [T.cocoaDeep, T.cocoa, T.cocoaSoft, '#A47A61', T.roseDeep, T.rose, '#E5C3B6', '#EFD8C9']
 
@@ -110,10 +112,12 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
   items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void; isDesktop: boolean
 }) {
   const wearable = items.filter(i => i.category !== 'fragrance')
-  const mainPieces = wearable.filter(i => MAIN_CATS.has(i.category))
   const accessories = wearable.filter(i => i.category === 'accessory')
-  const mostWorn = (list: ItemWithSignedUrl[]) => [...list].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, 5)
-  const leastWorn = (list: ItemWithSignedUrl[]) => [...list].sort((a, b) => (wearCount[a.id] ?? 0) - (wearCount[b.id] ?? 0)).slice(0, 5)
+  const mostWorn = (list: ItemWithSignedUrl[], n = 5) => [...list].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, n)
+  const leastWorn = (list: ItemWithSignedUrl[], n = 5) => [...list].sort((a, b) => (wearCount[a.id] ?? 0) - (wearCount[b.id] ?? 0)).slice(0, n)
+  const mainCatGroups = MAIN_CAT_ORDER
+    .map(cat => ({ cat, label: MAIN_CAT_LABELS[cat], list: wearable.filter(i => i.category === cat) }))
+    .filter(g => g.list.length > 0)
 
   const brandTotals: Record<string, number> = {}
   for (const i of wearable) if (i.brand) brandTotals[i.brand] = (brandTotals[i.brand] ?? 0) + (wearCount[i.id] ?? 0)
@@ -139,13 +143,40 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
       <Section isDesktop={isDesktop}>
         <Disp s={20}>Most and least worn</Disp>
         <Body s={13.5} style={{ marginTop: 5 }}>Fragrance excluded — this is about what you put on, not what you spritz.</Body>
-        {([['Main pieces', mainPieces], ['Accessories', accessories]] as const).map(([groupLabel, list], gi) => {
-          const most = mostWorn(list)
-          const least = leastWorn(list)
+        {mainCatGroups.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Main pieces</Mono>
+            {mainCatGroups.map((g, ci) => {
+              const most = mostWorn(g.list, 4)
+              const least = leastWorn(g.list, 4)
+              if (most.length === 0 && least.length === 0) return null
+              return (
+                <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 22 }}>
+                  <div style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600, color: T.g500, marginBottom: 8 }}>{g.label}</div>
+                  {most.length > 0 && (
+                    <div>
+                      <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
+                      <div style={{ display: 'flex', gap: 7 }}>{most.map(i => <Row key={i.id} item={i} />)}</div>
+                    </div>
+                  )}
+                  {least.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
+                      <div style={{ display: 'flex', gap: 7, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {(() => {
+          const most = mostWorn(accessories)
+          const least = leastWorn(accessories)
           if (most.length === 0 && least.length === 0) return null
           return (
-            <div key={groupLabel} style={{ marginTop: gi === 0 ? 20 : 30, paddingTop: gi === 0 ? 0 : 20, borderTop: gi === 0 ? 'none' : `1px solid ${T.line}` }}>
-              <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{groupLabel}</Mono>
+            <div style={{ marginTop: 30, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
+              <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Accessories</Mono>
               {most.length > 0 && (
                 <div>
                   <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
@@ -160,7 +191,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
               )}
             </div>
           )
-        })}
+        })()}
       </Section>
       {brands.length > 0 && (
         <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
