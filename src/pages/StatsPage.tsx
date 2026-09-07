@@ -120,26 +120,55 @@ export default function StatsPage() {
     )
   }
 
-  const Head = (
+  const PeriodNav = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <button onClick={() => setOffset(o => Math.min(o + 1, maxOffset))} disabled={offset >= maxOffset} style={{
+        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+        border: 'none', padding: 0, cursor: offset >= maxOffset ? 'not-allowed' : 'pointer', opacity: offset >= maxOffset ? .35 : 1,
+      }}><V4Icon n="back" s={16} w={1.7} /></button>
+      <Mono s={12} c={T.g500} style={{ minWidth: 110, textAlign: 'center' }}>{periodStr}</Mono>
+      <button onClick={() => setOffset(o => Math.max(o - 1, 0))} disabled={offset === 0} style={{
+        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+        border: 'none', padding: 0, cursor: offset === 0 ? 'not-allowed' : 'pointer', opacity: offset === 0 ? .35 : 1,
+      }}><V4Icon n="next" s={16} w={1.7} /></button>
+    </div>
+  )
+
+  const PillsRow = (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <Pill on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill>
+      <Pill on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill>
+      <Pill on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill>
+    </div>
+  )
+
+  // Desktop: back link / [title —— nav + pills] / grain dropdown — title and
+  // the view switcher share a row, matching the wide header's proportions;
+  // mobile keeps everything stacked full-width instead.
+  const Head = isDesktop ? (
+    <div style={{ position: 'sticky', top: 0, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
+      <div style={{ padding: '0 22px' }}>
+        <button onClick={() => navigate('/settings')} style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: -6, background: 'none', border: 'none', padding: '4px 6px', cursor: 'pointer', fontFamily: fS, fontSize: 14, fontWeight: 500, color: T.ink, height: 44 }}>
+          <V4Icon n="back" s={20} w={1.7} />Me
+        </button>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 22px 0' }}>
+        <Disp s={29}>Statistics</Disp>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+          {PeriodNav}
+          {PillsRow}
+        </div>
+      </div>
+      <div style={{ padding: '10px 22px 0' }}>
+        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+      </div>
+    </div>
+  ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
-      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>
-        <Pill on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill>
-        <Pill on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill>
-        <Pill on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '12px 22px 0' }}>
-        <button onClick={() => setOffset(o => Math.min(o + 1, maxOffset))} disabled={offset >= maxOffset} style={{
-          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
-          border: 'none', padding: 0, cursor: offset >= maxOffset ? 'not-allowed' : 'pointer', opacity: offset >= maxOffset ? .35 : 1,
-        }}><V4Icon n="back" s={17} w={1.7} /></button>
-        <Mono s={12} c={T.g500} style={{ minWidth: 130, textAlign: 'center' }}>{periodStr}</Mono>
-        <button onClick={() => setOffset(o => Math.max(o - 1, 0))} disabled={offset === 0} style={{
-          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
-          border: 'none', padding: 0, cursor: offset === 0 ? 'not-allowed' : 'pointer', opacity: offset === 0 ? .35 : 1,
-        }}><V4Icon n="next" s={17} w={1.7} /></button>
-      </div>
+      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '12px 22px 0' }}>{PeriodNav}</div>
     </div>
   )
 
