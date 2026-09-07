@@ -172,7 +172,7 @@ function PiecesTab({ items, wearCount, grain, navigate, isDesktop }: {
               const least = leastWorn(g.list)
               if (most.length === 0 && least.length === 0) return null
               return (
-                <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 22 }}>
+                <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 30, paddingTop: ci === 0 ? 0 : 20, borderTop: ci === 0 ? 'none' : `1px solid ${T.line}` }}>
                   <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.label}</Mono>
                   <MostLeast most={most} least={least} />
                 </div>
