@@ -19,7 +19,6 @@ type Tab = 'pieces' | 'outfits' | 'colour'
 type Grain = 'Weekly' | 'Monthly' | 'Yearly'
 const GARMENT_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
-const MAIN_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
 const MAIN_CAT_ORDER = ['top', 'bottom', 'one-piece', 'outerwear', 'shoes']
 const MAIN_CAT_LABELS: Record<string, string> = { top: 'Tops', bottom: 'Bottoms', 'one-piece': 'One-pieces', outerwear: 'Outerwear', shoes: 'Shoes' }
 const DOW_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
