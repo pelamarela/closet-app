@@ -121,16 +121,16 @@ export default function StatsPage() {
   }
 
   const PeriodNav = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: isDesktop ? 10 : 4 }}>
       <button onClick={() => setOffset(o => Math.min(o + 1, maxOffset))} disabled={offset >= maxOffset} style={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+        width: isDesktop ? 26 : 22, height: isDesktop ? 26 : 22, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
         border: 'none', padding: 0, cursor: offset >= maxOffset ? 'not-allowed' : 'pointer', opacity: offset >= maxOffset ? .35 : 1,
-      }}><V4Icon n="back" s={16} w={1.7} /></button>
-      <Mono s={12} c={T.g500} style={{ minWidth: 110, textAlign: 'center' }}>{periodStr}</Mono>
+      }}><V4Icon n="back" s={isDesktop ? 16 : 14} w={1.7} /></button>
+      <Mono s={isDesktop ? 12 : 11} c={T.g500} style={{ minWidth: isDesktop ? 110 : 82, textAlign: 'center' }}>{periodStr}</Mono>
       <button onClick={() => setOffset(o => Math.max(o - 1, 0))} disabled={offset === 0} style={{
-        width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+        width: isDesktop ? 26 : 22, height: isDesktop ? 26 : 22, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
         border: 'none', padding: 0, cursor: offset === 0 ? 'not-allowed' : 'pointer', opacity: offset === 0 ? .35 : 1,
-      }}><V4Icon n="next" s={16} w={1.7} /></button>
+      }}><V4Icon n="next" s={isDesktop ? 16 : 14} w={1.7} /></button>
     </div>
   )
 
@@ -165,10 +165,15 @@ export default function StatsPage() {
     </div>
   ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
-      <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} right={<Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} />} />
+      <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
-      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '12px 22px 0' }}>{PeriodNav}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 22px 0' }}>
+        {PillsRow}
+        {PeriodNav}
+      </div>
+      <div style={{ padding: '12px 22px 0' }}>
+        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+      </div>
     </div>
   )
 
