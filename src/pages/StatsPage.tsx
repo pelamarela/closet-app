@@ -164,11 +164,13 @@ export default function StatsPage() {
   ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} />
-      <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
-      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, padding: '12px 22px 0' }}>
-        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 22px 0' }}>
+        <Disp s={29}>Statistics</Disp>
         {PeriodNav}
+      </div>
+      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
+      <div style={{ padding: '12px 22px 0' }}>
+        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
       </div>
     </div>
   )
