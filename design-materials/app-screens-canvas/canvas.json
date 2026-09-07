@@ -1,236 +1,13 @@
 {
   "artboards": [
     {
-      "file": "MainDesktop.dc.html",
-      "x": 0,
-      "y": 0,
-      "w": 1440,
-      "h": 845,
-      "title": "Today",
-      "page": "desktop"
-    },
-    {
-      "file": "TodayEmptyDesktop.dc.html",
-      "x": 1580,
-      "y": 0,
-      "w": 1440,
-      "h": 575,
-      "title": "Today — nothing logged",
-      "page": "desktop"
-    },
-    {
-      "file": "LoginDesktop.dc.html",
-      "x": 3160,
-      "y": 0,
-      "w": 1440,
-      "h": 905,
-      "page": "desktop"
-    },
-    {
-      "file": "MonthDesktop.dc.html",
-      "x": 0,
-      "y": 1045,
-      "w": 1440,
-      "h": 790,
-      "page": "desktop"
-    },
-    {
-      "file": "OutfitDetailDesktop.dc.html",
-      "x": 1580,
-      "y": 1045,
-      "w": 1440,
-      "h": 755,
-      "page": "desktop"
-    },
-    {
-      "file": "ClosetDesktop.dc.html",
-      "x": 3160,
-      "y": 1045,
-      "w": 1440,
-      "h": 580,
-      "page": "desktop"
-    },
-    {
-      "file": "ItemDetailDesktop.dc.html",
-      "x": 0,
-      "y": 1975,
-      "w": 1440,
-      "h": 1025,
-      "page": "desktop"
-    },
-    {
-      "file": "AddItemDesktop.dc.html",
-      "x": 1580,
-      "y": 1975,
-      "w": 1440,
-      "h": 795,
-      "page": "desktop"
-    },
-    {
-      "file": "BatchUploadDesktop.dc.html",
-      "x": 3160,
-      "y": 1975,
-      "w": 1440,
-      "h": 575,
-      "page": "desktop"
-    },
-    {
-      "file": "LogOutfitPiecesDesktop.dc.html",
-      "x": 0,
-      "y": 3140,
-      "w": 1440,
-      "h": 580,
-      "title": "Log outfit — pieces",
-      "page": "desktop"
-    },
-    {
-      "file": "LogOutfitContextDesktop.dc.html",
-      "x": 1580,
-      "y": 3140,
-      "w": 1440,
-      "h": 1565,
-      "title": "Log outfit — context",
-      "page": "desktop"
-    },
-    {
-      "file": "LogOutfitSavedDesktop.dc.html",
-      "x": 3160,
-      "y": 3140,
-      "w": 1440,
-      "h": 575,
-      "title": "Log outfit — saved",
-      "page": "desktop"
-    },
-    {
-      "file": "IdeasDesktop.dc.html",
-      "x": 0,
-      "y": 4845,
-      "w": 1440,
-      "h": 1040,
-      "page": "desktop"
-    },
-    {
-      "file": "IdeaDetailDesktop.dc.html",
-      "x": 1580,
-      "y": 4845,
-      "w": 1440,
-      "h": 655,
-      "page": "desktop"
-    },
-    {
-      "file": "ShopSheetDesktop.dc.html",
-      "x": 3160,
-      "y": 4845,
-      "w": 1440,
-      "h": 575,
-      "title": "Shop — check",
-      "page": "desktop"
-    },
-    {
-      "file": "ShopResultDesktop.dc.html",
-      "x": 0,
-      "y": 6025,
-      "w": 1440,
-      "h": 695,
-      "title": "Shop — verdict",
-      "page": "desktop"
-    },
-    {
-      "file": "SuggestBriefDesktop.dc.html",
-      "x": 1580,
-      "y": 6025,
-      "w": 1440,
-      "h": 575,
-      "title": "Suggest — brief",
-      "page": "desktop"
-    },
-    {
-      "file": "SuggestResultDesktop.dc.html",
-      "x": 3160,
-      "y": 6025,
-      "w": 1440,
-      "h": 730,
-      "title": "Suggest — result",
-      "page": "desktop"
-    },
-    {
-      "file": "MeDesktop.dc.html",
-      "x": 0,
-      "y": 6895,
-      "w": 1440,
-      "h": 650,
-      "page": "desktop"
-    },
-    {
-      "file": "StatisticsDesktop.dc.html",
-      "x": 1580,
-      "y": 6895,
-      "w": 1440,
-      "h": 575,
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingSuggestDesktop.dc.html",
-      "x": 3160,
-      "y": 6895,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — Suggest",
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingAddItemDesktop.dc.html",
-      "x": 0,
-      "y": 7685,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — Add item",
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingStyleProfileDesktop.dc.html",
-      "x": 1580,
-      "y": 7685,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — style profile",
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingShopDesktop.dc.html",
-      "x": 3160,
-      "y": 7685,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — Shop",
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingBatchAnalyzingDesktop.dc.html",
-      "x": 0,
-      "y": 8400,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — batch (analyzing)",
-      "page": "desktop"
-    },
-    {
-      "file": "LoadingBatchSavingDesktop.dc.html",
-      "x": 1580,
-      "y": 8400,
-      "w": 1440,
-      "h": 575,
-      "title": "Loading — batch (saving)",
-      "page": "desktop"
-    },
-    {
       "file": "Main.dc.html",
       "x": 0,
       "y": 0,
       "w": 390,
       "h": 1045,
-      "title": "Today",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Today"
     },
     {
       "file": "TodayEmpty.dc.html",
@@ -238,8 +15,8 @@
       "y": 0,
       "w": 390,
       "h": 505,
-      "title": "Today — nothing logged",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Today \u2014 nothing logged"
     },
     {
       "file": "Login.dc.html",
@@ -303,8 +80,8 @@
       "y": 1250,
       "w": 390,
       "h": 935,
-      "title": "Log outfit — pieces",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Log outfit \u2014 pieces"
     },
     {
       "file": "LogOutfitContext.dc.html",
@@ -312,8 +89,8 @@
       "y": 2755,
       "w": 390,
       "h": 965,
-      "title": "Log outfit — context",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Log outfit \u2014 context"
     },
     {
       "file": "LogOutfitSaved.dc.html",
@@ -321,8 +98,8 @@
       "y": 2755,
       "w": 390,
       "h": 580,
-      "title": "Log outfit — saved",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Log outfit \u2014 saved"
     },
     {
       "file": "Ideas.dc.html",
@@ -346,8 +123,8 @@
       "y": 2755,
       "w": 390,
       "h": 890,
-      "title": "Shop — check",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Shop \u2014 check"
     },
     {
       "file": "ShopResult.dc.html",
@@ -355,8 +132,8 @@
       "y": 3910,
       "w": 390,
       "h": 1095,
-      "title": "Shop — verdict",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Shop \u2014 verdict"
     },
     {
       "file": "SuggestBrief.dc.html",
@@ -364,8 +141,8 @@
       "y": 3910,
       "w": 390,
       "h": 735,
-      "title": "Suggest — brief",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Suggest \u2014 brief"
     },
     {
       "file": "SuggestResult.dc.html",
@@ -373,8 +150,8 @@
       "y": 3910,
       "w": 390,
       "h": 1050,
-      "title": "Suggest — result",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Suggest \u2014 result"
     },
     {
       "file": "Me.dc.html",
@@ -389,86 +166,305 @@
       "x": 1920,
       "y": 3910,
       "w": 390,
-      "h": 795,
+      "h": 2295,
       "page": "mobile"
     },
     {
       "file": "LoadingSuggest.dc.html",
       "x": 0,
-      "y": 5135,
+      "y": 6335,
       "w": 390,
       "h": 485,
-      "title": "Loading — Suggest",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 Suggest"
     },
     {
       "file": "LoadingAddItem.dc.html",
       "x": 480,
-      "y": 5135,
+      "y": 6335,
       "w": 390,
       "h": 450,
-      "title": "Loading — Add item",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 Add item"
     },
     {
       "file": "LoadingStyleProfile.dc.html",
       "x": 960,
-      "y": 5135,
+      "y": 6335,
       "w": 390,
       "h": 450,
-      "title": "Loading — style profile",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 style profile"
     },
     {
       "file": "LoadingShop.dc.html",
       "x": 1440,
-      "y": 5135,
+      "y": 6335,
       "w": 390,
       "h": 450,
-      "title": "Loading — Shop",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 Shop"
     },
     {
       "file": "LoadingBatchAnalyzing.dc.html",
       "x": 1920,
-      "y": 5135,
+      "y": 6335,
       "w": 390,
       "h": 390,
-      "title": "Loading — batch (analyzing)",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 batch (analyzing)"
     },
     {
       "file": "LoadingBatchSaving.dc.html",
       "x": 0,
-      "y": 5750,
+      "y": 6950,
       "w": 390,
       "h": 390,
-      "title": "Loading — batch (saving)",
-      "page": "mobile"
+      "page": "mobile",
+      "title": "Loading \u2014 batch (saving)"
+    },
+    {
+      "file": "MainDesktop.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 845,
+      "page": "desktop",
+      "title": "Today"
+    },
+    {
+      "file": "TodayEmptyDesktop.dc.html",
+      "x": 1580,
+      "y": 0,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Today \u2014 nothing logged"
+    },
+    {
+      "file": "LoginDesktop.dc.html",
+      "x": 3160,
+      "y": 0,
+      "w": 1440,
+      "h": 905,
+      "page": "desktop"
+    },
+    {
+      "file": "MonthDesktop.dc.html",
+      "x": 0,
+      "y": 1045,
+      "w": 1440,
+      "h": 790,
+      "page": "desktop"
+    },
+    {
+      "file": "OutfitDetailDesktop.dc.html",
+      "x": 1580,
+      "y": 1045,
+      "w": 1440,
+      "h": 755,
+      "page": "desktop"
+    },
+    {
+      "file": "ClosetDesktop.dc.html",
+      "x": 3160,
+      "y": 1045,
+      "w": 1440,
+      "h": 580,
+      "page": "desktop"
+    },
+    {
+      "file": "ItemDetailDesktop.dc.html",
+      "x": 0,
+      "y": 1975,
+      "w": 1440,
+      "h": 1025,
+      "page": "desktop"
+    },
+    {
+      "file": "AddItemDesktop.dc.html",
+      "x": 1580,
+      "y": 1975,
+      "w": 1440,
+      "h": 795,
+      "page": "desktop"
+    },
+    {
+      "file": "BatchUploadDesktop.dc.html",
+      "x": 3160,
+      "y": 1975,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop"
+    },
+    {
+      "file": "LogOutfitPiecesDesktop.dc.html",
+      "x": 0,
+      "y": 3140,
+      "w": 1440,
+      "h": 580,
+      "page": "desktop",
+      "title": "Log outfit \u2014 pieces"
+    },
+    {
+      "file": "LogOutfitContextDesktop.dc.html",
+      "x": 1580,
+      "y": 3140,
+      "w": 1440,
+      "h": 1565,
+      "page": "desktop",
+      "title": "Log outfit \u2014 context"
+    },
+    {
+      "file": "LogOutfitSavedDesktop.dc.html",
+      "x": 3160,
+      "y": 3140,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Log outfit \u2014 saved"
+    },
+    {
+      "file": "IdeasDesktop.dc.html",
+      "x": 0,
+      "y": 4845,
+      "w": 1440,
+      "h": 1040,
+      "page": "desktop"
+    },
+    {
+      "file": "IdeaDetailDesktop.dc.html",
+      "x": 1580,
+      "y": 4845,
+      "w": 1440,
+      "h": 655,
+      "page": "desktop"
+    },
+    {
+      "file": "ShopSheetDesktop.dc.html",
+      "x": 3160,
+      "y": 4845,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Shop \u2014 check"
+    },
+    {
+      "file": "ShopResultDesktop.dc.html",
+      "x": 0,
+      "y": 6025,
+      "w": 1440,
+      "h": 695,
+      "page": "desktop",
+      "title": "Shop \u2014 verdict"
+    },
+    {
+      "file": "SuggestBriefDesktop.dc.html",
+      "x": 1580,
+      "y": 6025,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Suggest \u2014 brief"
+    },
+    {
+      "file": "SuggestResultDesktop.dc.html",
+      "x": 3160,
+      "y": 6025,
+      "w": 1440,
+      "h": 730,
+      "page": "desktop",
+      "title": "Suggest \u2014 result"
+    },
+    {
+      "file": "MeDesktop.dc.html",
+      "x": 0,
+      "y": 6895,
+      "w": 1440,
+      "h": 650,
+      "page": "desktop"
+    },
+    {
+      "file": "StatisticsDesktop.dc.html",
+      "x": 1580,
+      "y": 6895,
+      "w": 1440,
+      "h": 1875,
+      "page": "desktop"
+    },
+    {
+      "file": "LoadingSuggestDesktop.dc.html",
+      "x": 3160,
+      "y": 6895,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 Suggest"
+    },
+    {
+      "file": "LoadingAddItemDesktop.dc.html",
+      "x": 0,
+      "y": 8910,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 Add item"
+    },
+    {
+      "file": "LoadingStyleProfileDesktop.dc.html",
+      "x": 1580,
+      "y": 8910,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 style profile"
+    },
+    {
+      "file": "LoadingShopDesktop.dc.html",
+      "x": 3160,
+      "y": 8910,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 Shop"
+    },
+    {
+      "file": "LoadingBatchAnalyzingDesktop.dc.html",
+      "x": 0,
+      "y": 9625,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 batch (analyzing)"
+    },
+    {
+      "file": "LoadingBatchSavingDesktop.dc.html",
+      "x": 1580,
+      "y": 9625,
+      "w": 1440,
+      "h": 575,
+      "page": "desktop",
+      "title": "Loading \u2014 batch (saving)"
     }
   ],
   "annotations": [
-    {
-      "id": "desktop-note",
-      "x": 0,
-      "y": -100,
-      "w": 900,
-      "text": "Closet — desktop screens (static, from the live source)",
-      "page": "desktop"
-    },
     {
       "id": "mobile-note",
       "x": 0,
       "y": -100,
       "w": 900,
-      "text": "Closet — mobile screens (static, from the live source)",
+      "text": "Closet \u2014 mobile screens (static, from the live source)",
       "page": "mobile"
+    },
+    {
+      "id": "desktop-note",
+      "x": 0,
+      "y": -100,
+      "w": 900,
+      "text": "Closet \u2014 desktop screens (static, from the live source)",
+      "page": "desktop"
     }
   ],
-  "launch": {
-    "view": "canvas",
-    "page": "mobile"
-  },
   "pages": [
     {
       "id": "mobile",
@@ -478,5 +474,9 @@
       "id": "desktop",
       "name": "Desktop"
     }
-  ]
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "mobile"
+  }
 }

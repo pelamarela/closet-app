@@ -307,30 +307,29 @@ def d_me():
 
 # ── Statistics (desktop) ─────────────────────────────────────────────────────
 def d_statistics():
-    most_worn = [('cocoa','Zara Black Jumper','24&times;'), ('sand','COS Wide Trousers','19&times;'), ('rose','Nike Sneakers','17&times;')]
-    rows = ''.join(f'<div style="display:flex;align-items:center;gap:12px;padding:9px 0"><div style="width:34px;height:42px;flex-shrink:0">{ph(t)}</div>'
-                    f'<div style="flex:1;min-width:0">{body(n, 13.5, T["ink"], "font-weight:500")}</div>{mono(v, 12, T["ink"], "font-weight:700")}</div>' for t, n, v in most_worn)
-    brands = [('COS', 82), ('Zara', 68), ('Toteme', 41), ('Nike', 30)]
-    brand_rows = ''.join(f'<div style="padding:9px 0"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-family:{fS};font-size:13.5px">{b}</span>{mono(str(v), 12, T["ink"], "font-weight:700")}</div>'
-                          f'<div style="height:6px;background:{T["g200"]}"><div style="height:6px;width:{v}%;background:{T["cocoa"]}"></div></div></div>' for b, v in brands)
-    left = card(secH("Most worn", "All") + rows, T['white'], 22, True)
-    right = card(secH("Top brands") + brand_rows, T['white'], 22, True)
-    # Same hierarchy change as the mobile screen: title collapses into the
-    # sticky breadcrumb (Me / Statistics), Monthly moves down to sit right
-    # above the content it filters instead of the top bar.
-    crumb = (
-        f'<div style="height:44px;display:flex;align-items:center;gap:7px;'
-        f'position:sticky;top:0;background:{T["paper"]};z-index:5">'
-        f'{icon("back",20,1.7,T["ink"])}'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g400"]}">Me</span>'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g200"]}">/</span>'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:600;color:{T["ink"]}">Statistics</span>'
-        f'</div>'
+    # Matches the current StatsPage.tsx desktop layout: back link, then
+    # [title —— pills] and [grain dropdown —— period nav] sharing a row each,
+    # then Most/least worn grouped by category (reached-for-most and
+    # left-hanging side by side within each group), brand share, composition.
+    groups = (
+        stat_cat_group('TOPS', [('cocoa', 8), ('sand', 6), ('rose', 5), ('peach', 4), ('ink', 3)], [('paper', 1), ('sand', 1), ('rose', 0), ('cocoa', 0), ('peach', 0)], True, True) +
+        stat_cat_group('SHOES', [('cocoa', 9), ('sand', 4), ('rose', 3)], [('ink', 1), ('paper', 0), ('peach', 0)], False, True) +
+        stat_cat_group('ACCESSORIES', [('peach', 7), ('cocoa', 4), ('sand', 2)], [('rose', 1), ('ink', 0), ('paper', 0)], False, True)
     )
-    content = (crumb
-               + f'<div style="display:flex;gap:8px;margin-top:14px">{pill("Pieces", True, "ink", "sm")}{pill("Outfits", False, "ink", "sm")}{pill("Colour", False, "ink", "sm")}</div>'
-               + f'<div style="margin-top:18px;display:flex;justify-content:flex-end">{mono("Monthly &#9662;", 13)}</div>'
-               + f'<div style="margin-top:10px">{split(left, right)}</div>')
+    brands = [('COS', 24), ('Zara', 18), ('Toteme', 11), ('Nike', 9), ('Uniqlo', 6), ('H&M', 4)]
+    max_brand = brands[0][1]
+    brand_rows = ''.join(stat_brand_bar(n, v, max_brand, BRAND_RAMP[i % len(BRAND_RAMP)], i < 4) for i, (n, v) in enumerate(brands))
+    composition = stat_composition(sorted([('top', 18), ('bottom', 12), ('accessory', 9), ('shoes', 8), ('outerwear', 6), ('one-piece', 3)], key=lambda x: -x[1]))
+    pills = f'<div style="display:flex;gap:8px">{pill("Pieces", True, "ink", "sm")}{pill("Outfits", False, "ink", "sm")}{pill("Colour", False, "ink", "sm")}</div>'
+    most_least_card = card(disp("Most and least worn", 20) + f'<div style="margin-top:20px">{groups}</div>', T['white'], 22, True)
+    brands_card = card(disp("Labels you trust", 20) + body("Counted by pieces worn, not pieces owned.", 13.5, None, "margin-top:5px;margin-bottom:16px") + brand_rows, T['white'], 22, True)
+    composition_card = card(disp("What the closet is made of", 20) + composition, T['white'], 22, True)
+    content = (v4bar('Me', True)
+               + f'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px">{disp("Statistics", 29)}{pills}</div>'
+               + f'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px">{stat_dropdown("Monthly")}{stat_period_nav("this month", True)}</div>'
+               + f'<div style="margin-top:24px">{most_least_card}</div>'
+               + f'<div style="margin-top:24px">{brands_card}</div>'
+               + f'<div style="margin-top:24px">{composition_card}</div>')
     return desktop_shell(content, 'chart', h=980)
 
 # ── Today empty / Log saved (desktop, single column) ────────────────────────

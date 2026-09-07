@@ -462,38 +462,29 @@ def screen_me():
 
 # ── 19. Statistics ───────────────────────────────────────────────────────
 def screen_statistics():
-    most_worn = [('cocoa','Zara Black Jumper','24&times;'), ('sand','COS Wide Trousers','19&times;'), ('rose','Nike Sneakers','17&times;')]
-    rows = ''.join(
-        f'<div style="display:flex;align-items:center;gap:12px;padding:9px 0">'
-        f'<div style="width:34px;height:42px;flex-shrink:0">{ph(t)}</div>'
-        f'<div style="flex:1;min-width:0">{body(n, 13.5, T["ink"], "font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis")}</div>{mono(v, 12, T["ink"], "font-weight:700")}</div>'
-        for t, n, v in most_worn
+    # Matches the current StatsPage.tsx (Pieces tab, default "this month" view):
+    # most/least worn grouped by category with a separator before every group,
+    # a brand-share section, and a closet-composition bar — a representative
+    # sample of categories rather than every one, to keep the mockup honest
+    # without padding it with repetition.
+    groups = (
+        stat_cat_group('TOPS', [('cocoa', 8), ('sand', 6), ('rose', 5), ('peach', 4), ('ink', 3)], [('paper', 1), ('sand', 1), ('rose', 0), ('cocoa', 0), ('peach', 0)], True) +
+        stat_cat_group('SHOES', [('cocoa', 9), ('sand', 4), ('rose', 3)], [('ink', 1), ('paper', 0), ('peach', 0)], False) +
+        stat_cat_group('ACCESSORIES', [('peach', 7), ('cocoa', 4), ('sand', 2)], [('rose', 1), ('ink', 0), ('paper', 0)], False)
     )
-    brands = [('COS', 82), ('Zara', 68), ('Toteme', 41), ('Nike', 30)]
-    brand_rows = ''.join(
-        f'<div style="padding:9px 0"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-family:{fS};font-size:13.5px">{b}</span>{mono(str(v), 12, T["ink"], "font-weight:700")}</div>'
-        f'<div style="height:6px;background:{T["g200"]}"><div style="height:6px;width:{v}%;background:{T["cocoa"]}"></div></div></div>'
-        for b, v in brands
-    )
-    # Hierarchy change: the page title collapses into the sticky breadcrumb
-    # (Me / Statistics) instead of a separate large heading, and the Monthly
-    # grain-selector moves down to sit directly above the content it filters
-    # instead of tucked into the top bar.
-    crumb = (
-        f'<div style="height:44px;padding:0 22px;display:flex;align-items:center;gap:7px;'
-        f'position:sticky;top:0;background:{T["paper"]};z-index:5">'
-        f'{icon("back",20,1.7,T["ink"])}'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g400"]}">Me</span>'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:500;color:{T["g200"]}">/</span>'
-        f'<span style="font-family:{fS};font-size:14px;font-weight:600;color:{T["ink"]}">Statistics</span>'
-        f'</div>'
-    )
+    brands = [('COS', 24), ('Zara', 18), ('Toteme', 11), ('Nike', 9), ('Uniqlo', 6), ('H&M', 4)]
+    max_brand = brands[0][1]
+    brand_rows = ''.join(stat_brand_bar(n, v, max_brand, BRAND_RAMP[i % len(BRAND_RAMP)], i < 4) for i, (n, v) in enumerate(brands))
+    composition = stat_composition(sorted([('top', 18), ('bottom', 12), ('accessory', 9), ('shoes', 8), ('outerwear', 6), ('one-piece', 3)], key=lambda x: -x[1]))
+    pills_full = ''.join(f'<div style="flex:1">{pill(t, on, "ink", "sm", None, True)}</div>' for t, on in [('Pieces', True), ('Outfits', False), ('Colour', False)])
     content = (
-        crumb +
-        f'<div style="display:flex;gap:8px;padding:14px 22px 0">{pill("Pieces", True, "ink", "sm")}{pill("Outfits", False, "ink", "sm")}{pill("Colour", False, "ink", "sm")}</div>'
-        f'<div style="padding:18px 22px 0;display:flex;justify-content:flex-end">{mono("Monthly &#9662;", 13)}</div>'
-        f'<div style="padding:10px 22px 0">{secH("Most worn", "All")}{rows}</div>'
-        f'<div style="padding:22px 22px 0">{secH("Top brands")}{brand_rows}</div>'
+        v4bar('Me', True) +
+        f'<div style="padding:8px 22px 0">{disp("Statistics", 29)}</div>'
+        f'<div style="display:flex;gap:8px;padding:14px 22px 0">{pills_full}</div>'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 22px 0">{stat_dropdown("Monthly")}{stat_period_nav("this month", False)}</div>'
+        f'<div style="padding:24px 22px 0">{disp("Most and least worn", 20)}<div style="margin-top:20px">{groups}</div></div>'
+        f'<div style="padding:32px 22px 0">{disp("Labels you trust", 20)}{body("Counted by pieces worn, not pieces owned.", 13.5, None, "margin-top:5px;margin-bottom:16px")}{brand_rows}</div>'
+        f'<div style="padding:32px 22px 0">{disp("What the closet is made of", 20)}{composition}</div>'
     )
     return shell('Statistics', content, 'user')
 

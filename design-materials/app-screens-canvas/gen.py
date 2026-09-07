@@ -37,6 +37,7 @@ ICONS = {
     'bookmark': 'M6.5 4.5h11v15l-5.5-3.8-5.5 3.8z',
     'trash': 'M5 7.5h14M9.5 7.5V5.3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V7.5M7 7.5 7.8 19a1.4 1.4 0 0 0 1.4 1.3h5.6A1.4 1.4 0 0 0 16.2 19l.8-11.5M10.2 11v6M13.8 11v6',
     'bag': 'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0',
+    'caret': 'M5.5 9 12 15.5 18.5 9',
 }
 
 def img(src, w=None, h=None, extra=''):
@@ -149,6 +150,71 @@ def secH(title, right=None):
     r = f'<button style="background:none;border:none;padding:0;cursor:pointer;font-family:{fS};font-size:13px;color:{T["cocoa"]};display:flex;align-items:center;gap:3px">{right}{icon("next",14,2,T["cocoa"])}</button>' if right else ''
     return (f'<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">'
             f'<div style="font-family:{fS};font-size:14.5px;font-weight:500;color:{T["ink"]}">{title}</div>{r}</div>')
+
+# ── Statistics page (StatsPage.tsx) — shared mobile/desktop helpers ───────
+BRAND_RAMP = [T['cocoaDeep'], T['cocoa'], T['cocoaSoft'], '#A47A61', T['roseDeep'], T['rose'], '#E5C3B6', '#EFD8C9']
+
+def stat_dropdown(grain='Monthly', size_sm=True):
+    fs = 13 if size_sm else 14
+    return (f'<div style="display:inline-flex;align-items:center;gap:5px;font-family:{fS};font-size:{fs}px;'
+            f'font-weight:600;color:{T["ink"]}">{grain}{icon("caret",16,2.2,T["ink"])}</div>')
+
+def stat_period_nav(label='this month', desktop=False):
+    sz, isz, gap, minw, fs = (26, 16, 10, 110, 12) if desktop else (22, 14, 4, 82, 11)
+    btn = lambda name, disabled: (f'<div style="width:{sz}px;height:{sz}px;display:flex;align-items:center;'
+                                   f'justify-content:center;{"opacity:.35" if disabled else ""}">{icon(name,isz,1.7,T["ink"])}</div>')
+    return (f'<div style="display:flex;align-items:center;gap:{gap}px">{btn("back",False)}'
+            f'<span style="font-family:{fM};font-size:{fs}px;color:{T["g500"]};min-width:{minw}px;text-align:center">{label}</span>'
+            f'{btn("next",True)}</div>')
+
+def stat_tile(tone, count, desktop=False):
+    # Desktop mirrors the real CSS grid's minmax(76px,108px) track — capping
+    # width keeps a sparse row (1-2 items) from stretching into an oversized
+    # tile, since height derives from width via aspect-ratio.
+    grow = 'flex:0 0 108px' if desktop else 'flex:1;min-width:0'
+    return (f'<div style="{grow}">'
+            f'<div style="width:100%;aspect-ratio:3/4;overflow:hidden;background:{T["g200"]}">{ph(tone)}</div>'
+            f'<div style="text-align:center;margin-top:6px">{mono(str(count)+"&times;", 11, T["ink"], "font-weight:700")}</div></div>')
+
+def stat_most_least(most, least, desktop=False):
+    row = 'display:flex;gap:7px;flex-wrap:wrap' if desktop else 'display:flex;gap:7px'
+    blocks = []
+    if most:
+        tiles = ''.join(stat_tile(t, c, desktop) for t, c in most)
+        blocks.append(f'<div style="{"flex:1;min-width:0" if desktop else ""}">'
+                       f'<div style="font-family:{fS};font-size:13.5px;font-weight:600;margin-bottom:10px">Reached for most</div>'
+                       f'<div style="{row}">{tiles}</div></div>')
+    if least:
+        tiles = ''.join(stat_tile(t, c, desktop) for t, c in least)
+        blocks.append(f'<div style="{"flex:1;min-width:0" if desktop else "margin-top:16px"}">'
+                       f'<div style="font-family:{fS};font-size:13.5px;font-weight:600;margin-bottom:10px">Left hanging</div>'
+                       f'<div style="{row};opacity:.8">{tiles}</div></div>')
+    wrap = 'display:flex;gap:40px' if desktop else ''
+    return f'<div style="{wrap}">{"".join(blocks)}</div>'
+
+def stat_cat_group(label, most, least, first, desktop=False):
+    outer = '' if first else f'margin-top:30px;padding-top:20px;border-top:1px solid {T["line"]}'
+    return (f'<div style="{outer}">{mono(label, 11, T["g500"], "display:block;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em")}'
+            f'{stat_most_least(most, least, desktop)}</div>')
+
+def stat_brand_bar(name, v, max_v, tone, light_text):
+    color = '#fff' if light_text else T['ink']
+    return (f'<div style="display:flex;align-items:center;gap:12px;margin-bottom:7px">'
+            f'<div style="width:110px;flex-shrink:0;font-family:{fS};font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{name}</div>'
+            f'<div style="flex:1;height:24px;background:#EFEDEA"><div style="width:{v/max_v*100:.0f}%;height:24px;background:{tone};'
+            f'display:flex;align-items:center;justify-content:flex-end;padding-right:8px">{mono(str(v), 11, color, "font-weight:700")}</div></div></div>')
+
+def stat_composition(cats):
+    total = sum(v for _, v in cats)
+    bars = ''.join(f'<div style="flex:{v};background:{BRAND_RAMP[i % len(BRAND_RAMP)]}"></div>' for i, (_, v) in enumerate(cats))
+    legend = ''.join(
+        f'<div style="display:flex;align-items:center;gap:6px"><div style="width:9px;height:9px;background:{BRAND_RAMP[i % len(BRAND_RAMP)]}"></div>'
+        f'<span style="font-family:{fS};font-size:12.5px;text-transform:capitalize">{cat}</span>{mono(str(v), 11)}</div>'
+        for i, (cat, v) in enumerate(cats)
+    )
+    return (f'<div style="display:flex;height:14px;margin-top:14px">{bars}</div>'
+            f'<div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px">{legend}</div>'
+            f'{mono(f"{total} pieces total", 10, None, "display:block;margin-top:6px")}')
 
 # ── App shell ────────────────────────────────────────────────────────────
 FRAME_W = 390

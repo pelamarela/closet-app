@@ -14,7 +14,7 @@ MOBILE = [
     ('Closet', None, 755), ('ItemDetail', None, 1375), ('AddItem', None, 1240), ('BatchUpload', None, 830), ('LogOutfitPieces', 'Log outfit — pieces', 935),
     ('LogOutfitContext', 'Log outfit — context', 965), ('LogOutfitSaved', 'Log outfit — saved', 580), ('Ideas', None, 940), ('IdeaDetail', None, 1025),
     ('ShopSheet', 'Shop — check', 890), ('ShopResult', 'Shop — verdict', 1095), ('SuggestBrief', 'Suggest — brief', 735), ('SuggestResult', 'Suggest — result', 1050),
-    ('Me', None, 940), ('Statistics', None, 795),
+    ('Me', None, 940), ('Statistics', None, 2295),
     ('LoadingSuggest', 'Loading — Suggest', 485), ('LoadingAddItem', 'Loading — Add item', 450), ('LoadingStyleProfile', 'Loading — style profile', 450),
     ('LoadingShop', 'Loading — Shop', 450), ('LoadingBatchAnalyzing', 'Loading — batch (analyzing)', 390), ('LoadingBatchSaving', 'Loading — batch (saving)', 390),
 ]
@@ -27,7 +27,7 @@ DESKTOP = [
     ('LogOutfitSavedDesktop', 'Log outfit — saved', 575), ('IdeasDesktop', None, 1040), ('IdeaDetailDesktop', None, 655),
     ('ShopSheetDesktop', 'Shop — check', 575), ('ShopResultDesktop', 'Shop — verdict', 695),
     ('SuggestBriefDesktop', 'Suggest — brief', 575), ('SuggestResultDesktop', 'Suggest — result', 730),
-    ('MeDesktop', None, 650), ('StatisticsDesktop', None, 575),
+    ('MeDesktop', None, 650), ('StatisticsDesktop', None, 1875),
     ('LoadingSuggestDesktop', 'Loading — Suggest', 575), ('LoadingAddItemDesktop', 'Loading — Add item', 575),
     ('LoadingStyleProfileDesktop', 'Loading — style profile', 575), ('LoadingShopDesktop', 'Loading — Shop', 575),
     ('LoadingBatchAnalyzingDesktop', 'Loading — batch (analyzing)', 575), ('LoadingBatchSavingDesktop', 'Loading — batch (saving)', 575),
