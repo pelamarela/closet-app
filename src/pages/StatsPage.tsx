@@ -154,25 +154,21 @@ export default function StatsPage() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 22px 0' }}>
         <Disp s={29}>Statistics</Disp>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          {PeriodNav}
-          {PillsRow}
-        </div>
+        {PillsRow}
       </div>
-      <div style={{ padding: '10px 22px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '10px 22px 0' }}>
         <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+        {PeriodNav}
       </div>
     </div>
   ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} />
       <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 22px 0' }}>
-        {PillsRow}
-        {PeriodNav}
-      </div>
-      <div style={{ padding: '12px 22px 0' }}>
+      <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0' }}>{PillsRow}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, padding: '12px 22px 0' }}>
         <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+        {PeriodNav}
       </div>
     </div>
   )
