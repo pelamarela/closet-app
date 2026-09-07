@@ -129,7 +129,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
   const catList = Object.entries(catCounts).sort((a, b) => b[1] - a[1])
 
   const Row = ({ item }: { item: ItemWithSignedUrl }) => (
-    <button onClick={() => navigate(`/wardrobe/${item.id}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
+    <button onClick={() => navigate(`/wardrobe/${item.id}`)} style={{ flex: isDesktop ? '0 0 84px' : 1, width: isDesktop ? 84 : undefined, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
       <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
         {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
       </div>
@@ -146,8 +146,8 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
           <div style={{ marginTop: 20 }}>
             <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Main pieces</Mono>
             {mainCatGroups.map((g, ci) => {
-              const most = mostWorn(g.list, 4)
-              const least = leastWorn(g.list, 4)
+              const most = mostWorn(g.list)
+              const least = leastWorn(g.list)
               if (most.length === 0 && least.length === 0) return null
               return (
                 <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 22 }}>
