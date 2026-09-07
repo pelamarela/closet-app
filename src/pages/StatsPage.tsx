@@ -5,7 +5,7 @@ import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../lib/outfitTitle'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Bar, Pill, Dropdown, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
+import { T, fS, V4Bar, V4Icon, Pill, Dropdown, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
 import Collage from '../design/Collage'
 
 // Groups a section in its own white card on desktop, matching the Today
@@ -35,24 +35,51 @@ function mondayOf(d: Date) {
   return m
 }
 
-// Scopes outfits to the current week/month/year for the grain selector —
-// "current", not a trailing window, since the Colour tab shows a single
-// snapshot rather than a trend over time.
-function filterByGrain(outfits: OutfitWithItems[], grain: Grain): OutfitWithItems[] {
-  const now = new Date()
+// Start/end of the week/month/year `offset` periods back from `now`
+// (offset 0 = the current period). Powers both the grain filtering and the
+// prev/next period navigation.
+function periodBounds(grain: Grain, offset: number, now: Date): { start: Date; end: Date } {
   if (grain === 'Weekly') {
-    const start = mondayOf(now)
-    const s = start.toISOString().slice(0, 10)
+    const start = mondayOf(now); start.setDate(start.getDate() - offset * 7)
     const end = new Date(start); end.setDate(start.getDate() + 6)
-    const e = end.toISOString().slice(0, 10)
-    return outfits.filter(o => o.date_worn >= s && o.date_worn <= e)
+    return { start, end }
   }
   if (grain === 'Yearly') {
-    const y = String(now.getFullYear())
-    return outfits.filter(o => o.date_worn.startsWith(y))
+    const y = now.getFullYear() - offset
+    return { start: new Date(y, 0, 1), end: new Date(y, 11, 31) }
   }
-  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  return outfits.filter(o => o.date_worn.startsWith(prefix))
+  const start = new Date(now.getFullYear(), now.getMonth() - offset, 1)
+  const end = new Date(start.getFullYear(), start.getMonth() + 1, 0)
+  return { start, end }
+}
+
+function periodLabelStr(grain: Grain, offset: number, start: Date, end: Date): string {
+  if (offset === 0) return grain === 'Weekly' ? 'this week' : grain === 'Yearly' ? 'this year' : 'this month'
+  if (grain === 'Weekly') return `${start.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`
+  if (grain === 'Yearly') return String(start.getFullYear())
+  return start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
+
+// How many periods back from `now` the earliest logged outfit falls —
+// caps how far the prev-period arrow can go.
+function computeMaxOffset(grain: Grain, earliest: string, now: Date): number {
+  const earliestDate = new Date(earliest + 'T00:00:00')
+  if (grain === 'Weekly') {
+    const startNow = mondayOf(now)
+    const startEarliest = mondayOf(earliestDate)
+    return Math.max(0, Math.round((startNow.getTime() - startEarliest.getTime()) / (7 * 86400000)))
+  }
+  if (grain === 'Yearly') return Math.max(0, now.getFullYear() - earliestDate.getFullYear())
+  return Math.max(0, (now.getFullYear() - earliestDate.getFullYear()) * 12 + (now.getMonth() - earliestDate.getMonth()))
+}
+
+// Scopes outfits to a single week/month/year, `offset` periods back from now
+// (offset 0 = current) — a snapshot, not a trailing window.
+function filterByGrain(outfits: OutfitWithItems[], grain: Grain, offset: number): OutfitWithItems[] {
+  const { start, end } = periodBounds(grain, offset, new Date())
+  const s = start.toISOString().slice(0, 10)
+  const e = end.toISOString().slice(0, 10)
+  return outfits.filter(o => o.date_worn >= s && o.date_worn <= e)
 }
 
 export default function StatsPage() {
@@ -61,10 +88,18 @@ export default function StatsPage() {
   const { outfits } = useOutfits()
   const { isDesktop } = useBreakpoint()
   const [tab, setTab] = useState<Tab>('pieces')
-  const [grain, setGrain] = useState<Grain>('Monthly')
+  const [grain, setGrainRaw] = useState<Grain>('Monthly')
+  const [offset, setOffset] = useState(0)
+  const setGrain = (g: Grain) => { setGrainRaw(g); setOffset(0) }
+
+  const now = new Date()
+  const { start: periodStart, end: periodEnd } = periodBounds(grain, offset, now)
+  const periodStr = periodLabelStr(grain, offset, periodStart, periodEnd)
+  const earliestDate = outfits.length ? outfits.reduce((min, o) => o.date_worn < min ? o.date_worn : min, outfits[0].date_worn) : ''
+  const maxOffset = earliestDate ? computeMaxOffset(grain, earliestDate, now) : 0
 
   const itemById = useMemo(() => new Map(items.map(i => [i.id, i])), [items])
-  const piecesScoped = useMemo(() => filterByGrain(outfits, grain), [outfits, grain])
+  const piecesScoped = useMemo(() => filterByGrain(outfits, grain, offset), [outfits, grain, offset])
   const wearCount = useMemo(() => {
     const map: Record<string, number> = {}
     for (const o of piecesScoped) for (const id of o.item_ids) map[id] = (map[id] ?? 0) + 1
@@ -94,24 +129,34 @@ export default function StatsPage() {
         <Pill on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill>
         <Pill on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '12px 22px 0' }}>
+        <button onClick={() => setOffset(o => Math.min(o + 1, maxOffset))} disabled={offset >= maxOffset} style={{
+          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+          border: 'none', padding: 0, cursor: offset >= maxOffset ? 'not-allowed' : 'pointer', opacity: offset >= maxOffset ? .35 : 1,
+        }}><V4Icon n="back" s={17} w={1.7} /></button>
+        <Mono s={12} c={T.g500} style={{ minWidth: 130, textAlign: 'center' }}>{periodStr}</Mono>
+        <button onClick={() => setOffset(o => Math.max(o - 1, 0))} disabled={offset === 0} style={{
+          width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none',
+          border: 'none', padding: 0, cursor: offset === 0 ? 'not-allowed' : 'pointer', opacity: offset === 0 ? .35 : 1,
+        }}><V4Icon n="next" s={17} w={1.7} /></button>
+      </div>
     </div>
   )
 
   return (
     <div style={{ paddingBottom: 40 }}>
       {Head}
-      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} grain={grain} navigate={navigate} isDesktop={isDesktop} />}
-      {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} collageItems={collageItems} navigate={navigate} isDesktop={isDesktop} />}
-      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} isDesktop={isDesktop} />}
+      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} periodStr={periodStr} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} offset={offset} periodEnd={periodEnd} collageItems={collageItems} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} offset={offset} periodStr={periodStr} isDesktop={isDesktop} />}
     </div>
   )
 }
 
 // ── Pieces ──────────────────────────────────────────────────────────────
-function PiecesTab({ items, wearCount, grain, navigate, isDesktop }: {
-  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; grain: Grain; navigate: (path: string) => void; isDesktop: boolean
+function PiecesTab({ items, wearCount, periodStr, navigate, isDesktop }: {
+  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; periodStr: string; navigate: (path: string) => void; isDesktop: boolean
 }) {
-  const periodLabel = grain === 'Weekly' ? 'this week' : grain === 'Yearly' ? 'this year' : 'this month'
   const wearable = items.filter(i => i.category !== 'fragrance')
   const accessories = wearable.filter(i => i.category === 'accessory')
   const mostWorn = (list: ItemWithSignedUrl[], n = 5) => [...list].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, n)
@@ -164,7 +209,7 @@ function PiecesTab({ items, wearCount, grain, navigate, isDesktop }: {
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
         <Disp s={20}>Most and least worn</Disp>
-        <Body s={13.5} style={{ marginTop: 5 }}>Wear counts are for {periodLabel}.</Body>
+        <Body s={13.5} style={{ marginTop: 5 }}>Wear counts are for {periodStr}.</Body>
         {mainCatGroups.length > 0 && (
           <div style={{ marginTop: 20 }}>
             {mainCatGroups.map((g, ci) => {
@@ -228,13 +273,16 @@ function PiecesTab({ items, wearCount, grain, navigate, isDesktop }: {
 }
 
 // ── Outfits ─────────────────────────────────────────────────────────────
-function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, isDesktop }: {
+function OutfitsTab({ outfits, items, itemById, grain, offset, periodEnd, collageItems, navigate, isDesktop }: {
   outfits: OutfitWithItems[]; items: ItemWithSignedUrl[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain
+  offset: number; periodEnd: Date
   collageItems: (ids: string[]) => { id: string; name: string; category: string; signedImageUrl: string | null }[]
   navigate: (path: string) => void; isDesktop: boolean
 }) {
+  const scoped = useMemo(() => filterByGrain(outfits, grain, offset), [outfits, grain, offset])
+
   const trend = useMemo(() => {
-    const now = new Date()
+    const now = periodEnd
     if (grain === 'Weekly') {
       return Array.from({ length: 10 }, (_, i) => {
         const start = mondayOf(now); start.setDate(start.getDate() - (9 - i) * 7)
@@ -244,7 +292,7 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, i
       })
     }
     if (grain === 'Yearly') {
-      const years = [...new Set(outfits.map(o => o.date_worn.slice(0, 4)))].sort()
+      const years = [...new Set(outfits.map(o => o.date_worn.slice(0, 4)))].filter(y => Number(y) <= now.getFullYear()).sort()
       return years.map(y => ({ label: y, count: outfits.filter(o => o.date_worn.startsWith(y)).length }))
     }
     return Array.from({ length: 12 }, (_, i) => {
@@ -252,16 +300,16 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, i
       const prefix = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       return { label: d.toLocaleDateString('en-US', { month: 'short' }).toLowerCase(), count: outfits.filter(o => o.date_worn.startsWith(prefix)).length }
     })
-  }, [outfits, grain])
+  }, [outfits, grain, periodEnd])
   const maxTrend = Math.max(...trend.map(t => t.count), 1)
 
   const occCounts: Record<string, number> = {}
-  for (const o of outfits) if (o.occasion) occCounts[o.occasion] = (occCounts[o.occasion] ?? 0) + 1
+  for (const o of scoped) if (o.occasion) occCounts[o.occasion] = (occCounts[o.occasion] ?? 0) + 1
   const occList = Object.entries(occCounts).sort((a, b) => b[1] - a[1]).slice(0, 6)
   const maxOcc = occList[0]?.[1] ?? 1
 
-  const weekday = outfits.filter(o => { const d = new Date(o.date_worn + 'T00:00:00').getDay(); return d >= 1 && d <= 5 })
-  const weekend = outfits.filter(o => { const d = new Date(o.date_worn + 'T00:00:00').getDay(); return d === 0 || d === 6 })
+  const weekday = scoped.filter(o => { const d = new Date(o.date_worn + 'T00:00:00').getDay(); return d >= 1 && d <= 5 })
+  const weekend = scoped.filter(o => { const d = new Date(o.date_worn + 'T00:00:00').getDay(); return d === 0 || d === 6 })
   const avgPieces = (list: OutfitWithItems[]) => list.length ? Math.round((list.reduce((s, o) => s + o.item_ids.length, 0) / list.length) * 10) / 10 : 0
   const topOcc = (list: OutfitWithItems[]) => {
     const c: Record<string, number> = {}
@@ -271,7 +319,7 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, i
 
   const combos = useMemo(() => {
     const map = new Map<string, { item_ids: string[]; count: number; outfitId: string }>()
-    for (const o of outfits) {
+    for (const o of scoped) {
       const coreIds = o.item_ids.filter(id => CORE_CATEGORIES.has(itemById.get(id)?.category ?? ''))
       const key = (coreIds.length ? coreIds : o.item_ids).slice().sort().join(',')
       const existing = map.get(key)
@@ -279,7 +327,7 @@ function OutfitsTab({ outfits, items, itemById, grain, collageItems, navigate, i
       else map.set(key, { item_ids: o.item_ids, count: 1, outfitId: o.id })
     }
     return [...map.values()].filter(c => c.count > 1).sort((a, b) => b.count - a.count).slice(0, 5)
-  }, [outfits, itemById])
+  }, [scoped, itemById])
 
   return (
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
@@ -348,8 +396,10 @@ function outfitBuckets(o: OutfitWithItems, itemById: Map<string, ItemWithSignedU
 }
 
 // ── Colour ──────────────────────────────────────────────────────────────
-function ColourTab({ outfits, itemById, grain, isDesktop }: { outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain; isDesktop: boolean }) {
-  const scoped = useMemo(() => filterByGrain(outfits, grain), [outfits, grain])
+function ColourTab({ outfits, itemById, grain, offset, periodStr, isDesktop }: {
+  outfits: OutfitWithItems[]; itemById: Map<string, ItemWithSignedUrl>; grain: Grain; offset: number; periodStr: string; isDesktop: boolean
+}) {
+  const scoped = useMemo(() => filterByGrain(outfits, grain, offset), [outfits, grain, offset])
 
   const palettes = useMemo(() => {
     const map = new Map<string, { buckets: ColorBucket[]; count: number }>()
@@ -382,10 +432,8 @@ function ColourTab({ outfits, itemById, grain, isDesktop }: { outfits: OutfitWit
   const bucketByKey = new Map<string, ColorBucket>()
   scoped.forEach(o => outfitBuckets(o, itemById).forEach(b => bucketByKey.set(b.key, b)))
 
-  const periodLabel = grain === 'Weekly' ? 'this week' : grain === 'Yearly' ? 'this year' : 'this month'
-
   if (palettes.length === 0) {
-    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>No outfits with colours logged {periodLabel}.</Body></div>
+    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>No outfits with colours logged {periodStr}.</Body></div>
   }
 
   return (
