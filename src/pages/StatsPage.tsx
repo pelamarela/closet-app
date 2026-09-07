@@ -64,11 +64,12 @@ export default function StatsPage() {
   const [grain, setGrain] = useState<Grain>('Monthly')
 
   const itemById = useMemo(() => new Map(items.map(i => [i.id, i])), [items])
+  const piecesScoped = useMemo(() => filterByGrain(outfits, grain), [outfits, grain])
   const wearCount = useMemo(() => {
     const map: Record<string, number> = {}
-    for (const o of outfits) for (const id of o.item_ids) map[id] = (map[id] ?? 0) + 1
+    for (const o of piecesScoped) for (const id of o.item_ids) map[id] = (map[id] ?? 0) + 1
     return map
-  }, [outfits])
+  }, [piecesScoped])
 
   const collageItems = (itemIds: string[]) => itemIds
     .map(id => itemById.get(id))
@@ -99,7 +100,7 @@ export default function StatsPage() {
   return (
     <div style={{ paddingBottom: 40 }}>
       {Head}
-      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} navigate={navigate} isDesktop={isDesktop} />}
+      {tab === 'pieces' && <PiecesTab items={items} wearCount={wearCount} grain={grain} navigate={navigate} isDesktop={isDesktop} />}
       {tab === 'outfits' && <OutfitsTab outfits={outfits} items={items} itemById={itemById} grain={grain} collageItems={collageItems} navigate={navigate} isDesktop={isDesktop} />}
       {tab === 'colour' && <ColourTab outfits={outfits} itemById={itemById} grain={grain} isDesktop={isDesktop} />}
     </div>
@@ -107,9 +108,10 @@ export default function StatsPage() {
 }
 
 // ── Pieces ──────────────────────────────────────────────────────────────
-function PiecesTab({ items, wearCount, navigate, isDesktop }: {
-  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; navigate: (path: string) => void; isDesktop: boolean
+function PiecesTab({ items, wearCount, grain, navigate, isDesktop }: {
+  items: ItemWithSignedUrl[]; wearCount: Record<string, number>; grain: Grain; navigate: (path: string) => void; isDesktop: boolean
 }) {
+  const periodLabel = grain === 'Weekly' ? 'this week' : grain === 'Yearly' ? 'this year' : 'this month'
   const wearable = items.filter(i => i.category !== 'fragrance')
   const accessories = wearable.filter(i => i.category === 'accessory')
   const mostWorn = (list: ItemWithSignedUrl[], n = 5) => [...list].filter(i => (wearCount[i.id] ?? 0) > 0).sort((a, b) => (wearCount[b.id] ?? 0) - (wearCount[a.id] ?? 0)).slice(0, n)
@@ -162,6 +164,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
         <Disp s={20}>Most and least worn</Disp>
+        <Body s={13.5} style={{ marginTop: 5 }}>Wear counts are for {periodLabel}.</Body>
         {mainCatGroups.length > 0 && (
           <div style={{ marginTop: 20 }}>
             {mainCatGroups.map((g, ci) => {
@@ -170,7 +173,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
               if (most.length === 0 && least.length === 0) return null
               return (
                 <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 22 }}>
-                  <div style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600, color: T.g500, marginBottom: 8 }}>{g.label}</div>
+                  <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.label}</Mono>
                   <MostLeast most={most} least={least} />
                 </div>
               )
