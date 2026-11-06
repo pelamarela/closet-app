@@ -141,10 +141,11 @@ function Cell({ tile, square }: { tile: Tile; square: boolean }) {
  * `square`: force every tile to 1:1 (photos are cropped) instead of keeping their own shape.
  * `maxSmall`: most small tiles to show; extra ones become a "+n" tile (use 4 on small cards).
  * `portrait`: lay it out taller than wide (fewer columns), for the big collage on detail pages.
+ * `maxHeight`: a CSS length (e.g. 'calc(100svh - 200px)'); the collage narrows so it never gets taller than that.
  * `height`: render at exactly this many px tall; the width follows from the layout, so a row of collages lines up top and bottom.
  */
-export default function Collage({ items, thumb = false, square = false, maxSmall = 6, height, portrait = false }: {
-  items: CollageItem[]; thumb?: boolean; square?: boolean; maxSmall?: number; height?: number; portrait?: boolean
+export default function Collage({ items, thumb = false, square = false, maxSmall = 6, height, portrait = false, maxHeight }: {
+  items: CollageItem[]; thumb?: boolean; square?: boolean; maxSmall?: number; height?: number; portrait?: boolean; maxHeight?: string
 }) {
   const ars = useAspects(items.map(i => i.signedImageUrl))
   const tiles = useMemo<Tile[]>(() => items.map((item, i) => ({ item, ar: square ? 1 : Math.min(Math.max(ars[i], 0.5), 2) })), [items, ars, square])
@@ -167,7 +168,7 @@ export default function Collage({ items, thumb = false, square = false, maxSmall
   // for a fixed height, the width that makes every column end exactly there
   const fixedW = height != null ? Math.round(height * D + (cols.length - 1) * G - C) : null
   return (
-    <div style={{ containerType: 'inline-size', ...(fixedW != null ? { width: fixedW, flexShrink: 0 } : { width: '100%', minWidth: 0, maxWidth: '100%' }) }}>
+    <div style={{ containerType: 'inline-size', ...(fixedW != null ? { width: fixedW, flexShrink: 0 } : { width: '100%', minWidth: 0, maxWidth: maxHeight ? `min(100%, calc(${D} * (${maxHeight}) + ${(cols.length - 1) * G - C}px))` : '100%' }) }}>
       <div style={{ display: 'flex', gap: G, alignItems: 'flex-start' }}>
         {cols.map((c, ci) => (
           <div key={ci} style={{ flex: 'none', width: `calc((${H} - ${d[ci].b}px) / ${d[ci].a})`, display: 'flex', flexDirection: 'column', gap: G }}>

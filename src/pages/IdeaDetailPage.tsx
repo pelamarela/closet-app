@@ -73,7 +73,7 @@ export default function IdeaDetailPage() {
   const savedLabel = new Date(idea.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
 
   const PhotoBlock = (
-    <div style={{ width: '100%' }}><Collage items={collageItems} portrait /></div>
+    <div style={{ width: '100%' }}><Collage items={collageItems} portrait maxHeight={isDesktop ? 'calc(100svh - var(--v3-header-h) - 190px)' : undefined} /></div>
   )
 
   const InfoBlock = (

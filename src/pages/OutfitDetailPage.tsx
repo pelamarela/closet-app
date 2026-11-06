@@ -110,7 +110,7 @@ export default function OutfitDetailPage() {
   // if there is one, the real photo underneath it — never one instead of the other.
   const CollageBlock = (
     <div style={{ width: '100%', position: 'relative' }}>
-      <Collage items={collageItems} portrait />
+      <Collage items={collageItems} portrait maxHeight={isDesktop ? 'calc(100svh - var(--v3-header-h) - 190px)' : undefined} />
     </div>
   )
   const PhotoBlock = outfitImageUrl ? (
