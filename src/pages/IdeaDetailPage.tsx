@@ -1,3 +1,4 @@
+import { SafeImg } from '../design/SafeImg'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -54,10 +55,10 @@ export default function IdeaDetailPage() {
   }, [id, user])
 
   const handleDelete = async () => {
-    if (!id || !confirm('Delete this idea?')) return
+    if (!id || !confirm('delete this idea?')) return
     setDeleting(true); setDeleteError(null)
     try { await deleteIdea(id); navigate('/ideas') }
-    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'Delete failed') }
+    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'delete failed') }
   }
   const handleLog = () => navigate('/outfits/new', { state: { preselectedIds: items.map(i => i.id), occasion: idea?.occasion ?? '' } })
 
@@ -65,21 +66,21 @@ export default function IdeaDetailPage() {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
   if (!idea) {
-    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>Not found.</div>
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>not found.</div>
   }
 
   const collageItems = items.map(i => ({ id: i.id, name: i.name, category: i.category, signedImageUrl: i.signedImageUrl }))
   const savedLabel = new Date(idea.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toLowerCase()
 
   const PhotoBlock = (
-    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3' }}><Collage items={collageItems} fill /></div>
+    <div style={{ width: '100%' }}><Collage items={collageItems} /></div>
   )
 
   const InfoBlock = (
     <>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-          {idea.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{idea.occasion}</Mono>}
+          {idea.occasion && <Mono s={11} c={T.cocoa} style={{}}>{idea.occasion}</Mono>}
           <Mono s={11}>saved {savedLabel}{idea.reasoning ? ' · suggested' : ''}</Mono>
         </div>
         <Disp s={25}>{outfitTitle(items.map(i => i.id), items, 'Outfit idea.')}</Disp>
@@ -89,7 +90,7 @@ export default function IdeaDetailPage() {
           <V4Card fill={T.peachSoft} shadow={false} pad={16}>
             {idea.reasoning ? (
               <>
-                <div style={{ fontFamily: fS, fontSize: 12, fontWeight: 600, color: T.cocoa, marginBottom: 5 }}>Why I kept it</div>
+                <div style={{ fontFamily: fS, fontSize: 12, fontWeight: 600, color: T.cocoa, marginBottom: 5 }}>why i kept it</div>
                 <Body s={14} c={T.g700}>{idea.reasoning}</Body>
               </>
             ) : (
@@ -100,11 +101,11 @@ export default function IdeaDetailPage() {
       )}
       {items.length > 0 && (
         <div style={{ marginTop: 22 }}>
-          <SecH right={`${items.length} pieces`}>In this look</SecH>
+          <SecH right={`${items.length} pieces`}>in this look</SecH>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '9px 0', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ width: 36, height: 45, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{item.name}</div>
@@ -115,7 +116,7 @@ export default function IdeaDetailPage() {
         </div>
       )}
       <div style={{ marginTop: 24 }}>
-        <Btn full icon="check" onClick={handleLog}>Wear it today</Btn>
+        <Btn full icon="check" onClick={handleLog}>wear it today</Btn>
       </div>
     </>
   )
@@ -124,7 +125,7 @@ export default function IdeaDetailPage() {
     <div style={{ paddingBottom: 40 }}>
       {deleteError && <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>}
       <V4Bar
-        back title="Ideas" onBack={() => navigate('/ideas')}
+        back title="ideas" onBack={() => navigate('/ideas')}
         right={<>
           <button onClick={() => navigate(`/ideas/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
           <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>

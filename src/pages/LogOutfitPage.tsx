@@ -1,3 +1,5 @@
+import { Confetti } from '../design/fx'
+import { SafeImg } from '../design/SafeImg'
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -8,7 +10,9 @@ import { getOccasionPresets } from '../lib/occasionPresets'
 import { calcStreak } from '../lib/streak'
 import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, SecH, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, ItemTile, Disp, Body, CONTENT_MAX_W } from '../design/kit'
+import { R } from '../design/radii'
+import DateField from '../design/DateField'
 
 // Fragrance isn't a "piece worn on the body" — it gets its own always-visible
 // strip below the grid instead of a filter chip in with clothing/accessories.
@@ -23,7 +27,6 @@ const CATS: { value: string; label: string }[] = [
 ]
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
-function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) }
 
 type Step = 'pieces' | 'context' | 'saved'
 
@@ -93,7 +96,7 @@ export default function LogOutfitPage() {
         setStep('saved')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : 'something went wrong')
     }
     setSaving(false)
   }
@@ -111,8 +114,11 @@ export default function LogOutfitPage() {
       <div style={{ paddingBottom: 40 }}>
         <V4Bar right={<button onClick={() => navigate(savedId ? `/outfits/${savedId}` : '/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
         <div style={{ padding: '30px 34px 0', textAlign: 'center' }}>
-          <img src="/brand/wave-rose.png" alt="" style={{ width: 110, display: 'block', margin: '0 auto 24px' }} />
-          <Disp s={28}>Logged.</Disp>
+          <div style={{ position: 'relative', width: 110, margin: '0 auto 24px' }}>
+            <img src="/brand/wave-rose.png" alt="" style={{ width: 110, display: 'block' }} />
+            <Confetti fire={1} />
+          </div>
+          <Disp s={28}>logged</Disp>
           <Body s={14.5} style={{ marginTop: 10 }}>
             {dayLabel}{occasion ? ` — ${occasion}` : ''}, {selectedIds.size} piece{selectedIds.size === 1 ? '' : 's'}.
             {streak > 1 && ` That's a ${streak}-day streak.`}
@@ -120,12 +126,12 @@ export default function LogOutfitPage() {
           <div style={{ display: 'flex', gap: 9, justifyContent: 'center', marginTop: 22, flexWrap: 'wrap' }}>
             {picked.slice(0, 6).map(item => (
               <div key={item.id} style={{ width: 46, height: 58, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               </div>
             ))}
           </div>
           <div style={{ marginTop: 28 }}>
-            <Btn full onClick={() => navigate('/')}>Back to today</Btn>
+            <Btn full onClick={() => navigate('/')}>back to today</Btn>
           </div>
         </div>
       </div>
@@ -137,7 +143,7 @@ export default function LogOutfitPage() {
     const Grid = itemsLoading ? (
       <Body s={13}>loading…</Body>
     ) : gridItems.length === 0 ? (
-      <Body s={13}>No items here.</Body>
+      <Body s={13}>no items here.</Body>
     ) : (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: 8 }}>
         {gridItems.map(item => (
@@ -163,13 +169,13 @@ export default function LogOutfitPage() {
       return (
         <div style={{ paddingBottom: 40 }}>
           <V4Bar
-            title="Log outfit"
+            title="log outfit"
             right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
           />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 44, alignItems: 'start', padding: '10px 22px 0' }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
-                {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
+                {CATS.map(c => <Pill group="log-cat" key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
               </div>
               {/* Bounded + independently scrollable — with a big wardrobe the
                   grid alone could run to hundreds of tiles, which used to bury
@@ -181,7 +187,7 @@ export default function LogOutfitPage() {
               <div style={{ maxHeight: '54vh', overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
               {fragranceItems.length > 0 && (
                 <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${T.line}`, maxHeight: '24vh', overflowY: 'auto' }}>
-                  <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
+                  <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>fragrance</div>
                   {FragranceTiles}
                 </div>
               )}
@@ -189,17 +195,17 @@ export default function LogOutfitPage() {
             <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600 }}>{pickedWorn.length} piece{pickedWorn.length === 1 ? '' : 's'} on</div>
-                {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
+                {selectedIds.size > 0 && <button onClick={() => setSelectedIds(new Set())} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>clear</button>}
               </div>
               {picked.length === 0 ? (
-                <Body s={13}>Tap pieces to add them here.</Body>
+                <Body s={13}>tap pieces to add them here.</Body>
               ) : (
                 <>
                   {pickedWorn.length > 0 && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                       {pickedWorn.map(item => (
-                        <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
-                          {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                        <div key={item.id} style={{ borderRadius: R.md, position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+                          {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                           <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <V4Icon n="close" s={11} w={2.4} />
                           </button>
@@ -212,8 +218,8 @@ export default function LogOutfitPage() {
                       <div style={{ fontFamily: fS, fontSize: 12, color: T.g400, marginBottom: 8 }}>+ fragrance</div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                         {pickedFragrance.map(item => (
-                          <div key={item.id} style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
-                            {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                          <div key={item.id} style={{ borderRadius: R.md, position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+                            {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                             <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: 5, right: 5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                               <V4Icon n="close" s={11} w={2.4} />
                             </button>
@@ -225,7 +231,7 @@ export default function LogOutfitPage() {
                 </>
               )}
               <div style={{ marginTop: 22 }}>
-                <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
+                <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>next</Btn>
               </div>
             </div>
           </div>
@@ -236,7 +242,7 @@ export default function LogOutfitPage() {
     return (
       <div>
         <V4Bar
-          title="Log outfit"
+          title="log outfit"
           right={<button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>}
         />
         <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, paddingBottom: 8, borderBottom: `1px solid ${T.line}` }}>
@@ -244,19 +250,19 @@ export default function LogOutfitPage() {
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
               {pickedWorn.map(item => (
                 <div key={item.id} style={{ position: 'relative', width: 52, height: 64, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                  {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                  {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                   <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <V4Icon n="close" s={11} w={2.4} />
                   </button>
                 </div>
               ))}
-              <div style={{ width: 52, height: 64, flexShrink: 0, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
+              <div style={{ width: 52, height: 64, flexShrink: 0, borderRadius: 2, border: `1.5px dashed ${T.g200}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></div>
               {pickedFragrance.length > 0 && (
                 <>
                   <div style={{ width: 1, flexShrink: 0, background: T.line, margin: '4px 2px' }} />
                   {pickedFragrance.map(item => (
                     <div key={item.id} style={{ position: 'relative', width: 52, height: 64, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                      {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                      {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                       <button onClick={() => toggleItem(item.id)} style={{ position: 'absolute', top: -5, right: -5, width: 21, height: 21, background: T.paper, boxShadow: `0 0 0 1px ${T.g200}`, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <V4Icon n="close" s={11} w={2.4} />
                       </button>
@@ -267,7 +273,7 @@ export default function LogOutfitPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, padding: '10px 22px 0', overflowX: 'auto' }}>
-            {CATS.map(c => <Pill key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
+            {CATS.map(c => <Pill group="log-cat" key={c.value} on={filterCat === c.value} s="sm" onClick={() => setFilterCat(c.value)}>{c.label}</Pill>)}
           </div>
         </div>
         {/* A fixed pane, not normal page flow — the picked-tray + category
@@ -285,14 +291,14 @@ export default function LogOutfitPage() {
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 4, margin: -4 }}>{Grid}</div>
           {fragranceItems.length > 0 && (
             <div style={{ flexShrink: 0, marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.line}` }}>
-              <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Fragrance</div>
+              <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>fragrance</div>
               {FragranceTiles}
             </div>
           )}
         </div>
-        <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+        <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', borderRadius: 2, background: T.paper, backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
-            <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>Add the details</Btn>
+            <Btn full icon="next" disabled={selectedIds.size === 0} onClick={() => setStep('context')}>next</Btn>
           </div>
         </div>
       </div>
@@ -304,7 +310,7 @@ export default function LogOutfitPage() {
     <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: isDesktop ? undefined : 'auto', flexWrap: isDesktop ? 'wrap' : undefined }}>
       {picked.slice(0, isDesktop ? 12 : 6).map(item => (
         <div key={item.id} style={{ width: 46, height: 58, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-          {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+          {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
         </div>
       ))}
     </div>
@@ -312,28 +318,19 @@ export default function LogOutfitPage() {
 
   const FormFields = (
     <>
-      <div>
-        <SecH>When</SecH>
-        <label style={{ position: 'relative', display: 'inline-block' }}>
-          <Pill on>
-            {date === todayStr() ? 'Today' : date === yesterdayStr() ? 'Yesterday' : new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
-          </Pill>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
-        </label>
-      </div>
+      <DateField value={date} onChange={setDate} />
       <div style={{ marginTop: 22 }}>
-        <SecH>What for</SecH>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {occasionPresets.map(o => <Pill key={o} on={occasion === o} tone="peach" onClick={() => setOccasion(prev => prev === o ? '' : o)}>{o}</Pill>)}
         </div>
         <input
           type="text" value={occasionPresets.includes(occasion) ? '' : occasion} onChange={e => setOccasion(e.target.value)}
-          placeholder="or type your own…"
+          placeholder="other"
           style={{ width: '100%', fontFamily: fS, fontSize: 14, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '10px 0 6px', marginTop: 10 }}
         />
       </div>
       <div style={{ marginTop: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500 }}>How did it feel</span>
+        <span style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500 }}>feel</span>
         <div style={{ display: 'flex', gap: 5 }}>
           {[1, 2, 3, 4, 5].map(n => (
             <button
@@ -348,16 +345,15 @@ export default function LogOutfitPage() {
         </div>
       </div>
       <div style={{ marginTop: 22 }}>
-        <SecH right="Optional">A note</SecH>
-        <textarea
-          value={notes} onChange={e => setNotes(e.target.value)} placeholder="Too warm for the waistcoat by noon…" rows={3}
+                <textarea
+          value={notes} onChange={e => setNotes(e.target.value)} placeholder="note" rows={3}
           style={{ width: '100%', boxSizing: 'border-box', minHeight: 62, background: T.white, boxShadow: `inset 0 0 0 1px ${T.line}`, padding: 15, fontFamily: fS, fontSize: 14, color: T.ink, border: 'none', outline: 'none', resize: 'none' }}
         />
       </div>
       <div style={{ marginTop: 20 }}>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] ?? null)} style={{ display: 'none' }} />
-        <button onClick={() => fileInputRef.current?.click()} style={{ width: '100%', border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: fS, fontSize: 13, color: T.g500 }}>
-          <V4Icon n="cam" s={17} w={1.5} />{imageFile ? imageFile.name : 'Add a photo of the full look (optional)'}
+        <button onClick={() => fileInputRef.current?.click()} style={{ width: '100%', borderRadius: 2, border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: fS, fontSize: 13, color: T.g500 }}>
+          <V4Icon n="cam" s={17} w={1.5} />{imageFile ? imageFile.name : 'photo'}
         </button>
       </div>
     </>
@@ -370,12 +366,12 @@ export default function LogOutfitPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 44, alignItems: 'start', padding: '10px 22px 0' }}>
           <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PiecesPreview}</div>
           <div>
-            <Disp s={24}>{isEdit ? 'Update this outfit' : 'Anything to remember about it?'}</Disp>
+            <Disp s={24}>{isEdit ? 'update outfit' : 'details'}</Disp>
             <div style={{ marginTop: 24 }}>{FormFields}</div>
             {error && <Body s={12.5} c={T.roseDeep} style={{ marginTop: 16 }}>{error}</Body>}
             <div style={{ marginTop: 24 }}>
               <Btn icon="check" disabled={saving} onClick={handleSave}>
-                {saving ? 'Saving…' : isEdit ? 'Save changes' : `Save to ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}`}
+                {saving ? 'saving…' : 'save'}
               </Btn>
             </div>
           </div>
@@ -388,7 +384,7 @@ export default function LogOutfitPage() {
     <div style={{ paddingBottom: 100 }}>
       <V4Bar back onBack={() => setStep('pieces')} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>{isEdit ? 'Update this outfit' : <>Anything to<br />remember about it?</>}</Disp>
+        <Disp s={24}>{isEdit ? 'update outfit' : 'details'}</Disp>
       </div>
       <div style={{ padding: '18px 22px 0' }}>{PiecesPreview}</div>
       <div style={{ padding: '24px 22px 0' }}>{FormFields}</div>
@@ -396,7 +392,7 @@ export default function LogOutfitPage() {
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
           <Btn full icon="check" disabled={saving} onClick={handleSave}>
-            {saving ? 'Saving…' : isEdit ? 'Save changes' : `Save to ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}`}
+            {saving ? 'saving…' : 'save'}
           </Btn>
         </div>
       </div>

@@ -11,82 +11,74 @@
 // nav — see App.tsx. Navigating between an old-shell page and a new-shell
 // page swaps the whole chrome; that's expected until every page migrates.
 
+import { motion, MotionConfig } from 'motion/react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, Btn, APP_HEADER_H, CONTENT_MAX_W, type IconName } from './kit'
+import { T, fD, fS, V4Icon, Btn, APP_HEADER_H, CONTENT_MAX_W, type IconName } from './kit'
+import { R } from './radii'
 
 const TABS: { id: string; label: string; to: string; icon: IconName; active: (p: string) => boolean }[] = [
-  { id: 'today', label: 'Today', to: '/', icon: 'home', active: p => p === '/' || p.startsWith('/outfits') },
-  { id: 'closet', label: 'Closet', to: '/wardrobe', icon: 'hanger', active: p => p.startsWith('/wardrobe') || p === '/shop' },
-  { id: 'ideas', label: 'Ideas', to: '/ideas', icon: 'bulb', active: p => p.startsWith('/ideas') },
-  { id: 'me', label: 'Me', to: '/settings', icon: 'user', active: p => p.startsWith('/settings') },
-]
-// Desktop-only secondary links — not primary IA (no room on the mobile tab
-// bar's 4 slots), but worth a permanent spot in the sidebar's extra space
-// rather than being buried a click deeper in Me/Closet.
-const SIDENAV_EXTRA: { id: string; label: string; to: string; icon: IconName; active: (p: string) => boolean }[] = [
-  { id: 'stats', label: 'Statistics', to: '/settings/stats', icon: 'chart', active: p => p.startsWith('/settings/stats') },
-  { id: 'shop', label: 'Shop', to: '/shop', icon: 'bag', active: p => p === '/shop' },
+  { id: 'today', label: 'today', to: '/', icon: 'home', active: p => p === '/' || p.startsWith('/outfits') },
+  { id: 'closet', label: 'closet', to: '/wardrobe', icon: 'hanger', active: p => p.startsWith('/wardrobe') },
+  // the fourth tab is the suggest function; saved ideas live under it and are also reachable from Today and Me
+  { id: 'suggest', label: 'suggest', to: '/suggest', icon: 'spark', active: p => p === '/suggest' || p.startsWith('/ideas') },
+  // the profile lives in the top bar; its slot here is the shop feature
+  { id: 'shop', label: 'shop', to: '/shop', icon: 'bag', active: p => p === '/shop' },
 ]
 const SIDENAV_W = 236
+// full-page flows with their own pinned action bar: no tab bar underneath
+const FOCUS_FLOW = /^\/(outfits\/new|outfits\/[^/]+\/edit|wardrobe\/new|wardrobe\/batch|wardrobe\/[^/]+\/edit|ideas\/[^/]+\/edit|settings\/password|settings\/profile)$/
 
+// Mobile app header: the logo and the title on the left, the avatar (a link to Me) on the right.
 function Header() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const initial = (user?.email ?? '?').charAt(0).toUpperCase()
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 30, background: T.paper, height: APP_HEADER_H, boxSizing: 'border-box',
-      padding: '0 22px', borderBottom: `1px solid ${T.line}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
-      <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-        <img src="/logo.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain', display: 'block' }} />
-        <span style={{ fontFamily: fS, fontSize: 14, fontWeight: 600, letterSpacing: '-.01em', color: T.ink }}>closet</span>
+      <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+        <img src="/logo.png" alt="" style={{ width: 32, height: 32, objectFit: 'contain', display: 'block' }} />
+        <span style={{ fontFamily: fD, fontSize: 18, color: T.ink, lineHeight: 1 }}>closet</span>
       </button>
-      <button onClick={() => navigate('/settings')} style={{
-        width: 36, height: 36, borderRadius: 2, background: T.peach, border: 'none', cursor: 'pointer',
+      <button onClick={() => navigate('/settings')} aria-label="me" style={{
+        width: 36, height: 36, borderRadius: R.sm, background: T.peach, border: 'none', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fS, fontSize: 15, fontWeight: 600, color: T.ink,
-      }}>{initial}</button>
+      }}><V4Icon n="user" s={21} w={1.7} /></button>
     </div>
   )
 }
 
+// Mobile: a floating white bar inset from the edges. Four icon-only tabs and the dark "log" square in the
+// middle, same size as the tabs. The selected tab is a blush block with a dark icon.
 function TabBar() {
   const { pathname } = useLocation()
+  const tab = (t: (typeof TABS)[number]) => {
+    const on = t.active(pathname)
+    return (
+      <Link key={t.id} to={t.to} aria-label={t.label} aria-current={on ? 'page' : undefined} style={{
+        position: 'relative', flex: 1, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: T.ink, textDecoration: 'none', WebkitTapHighlightColor: 'transparent', borderRadius: R.sm,
+      }}>
+        {on && <motion.div layoutId="tab-indicator" transition={{ type: 'spring', stiffness: 500, damping: 40 }} style={{ position: 'absolute', inset: 0, background: T.peach, borderRadius: R.sm }} />}
+        <motion.div whileTap={{ scale: 0.9 }} style={{ position: 'relative', display: 'flex' }}><V4Icon n={t.icon} s={23} w={1.7} /></motion.div>
+      </Link>
+    )
+  }
   return (
     <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 30,
-      height: 'var(--nav-h)', paddingBottom: 'var(--safe-b)',
-      background: 'rgba(247,246,245,.94)', backdropFilter: 'blur(12px)',
-      borderTop: `1px solid ${T.line}`, display: 'flex', alignItems: 'center',
+      position: 'fixed', left: 22, right: 22, bottom: 'calc(12px + var(--safe-b))', zIndex: 30,
+      background: T.paper, display: 'flex', gap: 4, padding: 4, borderRadius: R.sm,
     }}>
-      {TABS.slice(0, 2).map(tab => <TabLink key={tab.id} tab={tab} active={tab.active(pathname)} />)}
-      <Link to="/outfits/new" aria-label="Log an outfit" style={{ width: 78, display: 'flex', justifyContent: 'center', textDecoration: 'none' }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: 2, background: T.ink, color: '#fff',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          marginTop: -30, boxShadow: '0 8px 20px rgba(0,0,0,.22)',
-        }}>
-          <V4Icon n="cal" s={22} w={1.9} />
-          <div style={{ fontFamily: fS, fontSize: 8.5, fontWeight: 500, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: -1 }}>log</div>
-        </div>
+      {tab(TABS[0])}{tab(TABS[1])}
+      <Link to="/outfits/new" aria-label="log" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
+        <motion.div whileTap={{ scale: 0.94 }} style={{ flex: 1, height: 52, borderRadius: R.sm, background: T.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <V4Icon n="plus" s={24} w={2} />
+        </motion.div>
       </Link>
-      {TABS.slice(2).map(tab => <TabLink key={tab.id} tab={tab} active={tab.active(pathname)} />)}
+      {tab(TABS[2])}{tab(TABS[3])}
     </nav>
-  )
-}
-
-function TabLink({ tab, active }: { tab: (typeof TABS)[number]; active: boolean }) {
-  return (
-    <Link to={tab.to} style={{
-      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-      color: active ? T.ink : T.g400, textDecoration: 'none',
-    }}>
-      <V4Icon n={tab.icon} s={23} w={active ? 1.9 : 1.5} />
-      <div style={{ fontFamily: fS, fontSize: 10.5, fontWeight: active ? 500 : 400 }}>{tab.label}</div>
-    </Link>
   )
 }
 
@@ -94,67 +86,62 @@ function SideNav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const initial = (user?.email ?? '?').charAt(0).toUpperCase()
   return (
     <div style={{
-      width: SIDENAV_W, position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 30,
-      borderRight: `1px solid ${T.line}`, background: T.paper,
+      width: SIDENAV_W, position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 30, background: T.paper,
       padding: '30px 18px', display: 'flex', flexDirection: 'column', gap: 6,
     }}>
-      <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '0 12px 26px', background: 'none', border: 'none', cursor: 'pointer' }}>
-        <img src="/logo.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', display: 'block' }} />
-        <span style={{ fontFamily: fS, fontSize: 15, fontWeight: 600, color: T.ink }}>closet</span>
+      <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '0 12px 22px', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <img src="/logo.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain', display: 'block' }} />
+        <span style={{ fontFamily: fD, fontSize: 22, color: T.ink }}>closet</span>
       </button>
-      <div style={{ padding: '0 0 18px' }}><Link to="/outfits/new" style={{ textDecoration: 'none', display: 'block' }}><Btn full icon="cal">Log an outfit</Btn></Link></div>
-      {[...TABS, ...SIDENAV_EXTRA].map(tab => {
-        // Closet/Me's own active checks also match /shop and /settings/stats
-        // respectively, for the mobile tab bar (which has no separate Shop or
-        // Statistics tab) — but the sidebar has both as their own entries, so
-        // don't double-highlight the parent tab while the more specific one
-        // is the real match.
-        const active =
-          tab.id === 'closet' ? pathname.startsWith('/wardrobe') :
-          tab.id === 'me' ? pathname.startsWith('/settings') && !pathname.startsWith('/settings/stats') :
-          tab.active(pathname)
+      <div style={{ padding: '0 0 16px' }}><Link to="/outfits/new" style={{ textDecoration: 'none', display: 'block' }}><Btn full icon="plus">log</Btn></Link></div>
+      {TABS.map(tab => {
+        const on = tab.active(pathname)
         return (
-          <Link key={tab.id} to={tab.to} style={{
-            height: 46, borderRadius: 2, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 11,
-            background: active ? T.peach : 'transparent', textDecoration: 'none',
-            fontFamily: fS, fontSize: 14.5, fontWeight: active ? 600 : 400, color: active ? T.ink : T.g500,
+          <Link key={tab.id} to={tab.to} aria-current={on ? 'page' : undefined} style={{
+            position: 'relative', height: 46, borderRadius: R.sm, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 11,
+            textDecoration: 'none', fontFamily: fS, fontSize: 14.5, fontWeight: on ? 600 : 400, color: T.ink,
           }}>
-            <V4Icon n={tab.icon} s={21} w={active ? 1.9 : 1.5} />{tab.label}
+            {on && <motion.div layoutId="side-indicator" transition={{ type: 'spring', stiffness: 500, damping: 38 }} style={{ position: 'absolute', inset: 0, background: T.peach, borderRadius: R.sm }} />}
+            <span style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 11 }}><V4Icon n={tab.icon} s={21} w={on ? 1.9 : 1.6} />{tab.label}</span>
           </Link>
         )
       })}
       <div style={{ flex: 1 }} />
-      <button onClick={() => navigate('/settings')} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '0 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-        <div style={{ width: 34, height: 34, borderRadius: 2, background: T.peach, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: fS, fontSize: 14, fontWeight: 600, color: T.ink, flexShrink: 0 }}>{initial}</div>
-        <div style={{ minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, color: T.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email?.split('@')[0]}</div>
-        </div>
-      </button>
+      <Link to="/settings" aria-current={pathname.startsWith('/settings') ? 'page' : undefined} style={{ position: 'relative', height: 46, borderRadius: R.sm, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none', fontFamily: fS, fontSize: 14.5, fontWeight: pathname.startsWith('/settings') ? 600 : 400, color: T.ink, background: pathname.startsWith('/settings') ? T.peach : 'none' }}>
+        <V4Icon n="user" s={21} w={1.7} />{user?.email?.split('@')[0] ?? 'me'}
+      </Link>
     </div>
   )
 }
 
 export default function V3Layout() {
   const { isDesktop } = useBreakpoint()
+  const { pathname } = useLocation()
+  const focus = FOCUS_FLOW.test(pathname)
 
-  // One shared tree instead of two early-return branches — resizing across
-  // the breakpoint used to swap in a differently-shaped tree around
-  // <Outlet/> (an extra wrapping <div> on desktop that mobile didn't have),
-  // which made React treat it as a different element and remount the whole
-  // current route, wiping out any in-progress page state (e.g. a half-filled
-  // form). <main>'s child is now always the same <div><Outlet/></div> shape
-  // on both sides — only its styling changes — so Outlet, and the route it's
-  // rendering, survive the resize.
+  // One shared tree instead of two early-return branches, so resizing across the breakpoint doesn't remount
+  // the current route and wipe in-progress page state (e.g. a half-filled form).
   return (
-    <div style={{ minHeight: '100svh', background: T.paper, width: '100%', ...(isDesktop ? {} : { display: 'flex', flexDirection: 'column' }) }}>
+    <div style={{ minHeight: '100svh', background: T.paper, width: '100%', ...(isDesktop ? {} : { display: 'flex', flexDirection: 'column' }), ...(focus && !isDesktop ? { ['--v3-sticky-bottom' as string]: '0px' } : {}) }}>
       {isDesktop ? <SideNav /> : <Header />}
-      <main style={isDesktop ? { marginLeft: SIDENAV_W, padding: '30px 44px 0' } : { flex: 1, paddingTop: APP_HEADER_H, paddingBottom: 'var(--nav-h)' }}>
-        <div style={isDesktop ? { maxWidth: CONTENT_MAX_W, margin: '0 auto' } : undefined}><Outlet /></div>
+      <main style={isDesktop ? { marginLeft: SIDENAV_W, padding: '30px 44px 0' } : { flex: 1, paddingTop: APP_HEADER_H, paddingBottom: focus ? 0 : 'var(--nav-h)' }}>
+        <div style={isDesktop ? { maxWidth: CONTENT_MAX_W, margin: '0 auto' } : undefined}>
+          <MotionConfig reducedMotion="user">
+            <motion.div
+              key={pathname}
+              // item detail is entered via a View Transition morph from the tile; no fade there
+              initial={/^\/wardrobe\/(?!new$|batch$)[^/]+$/.test(pathname) ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          </MotionConfig>
+        </div>
       </main>
-      {!isDesktop && <TabBar />}
+      {!isDesktop && !focus && <TabBar />}
     </div>
   )
 }

@@ -1,3 +1,6 @@
+import { motion } from 'motion/react'
+import { CountUp } from '../design/CountUp'
+import { SafeImg } from '../design/SafeImg'
 import { useState, useMemo, type ReactNode, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems, type ItemWithSignedUrl } from '../hooks/useItems'
@@ -5,7 +8,9 @@ import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
 import { outfitTitle } from '../lib/outfitTitle'
 import { bucketColor, type ColorBucket } from '../lib/colorBuckets'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Bar, V4Icon, Pill, Dropdown, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
+import { T, fS, V4Bar, V4Icon, Pill, Segmented, Disp, Body, Mono, BarStat, V4Card } from '../design/kit'
+import { R } from '../design/radii'
+import { catLabel } from '../lib/categoryLabel'
 import Collage from '../design/Collage'
 
 // Groups a section in its own white card on desktop, matching the Today
@@ -20,7 +25,7 @@ type Grain = 'Weekly' | 'Monthly' | 'Yearly'
 const GARMENT_CATS = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes', 'accessory'])
 const CORE_CATEGORIES = new Set(['top', 'bottom', 'one-piece', 'shoes'])
 const MAIN_CAT_ORDER = ['top', 'bottom', 'one-piece', 'outerwear', 'shoes']
-const MAIN_CAT_LABELS: Record<string, string> = { top: 'Tops', bottom: 'Bottoms', 'one-piece': 'One-pieces', outerwear: 'Outerwear', shoes: 'Shoes' }
+const MAIN_CAT_LABELS: Record<string, string> = { top: catLabel('top'), bottom: catLabel('bottom'), 'one-piece': catLabel('one-piece'), outerwear: catLabel('outerwear'), shoes: catLabel('shoes') }
 const DOW_FULL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const BRAND_RAMP = [T.cocoaDeep, T.cocoa, T.cocoaSoft, '#A47A61', T.roseDeep, T.rose, '#E5C3B6', '#EFD8C9']
 
@@ -114,8 +119,8 @@ export default function StatsPage() {
   if (outfits.length === 0) {
     return (
       <div style={{ paddingBottom: 40 }}>
-        <V4Bar back title="Me" onBack={() => navigate('/settings')} />
-        <div style={{ padding: '20px 22px 0' }}><Body s={14}>Log some outfits to see stats here.</Body></div>
+        <V4Bar back title="me" onBack={() => navigate('/settings')} />
+        <div style={{ padding: '20px 22px 0' }}><Body s={14}>log some outfits to see stats here.</Body></div>
       </div>
     )
   }
@@ -136,9 +141,9 @@ export default function StatsPage() {
 
   const PillsRow = (
     <div style={{ display: 'flex', gap: 8 }}>
-      <Pill on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill>
-      <Pill on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill>
-      <Pill on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill>
+      <Pill group="stats-tab" on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>pieces</Pill>
+      <Pill group="stats-tab" on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>outfits</Pill>
+      <Pill group="stats-tab" on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>colour</Pill>
     </div>
   )
 
@@ -146,9 +151,9 @@ export default function StatsPage() {
   // instead of sitting left-aligned with dead space to the right.
   const PillsRowFill = (
     <div style={{ display: 'flex', gap: 8 }}>
-      <div style={{ flex: 1 }}><Pill full on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>Pieces</Pill></div>
-      <div style={{ flex: 1 }}><Pill full on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>Outfits</Pill></div>
-      <div style={{ flex: 1 }}><Pill full on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>Colour</Pill></div>
+      <div style={{ flex: 1 }}><Pill group="stats-tab" full on={tab === 'pieces'} s="sm" onClick={() => setTab('pieces')}>pieces</Pill></div>
+      <div style={{ flex: 1 }}><Pill group="stats-tab" full on={tab === 'outfits'} s="sm" onClick={() => setTab('outfits')}>outfits</Pill></div>
+      <div style={{ flex: 1 }}><Pill group="stats-tab" full on={tab === 'colour'} s="sm" onClick={() => setTab('colour')}>colour</Pill></div>
     </div>
   )
 
@@ -159,25 +164,25 @@ export default function StatsPage() {
     <div style={{ position: 'sticky', top: 0, zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
       <div style={{ padding: '0 22px' }}>
         <button onClick={() => navigate('/settings')} style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: -6, background: 'none', border: 'none', padding: '4px 6px', cursor: 'pointer', fontFamily: fS, fontSize: 14, fontWeight: 500, color: T.ink, height: 44 }}>
-          <V4Icon n="back" s={20} w={1.7} />Me
+          <V4Icon n="back" s={20} w={1.7} />me
         </button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 22px 0' }}>
-        <Disp s={29}>Statistics</Disp>
+        <Disp s={22}>statistics</Disp>
         {PillsRow}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 22px 0' }}>
-        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+        <Segmented<Grain> group="stats-grain" value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} labels={{ Weekly: 'week', Monthly: 'month', Yearly: 'year' }} />
         {PeriodNav}
       </div>
     </div>
   ) : (
     <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}`, boxShadow: 'none', isolation: 'isolate' }}>
-      <V4Bar sticky={false} back title="Me" onBack={() => navigate('/settings')} />
-      <div style={{ padding: '8px 22px 0' }}><Disp s={29}>Statistics</Disp></div>
+      <V4Bar sticky={false} back title="me" onBack={() => navigate('/settings')} />
+      <div style={{ padding: '8px 22px 0' }}><Disp s={22}>statistics</Disp></div>
       <div style={{ padding: '14px 22px 0' }}>{PillsRowFill}</div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 22px 0' }}>
-        <Dropdown<Grain> value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} align="left" size="sm" />
+        <Segmented<Grain> group="stats-grain" value={grain} options={['Weekly', 'Monthly', 'Yearly']} onChange={setGrain} labels={{ Weekly: 'week', Monthly: 'month', Yearly: 'year' }} />
         {PeriodNav}
       </div>
     </div>
@@ -221,8 +226,8 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
 
   const Row = ({ item }: { item: ItemWithSignedUrl }) => (
     <button onClick={() => navigate(`/wardrobe/${item.id}`)} style={{ flex: isDesktop ? undefined : 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-      <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
-        {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+      <div style={{ borderRadius: R.md, width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: T.g200 }}>
+        {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
       </div>
       <div style={{ textAlign: 'center', marginTop: 6 }}><Mono s={11} c={T.ink} style={{ fontWeight: 700 }}>{wearCount[item.id] ?? 0}×</Mono></div>
     </button>
@@ -232,13 +237,13 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
     <div style={isDesktop ? { display: 'flex', gap: 40 } : undefined}>
       {most.length > 0 && (
         <div style={isDesktop ? { flex: 1, minWidth: 0 } : undefined}>
-          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Reached for most</div>
+          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>reached for most</div>
           <div style={rowStyle}>{most.map(i => <Row key={i.id} item={i} />)}</div>
         </div>
       )}
       {least.length > 0 && (
         <div style={isDesktop ? { flex: 1, minWidth: 0 } : { marginTop: 16 }}>
-          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>Left hanging</div>
+          <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 600, marginBottom: 10 }}>left hanging</div>
           <div style={{ ...rowStyle, opacity: .8 }}>{least.map(i => <Row key={i.id} item={i} />)}</div>
         </div>
       )}
@@ -248,7 +253,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
   return (
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
-        <Disp s={20}>Most and least worn</Disp>
+        <Disp s={20}>most and least worn</Disp>
         {mainCatGroups.length > 0 && (
           <div style={{ marginTop: 20 }}>
             {mainCatGroups.map((g, ci) => {
@@ -257,7 +262,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
               if (most.length === 0 && least.length === 0) return null
               return (
                 <div key={g.cat} style={{ marginTop: ci === 0 ? 0 : 30, paddingTop: ci === 0 ? 0 : 20, borderTop: ci === 0 ? 'none' : `1px solid ${T.line}` }}>
-                  <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.label}</Mono>
+                  <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, marginBottom: 12 }}>{g.label}</div>
                   <MostLeast most={most} least={least} />
                 </div>
               )
@@ -270,7 +275,7 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
           if (most.length === 0 && least.length === 0) return null
           return (
             <div style={{ marginTop: 30, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
-              <Mono s={11} c={T.g500} style={{ display: 'block', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Accessories</Mono>
+              <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, marginBottom: 12 }}>{catLabel('accessory')}</div>
               <MostLeast most={most} least={least} />
             </div>
           )
@@ -278,34 +283,43 @@ function PiecesTab({ items, wearCount, navigate, isDesktop }: {
       </Section>
       {brands.length > 0 && (
         <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
-          <Disp s={20}>Labels you trust</Disp>
-          <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>Counted by pieces worn, not pieces owned.</Body>
+          <Disp s={20}>labels you trust</Disp>
+          <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>counted by pieces worn, not pieces owned.</Body>
           {brands.map(([name, v], i) => (
             <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 7 }}>
               <div style={{ width: 110, flexShrink: 0, fontFamily: fS, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
               <div style={{ flex: 1, height: 24, background: '#EFEDEA' }}>
-                <div style={{ width: `${(v / maxBrand) * 100}%`, height: 24, background: BRAND_RAMP[i % BRAND_RAMP.length], display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 8 }}>
-                  <Mono s={11} c={i < 4 ? '#fff' : T.ink} style={{ fontWeight: 700 }}>{v}</Mono>
-                </div>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(v / maxBrand) * 100}%` }}
+                  transition={{ duration: 0.7, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ height: 24, background: BRAND_RAMP[i % BRAND_RAMP.length], display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 8, overflow: 'hidden' }}>
+                  <Mono s={11} c={i < 4 ? '#fff' : T.ink} style={{ fontWeight: 700 }}><CountUp to={v} delay={i * 0.06} /></Mono>
+                </motion.div>
               </div>
             </div>
           ))}
         </Section>
       )}
       <Section isDesktop={isDesktop} top={isDesktop ? 24 : 32}>
-        <Disp s={20}>What the closet is made of</Disp>
+        <Disp s={20}>what the closet is made of</Disp>
         <div style={{ display: 'flex', height: 14, marginTop: 14 }}>
-          {catList.map(([cat, v], i) => <div key={cat} style={{ flex: v, background: BRAND_RAMP[i % BRAND_RAMP.length] }} />)}
+          {catList.map(([cat, v], i) => (
+            <motion.div key={cat}
+              initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+              transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+              style={{ flex: v, background: BRAND_RAMP[i % BRAND_RAMP.length], transformOrigin: 'left' }} />
+          ))}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 14 }}>
           {catList.map(([cat, v], i) => (
             <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 9, height: 9, background: BRAND_RAMP[i % BRAND_RAMP.length] }} />
-              <span style={{ fontFamily: fS, fontSize: 12.5, textTransform: 'capitalize' }}>{cat}</span><Mono s={11}>{v}</Mono>
+              <span style={{ fontFamily: fS, fontSize: 12.5 }}>{cat}</span><Mono s={11}>{v}</Mono>
             </div>
           ))}
         </div>
-        <Mono s={10} style={{ display: 'block', marginTop: 6 }}>{catTotal} pieces total</Mono>
+        <Mono s={10} style={{ display: 'block', marginTop: 6 }}><CountUp to={catTotal} /> pieces total</Mono>
       </Section>
     </div>
   )
@@ -371,7 +385,7 @@ function OutfitsTab({ outfits, items, itemById, grain, offset, periodEnd, collag
   return (
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
-        <Disp s={20}>Logged each {grain === 'Yearly' ? 'year' : grain === 'Weekly' ? 'week' : 'month'}</Disp>
+        <Disp s={20}>logged each {grain === 'Yearly' ? 'year' : grain === 'Weekly' ? 'week' : 'month'}</Disp>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 110, marginTop: 16, overflowX: trend.length > 12 ? 'auto' : 'visible' }}>
           {trend.map((t, i) => (
             <div key={i} style={{ flex: 1, minWidth: grain === 'Weekly' ? 26 : undefined, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -384,7 +398,7 @@ function OutfitsTab({ outfits, items, itemById, grain, offset, periodEnd, collag
       </Section>
       {occList.length > 0 && (
         <Section isDesktop={isDesktop} top={isDesktop ? 24 : 30}>
-          <Disp s={20}>Where you actually go</Disp>
+          <Disp s={20}>where you actually go</Disp>
           <div style={{ marginTop: 10 }}>{occList.map(([label, v], i) => <BarStat key={label} label={label} v={v} max={maxOcc} suffix=" looks" tone={i === 0 ? T.cocoa : T.rose} />)}</div>
         </Section>
       )}
@@ -394,7 +408,7 @@ function OutfitsTab({ outfits, items, itemById, grain, offset, periodEnd, collag
           {([['Weekday', weekday], ['Weekend', weekend]] as const).map(([label, list], i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: i === 0 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, width: 66, flexShrink: 0 }}>{label}</div>
-              <div style={{ flex: 1, minWidth: 0, fontFamily: fS, fontSize: 12.5, color: T.g500, textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{topOcc(list).join(', ') || '—'}</div>
+              <div style={{ flex: 1, minWidth: 0, fontFamily: fS, fontSize: 12.5, color: T.g500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{topOcc(list).join(', ') || '—'}</div>
               <Mono s={11.5} c={T.cocoa} style={{ flexShrink: 0 }}>{avgPieces(list)} pcs/look</Mono>
             </div>
           ))}
@@ -402,11 +416,11 @@ function OutfitsTab({ outfits, items, itemById, grain, offset, periodEnd, collag
       )}
       {combos.length > 0 && (
         <Section isDesktop={isDesktop} top={isDesktop ? 24 : 28}>
-          <Disp s={20}>Combinations you repeat</Disp>
+          <Disp s={20}>combinations you repeat</Disp>
           <div style={{ display: 'flex', gap: 7, marginTop: 14 }}>
             {combos.map((c, i) => (
               <button key={i} onClick={() => navigate(`/outfits/${c.outfitId}`)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative', background: T.g200 }}><Collage items={collageItems(c.item_ids)} fill /></div>
+                <div style={{ width: '100%', position: 'relative' }}><Collage items={collageItems(c.item_ids)} maxSmall={4} /></div>
                 <div style={{ textAlign: 'center', marginTop: 6 }}><Mono s={11} c={T.ink} style={{ fontWeight: 700 }}>{c.count}×</Mono></div>
                 <div style={{ marginTop: 2, fontFamily: fS, fontSize: 11, color: T.g500, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(c.item_ids, items, 'Outfit')}</div>
               </button>
@@ -472,14 +486,14 @@ function ColourTab({ outfits, itemById, grain, offset, periodStr, isDesktop }: {
   scoped.forEach(o => outfitBuckets(o, itemById).forEach(b => bucketByKey.set(b.key, b)))
 
   if (palettes.length === 0) {
-    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>No outfits with colours logged {periodStr}.</Body></div>
+    return <div style={{ padding: '24px 22px 0' }}><Body s={14}>no outfits with colours logged {periodStr}.</Body></div>
   }
 
   return (
     <div style={{ padding: isDesktop ? '24px 0 0' : '24px 22px 0' }}>
       <Section isDesktop={isDesktop}>
-        <Disp s={20}>Signature palettes</Disp>
-        <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>The colour combinations you build looks from most.</Body>
+        <Disp s={20}>signature palettes</Disp>
+        <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>the colour combinations you build looks from most.</Body>
         {palettes.map((p, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '9px 0', borderBottom: i < palettes.length - 1 ? `1px solid ${T.line}` : 'none' }}>
             <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
@@ -493,13 +507,18 @@ function ColourTab({ outfits, itemById, grain, offset, periodStr, isDesktop }: {
         ))}
       </Section>
       <Section isDesktop={isDesktop} top={isDesktop ? 24 : 30}>
-        <Disp s={20}>Colour through the week</Disp>
-        <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>Dominant colours logged on each weekday.</Body>
+        <Disp s={20}>colour through the week</Disp>
+        <Body s={13.5} style={{ marginTop: 5, marginBottom: 16 }}>dominant colours logged on each weekday.</Body>
         <div style={{ display: 'flex', gap: 6, height: 140 }}>
           {byWeekday.map((d, i) => (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column-reverse' }}>
-                {d.segs.map(s => <div key={s.key} style={{ height: `${s.pct}%`, background: bucketByKey.get(s.key)?.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.07)' }} />)}
+                {d.segs.map(s => (
+                  <motion.div key={s.key}
+                    initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
+                    transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ height: `${s.pct}%`, background: bucketByKey.get(s.key)?.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.07)', transformOrigin: 'bottom' }} />
+                ))}
               </div>
               <div style={{ textAlign: 'center' }}><Mono s={10}>{d.label.slice(0, 1)}</Mono></div>
             </div>

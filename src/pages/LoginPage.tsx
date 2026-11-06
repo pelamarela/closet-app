@@ -35,7 +35,7 @@ export default function LoginPage() {
     setError(null)
 
     if (mode === 'signup' && password !== confirmPassword) {
-      setError("Passwords don't match.")
+      setError("passwords don't match.")
       return
     }
 
@@ -54,17 +54,17 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else if (!data.session) {
-        setError('Account created — check your email to confirm it before signing in.')
+        setError('account created — check your email to confirm it before signing in.')
         setMode('signin'); setConfirmPassword('')
       } else {
-        setError('Account created — you can now sign in.')
+        setError('account created — you can now sign in.')
         setMode('signin'); setConfirmPassword('')
       }
       setLoading(false)
     }
   }
 
-  const isInfo = error?.startsWith('Account')
+  const isInfo = error?.startsWith('account')
 
   const Footer = (
     <div style={{ padding: '18px 0', textAlign: 'center' }}>
@@ -75,38 +75,38 @@ export default function LoginPage() {
   const content = (
     <>
       <div style={{ padding: '36px 22px 0', display: 'flex', justifyContent: 'center' }}>
-        <img src="/logo.png" alt="closet" style={{ width: 108, height: 108, objectFit: 'contain', display: 'block' }} />
+        <img src="/brand/umbrella-icon.png" alt="closet" style={{ width: 88, height: 88, objectFit: 'contain', display: 'block' }} />
       </div>
 
       <div style={{ padding: '22px 22px 0', textAlign: 'center' }}>
-        <Disp s={34} style={{ lineHeight: 1.1 }}>Your closet,<br />on every device.</Disp>
+        <Disp s={34} style={{ lineHeight: 1.1 }}>your closet,<br />on every device</Disp>
       </div>
 
       <div style={{ padding: '28px 22px 0' }}>
-        <div style={{ ...dotted, height: 80, border: `1px solid ${T.line}`, display: 'flex', alignItems: 'center', padding: '0 18px' }}>
+        <div style={{ ...dotted, height: 80, display: 'flex', alignItems: 'center', padding: '0 18px' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 46, opacity: .95, display: 'block' }} />
         </div>
       </div>
 
       <div style={{ padding: '22px 22px 0' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1 }}><Pill s="lg" full on={mode === 'signin'} onClick={() => { setMode('signin'); setError(null); setConfirmPassword('') }}>Sign in</Pill></div>
-          <div style={{ flex: 1 }}><Pill s="lg" full on={mode === 'signup'} onClick={() => { setMode('signup'); setError(null); setConfirmPassword('') }}>Create account</Pill></div>
+          <div style={{ flex: 1 }}><Pill group="login" s="lg" full on={mode === 'signin'} onClick={() => { setMode('signin'); setError(null); setConfirmPassword('') }}>sign in</Pill></div>
+          <div style={{ flex: 1 }}><Pill group="login" s="lg" full on={mode === 'signup'} onClick={() => { setMode('signup'); setError(null); setConfirmPassword('') }}>create account</Pill></div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} style={{ padding: '22px 22px 28px' }}>
-        <Field label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
-        <Field label="Password" type="password" value={password} onChange={setPassword} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
+        <Field label="email" type="email" value={email} onChange={setEmail} autoComplete="email" />
+        <Field label="password" type="password" value={password} onChange={setPassword} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} />
         {mode === 'signup' && (
-          <Body s={11.5} style={{ marginTop: 8 }}>At least 8 characters, with uppercase, lowercase, a digit, and a symbol.</Body>
+          <Body s={11.5} style={{ marginTop: 8 }}>at least 8 characters, with uppercase, lowercase, a digit, and a symbol.</Body>
         )}
 
         {mode === 'signup' && (
           <div style={{ marginTop: 18 }}>
-            <Field label="Confirm password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+            <Field label="confirm password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
             {confirmPassword.length > 0 && password !== confirmPassword && (
-              <Body s={11.5} c={T.roseDeep} style={{ marginTop: 8 }}>Passwords don't match.</Body>
+              <Body s={11.5} c={T.roseDeep} style={{ marginTop: 8 }}>passwords don't match.</Body>
             )}
           </div>
         )}
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
         <div style={{ marginTop: 22 }}>
           <Btn type="submit" full disabled={loading || (mode === 'signup' && password !== confirmPassword)}>
-            {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
+            {loading ? 'please wait…' : mode === 'signin' ? 'sign in' : 'create account'}
           </Btn>
         </div>
       </form>

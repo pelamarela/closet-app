@@ -11,7 +11,7 @@ import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
 import { T, fS, fM, dotted, V4Icon, V4Bar, Btn, Pill, Switch, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
 
-const ANALYZE_STEPS = ['Reading the photo', 'Identifying the piece', 'Filling in the details']
+const ANALYZE_STEPS = ['reading the photo', 'identifying the piece', 'filling in the details']
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: 'top', label: catLabel('top') },
@@ -116,7 +116,7 @@ export default function ItemFormPage() {
         warmth: typeof ai.warmth === 'number' ? ai.warmth : prev.warmth,
         formality: typeof ai.formality === 'number' ? ai.formality : prev.formality,
       }))
-    } catch { setAnalyzeError('AI analysis unavailable — fill in manually') } finally {
+    } catch { setAnalyzeError('ai analysis unavailable — fill in manually') } finally {
       stepTimers.forEach(clearTimeout)
       setAnalyzing(false)
     }
@@ -168,7 +168,7 @@ export default function ItemFormPage() {
           ...(ai.pattern ? { pattern: ai.pattern } : {}),
           ...(ai.subcategory ? { subcategory: ai.subcategory } : {}),
         }))
-      } catch { setAnalyzeError('AI analysis unavailable — fill in manually') } finally {
+      } catch { setAnalyzeError('ai analysis unavailable — fill in manually') } finally {
         stepTimers.forEach(clearTimeout)
         setAnalyzing(false)
       }
@@ -188,16 +188,16 @@ export default function ItemFormPage() {
       else await addItem(form, imageFile ?? undefined)
       navigate('/wardrobe')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : 'something went wrong')
       setSaving(false)
     }
   }
 
   const handleArchive = async () => {
-    if (!id || !confirm('Archive this item? It will be hidden from your wardrobe.')) return
+    if (!id || !confirm('archive this item? it will be hidden from your wardrobe.')) return
     setSaving(true)
     try { await archiveItem(id); navigate('/wardrobe') }
-    catch (err) { setError(err instanceof Error ? err.message : 'Something went wrong'); setSaving(false) }
+    catch (err) { setError(err instanceof Error ? err.message : 'something went wrong'); setSaving(false) }
   }
 
   if (loadingItem) {
@@ -210,7 +210,7 @@ export default function ItemFormPage() {
         <V4Bar />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Reading your photo.</Disp>
+          <Disp s={26}>reading your photo</Disp>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
             {ANALYZE_STEPS.map((label, i) => {
               const done = i < analyzeStep
@@ -245,13 +245,13 @@ export default function ItemFormPage() {
           <>
             <img src={imagePreview} alt="" style={isDesktop ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.28)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>Change photo</span>
+              <span style={{ height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 14px', borderRadius: 2, background: T.paper, fontFamily: fS, fontSize: 13, fontWeight: 600, color: T.ink }}>change photo</span>
             </div>
           </>
         ) : (
-          <div style={{ width: '100%', height: '100%', border: `1.5px dashed ${T.g200}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: 2, border: `1.5px dashed ${T.g200}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <V4Icon n="cam" s={26} w={1.4} c={T.g400} />
-            <Body s={13.5} c={T.ink}>Tap to add a photo</Body>
+            <Body s={13.5} c={T.ink}>tap to add a photo</Body>
             <Mono s={10}>max 1200px · ~300 KB · JPEG</Mono>
           </div>
         )}
@@ -262,24 +262,24 @@ export default function ItemFormPage() {
 
   const FormBlock = (
     <>
-      <SecH>Attributes</SecH>
-      <Field label="Name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" />
+      <SecH>attributes</SecH>
+      <Field label="name" value={form.name} onChange={set('name')} placeholder="e.g. Black linen blazer" />
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>category</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={form.category === c.value} onClick={() => setForm(f => ({ ...f, category: c.value }))}>{c.label}</Pill>)}
+          {CATEGORIES.map(c => <Pill group="item-cat" key={c.value} s="sm" on={form.category === c.value} onClick={() => setForm(f => ({ ...f, category: c.value }))}>{c.label}</Pill>)}
         </div>
       </div>
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>warmth</div>
           <Mono s={11}>1 = light · 5 = heavy</Mono>
         </div>
         <DotPicker value={form.warmth} onChange={v => setForm(f => ({ ...f, warmth: v }))} />
       </div>
       <div style={{ marginBottom: 6 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>formality</div>
           <Mono s={11}>1 = casual · 5 = formal</Mono>
         </div>
         <DotPicker value={form.formality} onChange={v => setForm(f => ({ ...f, formality: v }))} tone={T.roseDeep} />
@@ -289,19 +289,19 @@ export default function ItemFormPage() {
           weighted heading dropped into the middle of this field group. */}
       <div style={{ marginTop: 20, marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Sport / gym only</div>
-          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>Excluded from everyday outfit suggestions</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>sport / gym only</div>
+          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>excluded from everyday outfit suggestions</div>
         </div>
         <button type="button" onClick={() => setForm(f => ({ ...f, sport: !f.sport }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
           <Switch on={form.sport} />
         </button>
       </div>
       <div>
-        <Field label="Colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
-        <Field label="Brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
-        <Field label="Material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />
-        <Field label="Pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" />
-        <Field label="Subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" />
+        <Field label="colour" value={form.color} onChange={set('color')} placeholder="white, navy, black…" />
+        <Field label="brand" value={form.brand} onChange={set('brand')} placeholder="e.g. Toteme" />
+        <Field label="material" value={form.material} onChange={set('material')} placeholder="cotton, wool, silk…" />
+        <Field label="pattern" value={form.pattern} onChange={set('pattern')} placeholder="solid, stripe, floral…" />
+        <Field label="subcategory" value={form.subcategory} onChange={set('subcategory')} placeholder="e.g. blazer, midi skirt…" />
       </div>
     </>
   )
@@ -309,11 +309,11 @@ export default function ItemFormPage() {
   return (
     <div style={{ paddingBottom: 100 }}>
       <V4Bar
-        back title="Closet" onBack={() => navigate('/wardrobe')}
+        back title="closet" onBack={() => navigate('/wardrobe')}
         right={isEdit ? <button onClick={handleArchive} disabled={saving} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.g400, display: 'flex', opacity: saving ? .4 : 1 }}><V4Icon n="archive" s={19} w={1.6} /></button> : undefined}
       />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>{isEdit ? 'Edit item' : 'Add an item'}</Disp>
+        <Disp s={24}>{isEdit ? 'edit item' : 'add an item'}</Disp>
       </div>
       {isDesktop ? (
         <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 44, alignItems: 'start', padding: '18px 22px 0' }}>
@@ -326,11 +326,11 @@ export default function ItemFormPage() {
           <div style={{ padding: '26px 22px 0' }}>{FormBlock}</div>
         </>
       )}
-      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', borderRadius: 2, background: T.paper, backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
           {error && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{error}</Body>}
-          <Btn kind="quiet" flex={1} onClick={() => navigate('/wardrobe')}>Cancel</Btn>
-          <Btn flex={1.6} icon="check" disabled={saving || !form.name.trim()} onClick={handleSubmit}>{saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add to closet'}</Btn>
+          <Btn kind="quiet" flex={1} onClick={() => navigate('/wardrobe')}>cancel</Btn>
+          <Btn flex={1.6} icon="check" disabled={saving || !form.name.trim()} onClick={handleSubmit}>{saving ? 'saving…' : isEdit ? 'save changes' : 'add to closet'}</Btn>
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { SafeImg } from '../design/SafeImg'
 import React from 'react'
 import { T } from '../design/kit'
 
@@ -31,7 +32,7 @@ function Cell({ item, pos, style }: { item: CollageItem; pos?: string; style?: R
   return (
     <div key={item.id} style={{ overflow: 'hidden', background: '#ECEAE6', ...style }}>
       {item.signedImageUrl
-        ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos ?? posFor(item.category), display: 'block' }} />
+        ? <SafeImg src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: pos ?? posFor(item.category), display: 'block' }} />
         : <div style={{ width: '100%', height: '100%', background: 'repeating-linear-gradient(135deg, #ECEAE6 0 10px, #DCD9D3 10px 20px)' }} />
       }
     </div>

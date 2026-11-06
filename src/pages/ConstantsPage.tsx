@@ -1,3 +1,4 @@
+import { SafeImg } from '../design/SafeImg'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useConstants, type ConstantWithSignedUrl } from '../hooks/useConstants'
@@ -37,7 +38,7 @@ export default function ConstantsPage() {
   }
 
   const handleSave = async () => {
-    if (!description.trim()) { setError('Add a description first.'); return }
+    if (!description.trim()) { setError('add a description first.'); return }
     setSaving(true); setError(null)
     try {
       if (editingId) await updateConstant(editingId, description, imageFile ?? undefined)
@@ -45,7 +46,7 @@ export default function ConstantsPage() {
       await refetch()
       setFormOpen(false)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save')
+      setError(e instanceof Error ? e.message : 'could not save')
     }
     setSaving(false)
   }
@@ -62,10 +63,10 @@ export default function ConstantsPage() {
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      <V4Bar back title="Settings" onBack={() => navigate('/settings')} />
+      <V4Bar back title="settings" onBack={() => navigate('/settings')} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>Constants</Disp>
-        <Body s={13} style={{ marginTop: 6 }}>Things you always wear — jewelry, watch, etc. Factored into Suggest.</Body>
+        <Disp s={24}>constants</Disp>
+        <Body s={13} style={{ marginTop: 6 }}>things you always wear — jewelry, watch, etc. factored into suggest.</Body>
       </div>
 
       {formOpen && (
@@ -85,8 +86,8 @@ export default function ConstantsPage() {
             />
             {error && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{error}</Body>}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-              <Btn kind="quiet" flex={1} onClick={() => setFormOpen(false)}>Cancel</Btn>
-              <Btn flex={1.4} icon="check" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Add constant'}</Btn>
+              <Btn kind="quiet" flex={1} onClick={() => setFormOpen(false)}>cancel</Btn>
+              <Btn flex={1.4} icon="check" disabled={saving} onClick={handleSave}>{saving ? 'saving…' : editingId ? 'save changes' : 'add constant'}</Btn>
             </div>
           </div>
         </div>
@@ -99,14 +100,14 @@ export default function ConstantsPage() {
 
       {constants.length === 0 && !formOpen ? (
         <div style={{ padding: '14px 22px 0' }}>
-          <Body s={13}>No constants yet — add pieces you always wear so Suggest can factor them in.</Body>
+          <Body s={13}>no constants yet — add pieces you always wear so suggest can factor them in.</Body>
         </div>
       ) : (
         <div style={{ padding: '10px 22px 0' }}>
           {constants.map((c, i) => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < constants.length - 1 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ width: 44, height: 44, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {c.signedImageUrl && <img src={c.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                {c.signedImageUrl && <SafeImg src={c.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
               </div>
               <div style={{ flex: 1, minWidth: 0, fontFamily: fS, fontSize: 13, color: T.ink, lineHeight: 1.4 }}>{c.description}</div>
               <button onClick={() => openEdit(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, flexShrink: 0, display: 'flex' }}><V4Icon n="pen" s={15} w={1.4} /></button>

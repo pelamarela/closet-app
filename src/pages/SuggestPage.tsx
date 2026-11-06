@@ -1,3 +1,6 @@
+import { rise } from '../design/rise'
+import { motion } from 'motion/react'
+import { SafeImg } from '../design/SafeImg'
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -10,18 +13,19 @@ import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted , CONTENT_MAX_W } from '../design/kit'
+import { catLabel } from '../lib/categoryLabel'
 import Collage from '../design/Collage'
 
 type Suggestion = { item_ids: string[]; reasoning: string }
 type View = 'brief' | 'loading' | 'result' | 'error'
 
 const ANCHOR_CATS = [
-  { value: 'all', label: 'All' }, { value: 'top', label: 'Tops' }, { value: 'bottom', label: 'Bottoms' },
-  { value: 'one-piece', label: 'One-piece' }, { value: 'outerwear', label: 'Outerwear' },
-  { value: 'shoes', label: 'Shoes' }, { value: 'accessory', label: 'Bags' },
+  { value: 'all', label: 'all' }, { value: 'top', label: catLabel('top') }, { value: 'bottom', label: catLabel('bottom') },
+  { value: 'one-piece', label: catLabel('one-piece') }, { value: 'outerwear', label: catLabel('outerwear') },
+  { value: 'shoes', label: catLabel('shoes') }, { value: 'accessory', label: catLabel('accessory') },
 ]
 
-const LOADING_STEPS = ['Checking the weather', 'Reading your style profile', 'Choosing from your closet']
+const LOADING_STEPS = ['checking the weather', 'reading your style profile', 'choosing from your closet']
 
 export default function SuggestPage() {
   const navigate = useNavigate()
@@ -59,8 +63,8 @@ export default function SuggestPage() {
   }, [])
 
   const handleSuggest = async () => {
-    if (!occasion.trim() && chosenFormality == null) { setError('Choose an occasion or a formality level.'); return }
-    if (!weather) { setError('Weather data needed — try again in a moment.'); return }
+    if (!occasion.trim() && chosenFormality == null) { setError('choose an occasion or a formality level.'); return }
+    if (!weather) { setError('weather data needed — try again in a moment.'); return }
     setView('loading'); setLoadingStep(0); setError(null)
     const stepTimers = [setTimeout(() => setLoadingStep(1), 900), setTimeout(() => setLoadingStep(2), 1900)]
 
@@ -101,7 +105,7 @@ export default function SuggestPage() {
         anchor_item: anchorItem ? { id: anchorItem.id, name: anchorItem.name, category: anchorItem.category, subcategory: anchorItem.subcategory, color: anchorItem.color } : undefined,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Suggestion failed')
+      if (!res.ok) throw new Error(data.error ?? 'suggestion failed')
       const incoming = data.suggestions ?? []
       if (incoming.length === 0) throw new Error('No valid outfits found — try a different anchor item or occasion.')
       setSuggestions(incoming)
@@ -110,7 +114,7 @@ export default function SuggestPage() {
       setFeedbackIds(incoming.map(() => crypto.randomUUID()))
       setView('result')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong')
+      setError(e instanceof Error ? e.message : 'something went wrong')
       setView('error')
     }
     stepTimers.forEach(clearTimeout)
@@ -125,7 +129,7 @@ export default function SuggestPage() {
       setSavedMsg(true)
       setTimeout(() => setSavedMsg(false), 2000)
     } catch (e) {
-      setSaveIdeaError(e instanceof Error ? e.message : 'Failed to save idea')
+      setSaveIdeaError(e instanceof Error ? e.message : 'failed to save idea')
       setTimeout(() => setSaveIdeaError(null), 4000)
     }
   }
@@ -157,8 +161,9 @@ export default function SuggestPage() {
         <V4Bar right={<button onClick={() => setView('brief')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Having a look through your closet.</Disp>
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
+          <Disp s={26}>having a look through your closet</Disp>
+          <div style={{ marginTop: 28 }}>
+          <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 15 }}>
             {LOADING_STEPS.map((label, i) => {
               const done = i < loadingStep
               const active = i === loadingStep
@@ -172,6 +177,7 @@ export default function SuggestPage() {
               )
             })}
           </div>
+          </div>
         </div>
       </div>
     )
@@ -184,11 +190,11 @@ export default function SuggestPage() {
         <V4Bar right={<button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
         <div style={{ padding: '40px 40px 0' }}>
           <div style={{ width: 50, height: 50, background: T.peachSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}><V4Icon n="close" s={22} w={1.8} c={T.cocoa} /></div>
-          <Disp s={26}>Couldn't put those looks together.</Disp>
+          <Disp s={26}>couldn't put those looks together</Disp>
           <Body s={14} style={{ marginTop: 10, maxWidth: 300 }}>{error ?? "Something went wrong — your answers are still here, nothing's lost."}</Body>
           <div style={{ marginTop: 26, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Btn full icon="spark" onClick={handleSuggest}>Try again</Btn>
-            <Btn full kind="quiet" onClick={() => setView('brief')}>Back to brief</Btn>
+            <Btn full icon="spark" onClick={handleSuggest}>try again</Btn>
+            <Btn full kind="quiet" onClick={() => setView('brief')}>back to brief</Btn>
           </div>
         </div>
       </div>
@@ -202,10 +208,10 @@ export default function SuggestPage() {
 
     const PhotoBlock = (
       <>
-        <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative' }}>
-          <Collage items={collageItems(current.item_ids)} fill />
-          {occasion && <div style={{ position: 'absolute', top: 22, left: 22, height: 29, display: 'inline-flex', alignItems: 'center', padding: '0 12px', background: 'rgba(247,246,245,.94)', fontFamily: fS, fontSize: 12, fontWeight: 600, textTransform: 'capitalize' }}>{occasion}</div>}
-        </div>
+        <motion.div key={selectedOption} initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} style={{ width: '100%', position: 'relative' }}>
+          <Collage items={collageItems(current.item_ids)} />
+          {occasion && <div style={{ position: 'absolute', top: 22, left: 22, height: 29, display: 'inline-flex', alignItems: 'center', padding: '0 12px', borderRadius: 2, background: T.paper, fontFamily: fS, fontSize: 12, fontWeight: 600 }}>{occasion}</div>}
+        </motion.div>
         {suggestions.length > 1 && (
           <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}><Dots n={suggestions.length} i={selectedOption} /></div>
         )}
@@ -213,7 +219,7 @@ export default function SuggestPage() {
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
             {suggestions.map((_, i) => (
               <div key={i} style={{ flex: 1 }}>
-                <Pill on={i === selectedOption} s="sm" full onClick={() => setSelectedOption(i)}>Look {i + 1}</Pill>
+                <Pill group="look" on={i === selectedOption} s="sm" full onClick={() => setSelectedOption(i)}>look {i + 1}</Pill>
               </div>
             ))}
           </div>
@@ -224,23 +230,23 @@ export default function SuggestPage() {
     const InfoBlock = (
       <>
         <div>
-          <Disp s={22}>{occasion ? `${occasion.charAt(0).toUpperCase()}${occasion.slice(1)}${weather ? `, ${weather.temp_c}°` : ''}.` : weather ? `${weather.temp_c}° and ${weather.conditions}.` : 'Your look.'}</Disp>
+          <Disp s={22}>{occasion ? `${occasion.charAt(0).toUpperCase()}${occasion.slice(1)}${weather ? `, ${weather.temp_c}°` : ''}.` : weather ? `${weather.temp_c}° and ${weather.conditions}.` : 'your look.'}</Disp>
           {anchorItem && <Mono s={10} style={{ display: 'block', marginTop: 6 }}>built around: {anchorItem.name}</Mono>}
         </div>
         <div style={{ marginTop: 16 }}>
           {currentItems.map((item, i) => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < currentItems.length - 1 ? `1px solid ${T.line}` : 'none' }}>
+            <motion.div key={`${selectedOption}-${item.id}`} {...rise(i, 8)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < currentItems.length - 1 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ width: 34, height: 42, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               </div>
               <div style={{ flex: 1, fontFamily: fS, fontSize: 14 }}>{item.name}</div>
               <Mono s={10.5}>{item.category}</Mono>
-            </div>
+            </motion.div>
           ))}
         </div>
-        <div style={{ marginTop: 18 }}>
+        <motion.div key={`r${selectedOption}`} {...rise(currentItems.length + 1, 8)} style={{ marginTop: 18 }}>
           <V4Card fill={T.peachSoft} shadow={false} pad={16}><Body s={14} c={T.g700}>{current.reasoning}</Body></V4Card>
-        </div>
+        </motion.div>
         <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
           <Mono s={10}>rate this suggestion</Mono>
           <div style={{ flex: 1, borderTop: `1px dashed ${T.g200}` }} />
@@ -249,18 +255,18 @@ export default function SuggestPage() {
         </div>
         <div style={{ marginTop: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
           <RoundBtn icon="bookmark" tone="peach" onClick={() => handleSaveIdea(current.item_ids, current.reasoning)} />
-          <Btn flex={1} icon="check" onClick={() => handleLog(current.item_ids)}>Wear this today</Btn>
+          <Btn flex={1} icon="check" onClick={() => handleLog(current.item_ids)}>wear this today</Btn>
         </div>
-        {(savedMsg || saveIdeaError) && <Body s={12} c={saveIdeaError ? T.roseDeep : T.cocoa} style={{ marginTop: 10, textAlign: 'center' }}>{saveIdeaError ?? 'Saved to ideas ✓'}</Body>}
+        {(savedMsg || saveIdeaError) && <Body s={12} c={saveIdeaError ? T.roseDeep : T.cocoa} style={{ marginTop: 10, textAlign: 'center' }}>{saveIdeaError ?? 'saved to ideas ✓'}</Body>}
         <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <button onClick={handleSuggest} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13.5, color: T.cocoa, textDecoration: 'underline' }}>Try three different ones</button>
+          <button onClick={handleSuggest} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13.5, color: T.cocoa, textDecoration: 'underline' }}>try three different ones</button>
         </div>
       </>
     )
 
     return (
       <div style={{ paddingBottom: 40 }}>
-        <V4Bar back title="Brief" onBack={() => setView('brief')} right={<Mono s={11.5}>{selectedOption + 1} / {suggestions.length}</Mono>} />
+        <V4Bar back title="brief" onBack={() => setView('brief')} />
         {isDesktop ? (
           <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
             <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
@@ -279,14 +285,10 @@ export default function SuggestPage() {
   // ── Brief ─────────────────────────────────────────────────────────────────
   return (
     <div style={{ paddingBottom: 100 }}>
-      <V4Bar right={<button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={25}>Where are you<br />off to?</Disp>
-      </div>
-      <div style={{ padding: '18px 22px 0' }}>
         <V4Card fill={T.peach} shadow={false} pad={14} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
           <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
-          <Body s={13.5} c={T.cocoa}>{weather ? `${weather.temp_c}° and ${weather.conditions} — I'll factor that in.` : "I'll factor in the weather where you're headed."}</Body>
+          <Body s={13.5} c={T.cocoa}>{weather ? `${weather.temp_c}°, ${weather.conditions}` : 'weather not loaded'}</Body>
         </V4Card>
       </div>
       <div style={{ padding: '22px 22px 0' }}>
@@ -295,13 +297,13 @@ export default function SuggestPage() {
         </div>
         <input
           type="text" value={occasionPresets.includes(occasion) ? '' : occasion} onChange={e => setOccasion(e.target.value)}
-          placeholder="or type your own…"
+          placeholder="other"
           style={{ width: '100%', fontFamily: fS, fontSize: 14, color: T.ink, background: 'none', border: 'none', outline: 'none', borderBottom: `1px solid ${T.line}`, padding: '10px 0 6px', marginTop: 10 }}
         />
       </div>
       <div style={{ padding: '20px 22px 0' }}>
         <button onClick={() => setShowFormality(v => !v)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: fS, fontSize: 13, color: T.cocoa }}>
-          {chosenFormality != null ? `Formality: ${chosenFormality}/5` : 'Set a formality level instead'}<V4Icon n="caret" s={13} w={2} style={showFormality ? { transform: 'rotate(180deg)' } : undefined} />
+          {chosenFormality != null ? `formality: ${chosenFormality}/5` : 'formality'}<V4Icon n="caret" s={13} w={2} style={showFormality ? { transform: 'rotate(180deg)' } : undefined} />
         </button>
         {showFormality && (
           <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
@@ -312,17 +314,17 @@ export default function SuggestPage() {
         )}
       </div>
       <div style={{ padding: '24px 22px 0' }}>
-        <SecH right={showAnchorPicker ? 'Hide' : 'Optional'} onRightClick={() => setShowAnchorPicker(v => !v)}>Start from a piece</SecH>
+        <SecH right={showAnchorPicker ? 'hide' : 'optional'} onRightClick={() => setShowAnchorPicker(v => !v)}>start from</SecH>
         {anchorItem ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: T.ink, color: '#fff' }}>
-            <div style={{ width: 40, height: 50, flexShrink: 0, overflow: 'hidden' }}>{anchorItem.signedImageUrl && <img src={anchorItem.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}</div>
-            <Mono s={11} style={{ flex: 1 }}>{anchorItem.name}</Mono>
+            <div style={{ width: 40, height: 50, flexShrink: 0, overflow: 'hidden' }}>{anchorItem.signedImageUrl && <SafeImg src={anchorItem.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}</div>
+            <span style={{ flex: 1, fontFamily: fS, fontSize: 13.5, color: '#fff' }}>{anchorItem.name}</span>
             <button onClick={() => setAnchorItemId(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex' }}><V4Icon n="close" s={16} w={2} /></button>
           </div>
         ) : showAnchorPicker ? (
           <>
             <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 10 }}>
-              {ANCHOR_CATS.map(c => <Pill key={c.value} s="sm" on={anchorFilterCat === c.value} onClick={() => setAnchorFilterCat(c.value)}>{c.label}</Pill>)}
+              {ANCHOR_CATS.map(c => <Pill group="anchor-cat" key={c.value} s="sm" on={anchorFilterCat === c.value} onClick={() => setAnchorFilterCat(c.value)}>{c.label}</Pill>)}
             </div>
             <div style={{ maxHeight: 260, overflowY: 'auto' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
@@ -333,14 +335,13 @@ export default function SuggestPage() {
             </div>
           </>
         ) : (
-          <button onClick={() => setShowAnchorPicker(true)} style={{ width: 60, height: 74, border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></button>
+          <button onClick={() => setShowAnchorPicker(true)} style={{ width: 60, height: 74, borderRadius: 2, border: `1.5px dashed ${T.g200}`, background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.g400 }}><V4Icon n="plus" s={18} w={1.7} /></button>
         )}
       </div>
-      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '0 22px max(0px, calc(24px - var(--v3-sticky-bottom)))', zIndex: 20, pointerEvents: 'none' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', pointerEvents: 'auto' }}>
           {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-          <Body s={12} c={T.g500} style={{ marginBottom: 10 }}>Using how you actually dress, and the weather.</Body>
-          <Btn full icon="spark" disabled={(!occasion.trim() && chosenFormality == null) || !weather || items.length === 0} onClick={handleSuggest}>Put together three looks</Btn>
+          <Btn full icon="spark" disabled={(!occasion.trim() && chosenFormality == null) || !weather || items.length === 0} onClick={handleSuggest}>suggest</Btn>
         </div>
       </div>
     </div>

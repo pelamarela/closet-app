@@ -3,6 +3,9 @@
 // so later phases can adapt the other v4-*.jsx reference screens with minimal translation risk.
 // This is the v3 replacement for components/ui.tsx — pages migrate to it one at a time.
 
+import { SafeImg } from './SafeImg'
+import { R } from './radii'
+import { motion, AnimatePresence } from 'motion/react'
 import { useState, useEffect } from 'react'
 import type { ReactNode, CSSProperties } from 'react'
 
@@ -16,23 +19,24 @@ export const APP_HEADER_H = 58
 // their buttons stay aligned under the content column above them.
 export const CONTENT_MAX_W = 1320
 
+// Pelamarela Design System colours. `white` is the cream surface (cards, fields), `paper` the white page,
+// `peach` the soft blush (selected states, soft buttons), `cocoa` the deep brown, `ink` espresso.
 export const T = {
-  paper: '#F7F6F5', white: '#FFFFFF', ink: '#000000',
-  peach: '#F2E1D0', peachSoft: '#FAF2EA', peachDeep: '#E9CBB0',
-  rose: '#DFAFA1', roseSoft: '#ECCFC4', roseDeep: '#C98E7C',
-  cocoa: '#6F4E37', cocoaSoft: '#8A6B54', cocoaDeep: '#543A29',
-  line: '#E6E3E0', g700: '#2B2B29', g500: '#5A5854', g400: '#8A8884', g200: '#D9D6D2',
+  paper: '#FFFFFF', white: '#FCF9F4', ink: '#1B1210',
+  peach: '#E1AFA1', peachSoft: '#FCF9F4', peachDeep: '#D49A8A',
+  rose: '#E1AFA1', roseSoft: '#ECCFC4', roseDeep: '#E9558C',
+  cocoa: '#3E2022', cocoaSoft: '#5E3436', cocoaDeep: '#2A1517',
+  surface: '#F7F6F5', // neutral soft grey, the same tone as the photo backgrounds, so collages sit in it without a colour clash
+  line: '#ECE6DF', g700: '#3A302D', g500: '#6B605B', g400: '#8F8580', g200: '#DDD6D0',
 } as const
 
-export const fD = '"Syne", system-ui, sans-serif'
-export const fS = '"Poppins", system-ui, sans-serif'
-export const fM = '"Space Mono", ui-monospace, monospace'
+// Pelamarela Design System (Brand Guidelines 3.0): Tenor Sans for titles, Manrope for body and UI.
+export const fD = '"Tenor Sans", "Manrope", sans-serif'
+export const fS = '"Manrope", system-ui, sans-serif'
+export const fM = '"Manrope", system-ui, sans-serif'
 
-export const dotted: CSSProperties = {
-  backgroundColor: T.paper,
-  backgroundImage: 'radial-gradient(circle, rgba(0,0,0,.13) 1px, transparent 1.4px)',
-  backgroundSize: '22px 22px',
-}
+// Page backdrop: plain paper. Name kept so existing `...dotted` spreads pick it up everywhere.
+export const dotted: CSSProperties = { backgroundColor: T.paper }
 
 // Real hover/active/disabled feedback for every button, round button and pill —
 // injected once so it matches the design system reference exactly. See
@@ -40,7 +44,7 @@ export const dotted: CSSProperties = {
 if (typeof document !== 'undefined' && !document.getElementById('ds-v3-interactive-css')) {
   const st = document.createElement('style')
   st.id = 'ds-v3-interactive-css'
-  st.textContent = `.ds-btn{transition:background .15s ease,transform .08s ease,border-color .15s ease}.ds-btn-primary:hover:not(:disabled){background:#2b2b29}.ds-btn-primary:active:not(:disabled){background:#000;transform:scale(.97)}.ds-btn-peach:hover:not(:disabled){background:${T.peachDeep}}.ds-btn-peach:active:not(:disabled){background:${T.peachDeep};transform:scale(.97)}.ds-btn-quiet:hover:not(:disabled){background:rgba(0,0,0,.045);border-color:${T.g400}}.ds-btn-quiet:active:not(:disabled){background:rgba(0,0,0,.08);transform:scale(.97)}.ds-btn-white:hover:not(:disabled){background:${T.paper}}.ds-btn-white:active:not(:disabled){background:${T.g200};transform:scale(.97)}.ds-btn:disabled{opacity:.38;cursor:not-allowed}.ds-round{transition:background .15s ease,transform .08s ease}.ds-round-quiet:hover:not(:disabled){background:rgba(0,0,0,.045)}.ds-round-peach:hover:not(:disabled){background:${T.peachDeep}}.ds-round:active:not(:disabled){transform:scale(.94)}.ds-round:disabled{opacity:.38;cursor:not-allowed}.ds-pill{cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .08s ease}.ds-pill:not(.ds-pill-on):hover{border-color:${T.g400}}.ds-pill:not(.ds-pill-on):active{background:rgba(0,0,0,.05);transform:scale(.97)}.ds-pill.ds-pill-on:active{transform:scale(.97);opacity:.85}.ds-tile{cursor:pointer;transition:box-shadow .15s ease,transform .08s ease}.ds-tile:hover{box-shadow:inset 0 0 0 1.5px ${T.g400}}.ds-tile:active{transform:scale(.97)}.ds-row4{cursor:pointer;transition:background .15s ease;margin:0 -12px;padding-left:12px;padding-right:12px}.ds-row4:hover{background:rgba(0,0,0,.03)}.ds-dd-trig{cursor:pointer;display:inline-flex;align-items:center;gap:5px}.ds-dd-opt{cursor:pointer;transition:background .12s ease}.ds-dd-opt:hover{background:rgba(0,0,0,.04)}`
+  st.textContent = `.ds-btn{transition:background .15s ease,transform .08s ease,border-color .15s ease}.ds-btn-primary:hover:not(:disabled){background:#2b2b29}.ds-btn-primary:active:not(:disabled){background:#000;transform:scale(.97)}.ds-btn-peach:hover:not(:disabled){background:${T.peachDeep}}.ds-btn-peach:active:not(:disabled){background:${T.peachDeep};transform:scale(.97)}.ds-btn-quiet:hover:not(:disabled){background:rgba(0,0,0,.045);border-color:${T.g400}}.ds-btn-quiet:active:not(:disabled){background:rgba(0,0,0,.08);transform:scale(.97)}.ds-btn-white:hover:not(:disabled){background:${T.paper}}.ds-btn-white:active:not(:disabled){background:${T.g200};transform:scale(.97)}.ds-btn:disabled{opacity:.38;cursor:not-allowed}.ds-round{transition:background .15s ease,transform .08s ease}.ds-round-quiet:hover:not(:disabled){background:rgba(0,0,0,.045)}.ds-round-peach:hover:not(:disabled){background:${T.peachDeep}}.ds-round:active:not(:disabled){transform:scale(.94)}.ds-round:disabled{opacity:.38;cursor:not-allowed}.ds-pill{cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .08s ease}.ds-pill:not(.ds-pill-on):hover{border-color:${T.g400}}.ds-pill:not(.ds-pill-on):active{background:rgba(0,0,0,.05);transform:scale(.97)}.ds-pill.ds-pill-on:active{transform:scale(.97);opacity:.85}.ds-tile{cursor:pointer;transition:box-shadow .15s ease,transform .08s ease}.ds-tile:hover{box-shadow:inset 0 0 0 1.5px ${T.g400}}.ds-tile:active{transform:scale(.97)}.ds-row4{cursor:pointer;transition:background .15s ease}.ds-row4:hover{background:${T.white}}.ds-dd-trig{cursor:pointer;display:inline-flex;align-items:center;gap:5px}.ds-dd-opt{cursor:pointer;transition:background .12s ease}.ds-dd-opt:hover{background:rgba(0,0,0,.04)}`
   document.head.appendChild(st)
 }
 
@@ -102,10 +106,12 @@ export function V4Icon({ n, s = 22, w = 1.6, c, style }: {
 // from the center — encoded as a background-position shift on the pattern.
 export type PhTone = 'peach' | 'rose' | 'cocoa' | 'ink' | 'sand' | 'paper'
 
+// Colours from the Pelamarela Design System: cream, blush, rosewood, espresso, pink.
+// Key names are historical; the values are what matters.
 const PH_TONES: Record<PhTone, [string, string, 0 | 1]> = {
-  peach: ['#F5E7DA', '#EAD8C4', 0], rose: ['#E7C6BA', '#DAB0A1', 0],
-  cocoa: ['#7C5B44', '#61452F', 1], ink: ['#2C2925', '#1A1815', 1],
-  sand: ['#EDEAE5', '#DFDAD3', 0], paper: ['#F4F2EF', '#E8E4DE', 0],
+  peach: ['#FCF3EA', '#F3E4D6', 0], rose: ['#E1AFA1', '#D49A8A', 0],
+  cocoa: ['#5E3436', '#4A282A', 1], ink: ['#2A1D1A', '#1B1210', 1],
+  sand: ['#E9558C', '#DC4780', 1], paper: ['#F1D5CC', '#E8C3B7', 0],
 }
 const TONE_CYCLE: PhTone[] = ['peach', 'rose', 'cocoa', 'ink', 'sand', 'paper']
 
@@ -113,7 +119,9 @@ const TONE_CYCLE: PhTone[] = ['peach', 'rose', 'cocoa', 'ink', 'sand', 'paper']
 // small to read (week strip, month calendar cells): same outfit always
 // shows the same color, different outfits are visually distinct at a glance.
 export function outfitTone(id: string): PhTone {
-  const n = parseInt(id.replace(/-/g, '').slice(0, 6), 16) || 0
+  // real ids are uuids (hex); for any other kind of id fall back to hashing every character so it still varies
+  const hex = parseInt(id.replace(/-/g, '').slice(0, 6), 16)
+  const n = Number.isNaN(hex) ? [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7) : hex
   return TONE_CYCLE[n % TONE_CYCLE.length]
 }
 
@@ -139,29 +147,29 @@ export function ItemPhoto({ src, alt = '', tone = 'sand', crop, style }: {
   src?: string | null; alt?: string; tone?: PhTone; crop?: 'top' | 'center'; style?: CSSProperties
 }) {
   if (src) {
-    return <img src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: crop === 'top' ? 'top' : 'center', display: 'block', ...style }} />
+    return <SafeImg src={src} alt={alt} fallback={<Ph tone={tone} crop={crop} style={style} />} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: crop === 'top' ? 'top' : 'center', display: 'block', ...style }} />
   }
   return <Ph tone={tone} crop={crop} style={style} />
 }
 
 // Closet grid tile — real photo (falls back to the Ph placeholder), optional
 // worn-count badge, optional selected ring/check for pick flows.
-export function ItemTile({ src, alt = '', tone = 'sand', crop, worn, sel, onClick }: {
+export function ItemTile({ src, alt = '', tone = 'sand', crop, worn, sel, onClick, vtName }: {
   src?: string | null; alt?: string; tone?: PhTone; crop?: 'top' | 'center'
-  worn?: number; sel?: boolean; onClick?: () => void
+  worn?: number; sel?: boolean; onClick?: () => void; vtName?: string
 }) {
   return (
     <button onClick={onClick} className="ds-tile" style={{
-      position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', padding: 0,
-      background: 'none', cursor: 'pointer',
-      boxShadow: sel ? `0 0 0 2.5px ${T.ink}` : `inset 0 0 0 1px ${T.line}`,
+      position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', padding: 0, border: 'none', borderRadius: R.md,
+      background: 'none', cursor: 'pointer', viewTransitionName: vtName,
+      boxShadow: sel ? `0 0 0 2.5px ${T.ink}` : 'none',
     }}>
       <ItemPhoto src={src} alt={alt} tone={tone} crop={crop} />
       {worn != null && (
-        <div style={{ position: 'absolute', right: 6, bottom: 6, height: 20, padding: '0 7px', borderRadius: 2, background: 'rgba(247,246,245,.92)', display: 'flex', alignItems: 'center', fontFamily: fM, fontSize: 10, fontWeight: 700 }}>{worn}×</div>
+        <div style={{ position: 'absolute', right: 6, bottom: 6, height: 22, padding: '0 8px', borderRadius: R.sm, background: 'rgba(255,255,255,.94)', display: 'flex', alignItems: 'center', fontFamily: fM, fontSize: 10, fontWeight: 700 }}>{worn}×</div>
       )}
       {sel && (
-        <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, background: T.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="check" s={13} w={2.6} /></div>
+        <div style={{ position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: R.sm, background: T.ink, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><V4Icon n="check" s={13} w={2.6} /></div>
       )}
     </button>
   )
@@ -173,8 +181,8 @@ export function Disp({ children, s = 28, w = 600, c = T.ink, style }: {
   const head = s >= 24
   return (
     <div style={{
-      fontFamily: head ? fD : fS, fontSize: s, fontWeight: head ? w : Math.min(w, 500),
-      lineHeight: head ? 1.12 : 1.32, letterSpacing: head ? '-.015em' : '-.005em',
+      fontFamily: head ? fD : fS, fontSize: s, fontWeight: head ? 400 : Math.min(w, 500),
+      lineHeight: head ? 1.12 : 1.32, 
       color: c, textWrap: 'pretty', ...style,
     }}>{children}</div>
   )
@@ -230,20 +238,29 @@ export function V4Bar({ title, back, onBack, right, pad = 22, sticky = true }: {
   )
 }
 
-export function Pill({ children, on = false, tone = 'ink', count, s = 'md', full = false, onClick }: {
+export function Pill({ children, on = false, tone = 'ink', count, s = 'md', full = false, onClick, group }: {
   children: ReactNode; on?: boolean; tone?: 'ink' | 'peach'; count?: number | string
   s?: 'sm' | 'md' | 'lg'; full?: boolean; onClick?: () => void
+  /** Pills sharing a `group` slide one highlight between them instead of swapping. */
+  group?: string
 }) {
   const h = s === 'lg' ? 46 : s === 'sm' ? 34 : 40
-  const bg = on ? (tone === 'peach' ? T.peach : T.ink) : 'transparent'
+  const onBg = tone === 'peach' ? T.peach : T.ink
+  const bg = on && !group ? onBg : 'transparent'
   const fg = on ? (tone === 'peach' ? T.ink : '#fff') : T.g700
   return (
     <button onClick={onClick} className={`ds-pill${on ? ' ds-pill-on' : ''}`} style={{
-      height: h, width: full ? '100%' : undefined, display: 'inline-flex', alignItems: 'center', justifyContent: full ? 'center' : 'flex-start', gap: 6, padding: `0 ${s === 'sm' ? 13 : 17}px`,
-      borderRadius: 2, background: bg, color: fg, border: on ? 'none' : `1px solid ${T.g200}`,
+      height: h, width: full ? '100%' : undefined, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: `0 ${s === 'sm' ? 13 : 17}px`,
+      position: 'relative', borderRadius: R.md, background: bg, color: fg, border: on ? (group ? '1px solid transparent' : 'none') : `1px solid ${T.g200}`,
       fontFamily: fS, fontSize: s === 'sm' ? 12.5 : 14, fontWeight: 400, whiteSpace: 'nowrap', flexShrink: 0,
+      // options (clickable) stretch so every row of them is always full; plain info chips keep their size
+      flexGrow: onClick ? 1 : 0,
+      transition: 'color .2s ease, border-color .15s ease',
     }}>
-      {children}{count != null && <span style={{ fontFamily: fM, fontSize: 11, opacity: .55 }}>{count}</span>}
+      {on && group && <motion.span layoutId={`pill-${group}`} transition={{ type: 'spring', stiffness: 520, damping: 40 }} style={{ position: 'absolute', inset: -1, background: onBg, borderRadius: R.md }} />}
+      <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        {children}{count != null && <span style={{ fontFamily: fM, fontSize: 11, opacity: .55 }}>{count}</span>}
+      </span>
     </button>
   )
 }
@@ -290,7 +307,7 @@ export function Btn({ children, kind = 'primary', icon, full, flex, disabled = f
 }) {
   return (
     <button type={type} disabled={disabled} onClick={onClick} className={`ds-btn ds-btn-${kind}`} style={{
-      height: 52, padding: '0 22px', borderRadius: 2, cursor: disabled ? 'not-allowed' : 'pointer',
+      height: 52, padding: '0 24px', borderRadius: R.md, cursor: disabled ? 'not-allowed' : 'pointer',
       width: full ? '100%' : undefined, flex, minWidth: 0, fontFamily: fS, fontSize: 14.5, fontWeight: 400,
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, overflow: 'hidden',
       WebkitTapHighlightColor: 'transparent', ...BTN_KIND[kind], ...style,
@@ -319,7 +336,7 @@ export function RoundBtn({ icon, tone = 'quiet', disabled = false, onClick, styl
   const k: CSSProperties = tone === 'peach' ? { background: T.peach, border: 'none' } : { background: 'transparent', border: `1px solid ${T.g200}` }
   return (
     <button disabled={disabled} onClick={onClick} className={`ds-round ds-round-${tone}`} style={{
-      width: 52, height: 52, padding: 0, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: 52, height: 52, padding: 0, borderRadius: R.md, display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0, cursor: disabled ? 'not-allowed' : 'pointer', WebkitTapHighlightColor: 'transparent', ...k, ...style,
     }}><V4Icon n={icon} s={21} w={1.7} /></button>
   )
@@ -330,23 +347,22 @@ export function Divider({ style }: { style?: CSSProperties }) {
   return <div style={{ height: 1, background: T.line, margin: '26px 22px 0', ...style }} />
 }
 
-export function V4Card({ children, fill = T.white, pad = 16, shadow = true, style }: {
+export function V4Card({ children, fill = T.white, pad = 16, style }: {
   children: ReactNode; fill?: string; pad?: number; shadow?: boolean; style?: CSSProperties
 }) {
-  return <div style={{ background: fill, borderRadius: 0, padding: pad, boxShadow: shadow ? '0 2px 10px rgba(0,0,0,.045)' : 'none', ...style }}>{children}</div>
+  return <div style={{ background: fill, borderRadius: R.lg, padding: pad, ...style }}>{children}</div>
 }
 
 // Pill track + sliding thumb — purely visual, the tap target is the whole
 // Row4 row. Used instead of a plain "On/Off" text value for boolean settings.
 export function Switch({ on }: { on: boolean }) {
   return (
-    <div style={{
+    <motion.div animate={{ backgroundColor: on ? T.ink : T.g200 }} transition={{ duration: 0.18 }} style={{
       width: 40, height: 24, borderRadius: 12, padding: 2, flexShrink: 0, boxSizing: 'border-box',
-      background: on ? T.ink : T.g200, display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start',
-      transition: 'background .15s ease',
+      display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start',
     }}>
-      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
-    </div>
+      <motion.div layout transition={{ type: 'spring', stiffness: 600, damping: 32 }} style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+    </motion.div>
   )
 }
 
@@ -355,22 +371,27 @@ export function Row4({ label, value, chev = true, sub, last, toggle, onClick }: 
 }) {
   const content = (
     <>
-      <div><div style={{ fontFamily: fS, fontSize: 15 }}>{label}</div>{sub && <div style={{ fontFamily: fS, fontSize: 12, color: T.g400, marginTop: 1 }}>{sub}</div>}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: T.g400 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: fS, fontSize: 15, lineHeight: 1.3 }}>{label}</div>
+        {sub && <div style={{ fontFamily: fS, fontSize: 12.5, lineHeight: 1.35, color: T.g400, marginTop: 3 }}>{sub}</div>}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: T.g400, flexShrink: 0 }}>
         {toggle != null ? <Switch on={toggle} /> : <>
-          {value != null && <span style={{ fontFamily: fM, fontSize: 12.5 }}>{value}</span>}
+          {value != null && <span style={{ fontFamily: fS, fontSize: 13 }}>{value}</span>}
           {chev && <V4Icon n="next" s={16} w={1.8} />}
         </>}
       </div>
     </>
   )
-  // flex-start, not center: with a two-line label (title + sub), centering
-  // against the whole block lands the switch/chevron in the gap between the
-  // two lines instead of against the title — this keeps it pinned to the top,
-  // level with the title, whether or not a sub caption is present.
-  const rowStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, minHeight: 54, paddingTop: 15, borderBottom: last ? 'none' : `1px solid ${T.line}`, width: '100%' }
+  // centred against the whole row, equal padding above and below, so the label, the caption, the switch
+  // and the chevron all line up; the -12px margin lets the hover tint reach past the text gutter
+  const rowStyle: CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, boxSizing: 'border-box',
+    minHeight: 56, padding: '12px 12px', margin: '0 -12px', width: 'calc(100% + 24px)',
+    borderBottom: last ? 'none' : `1px solid ${T.line}`, background: 'none',
+  }
   if (onClick) {
-    return <button className="ds-row4" onClick={onClick} style={{ ...rowStyle, background: 'none', border: 'none', borderBottom: rowStyle.borderBottom, textAlign: 'left', cursor: 'pointer', padding: '0 12px', margin: '0 -12px' }}>{content}</button>
+    return <button className="ds-row4" onClick={onClick} style={{ ...rowStyle, border: 'none', borderBottom: rowStyle.borderBottom, textAlign: 'left', cursor: 'pointer' }}>{content}</button>
   }
   return <div className="ds-row4" style={rowStyle}>{content}</div>
 }
@@ -378,9 +399,9 @@ export function Row4({ label, value, chev = true, sub, last, toggle, onClick }: 
 // Bottom sheet over a dimmed screen — used for Log, Suggest brief, Shop check.
 export function Scrim({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <div onClick={onClick} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.34)', zIndex: 40 }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} onClick={onClick} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.34)', zIndex: 40 }}>
       {children}
-    </div>
+    </motion.div>
   )
 }
 export function Sheet({ children, title, right, step, maxHeight = '92svh', footer, onClick }: {
@@ -388,9 +409,9 @@ export function Sheet({ children, title, right, step, maxHeight = '92svh', foote
   maxHeight?: string | number; footer?: ReactNode; onClick?: (e: React.MouseEvent) => void
 }) {
   return (
-    <div onClick={onClick} style={{
+    <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 38 }} onClick={onClick} style={{
       position: 'fixed', left: 0, right: 0, bottom: 0, maxHeight, background: T.paper,
-      borderRadius: '16px 16px 0 0', boxShadow: '0 -14px 40px rgba(0,0,0,.16)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 41,
+      borderRadius: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 41,
     }}>
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, flexShrink: 0 }}><div style={{ width: 40, height: 4, borderRadius: 2, background: T.g200 }} /></div>
       {(title || right) && (
@@ -403,14 +424,14 @@ export function Sheet({ children, title, right, step, maxHeight = '92svh', foote
       {/* Fixed within the sheet — stays put while `children` scrolls, same
           role as the position:fixed CTA bar full pages use. */}
       {footer && <div style={{ flexShrink: 0, padding: '14px 22px 20px', borderTop: `1px solid ${T.line}` }}>{footer}</div>}
-    </div>
+    </motion.div>
   )
 }
 export function Dots({ n = 3, i = 0 }: { n?: number; i?: number }) {
   return (
     <div style={{ display: 'flex', gap: 6 }}>
       {Array.from({ length: n }, (_, k) => (
-        <div key={k} style={{ width: k === i ? 20 : 6, height: 6, borderRadius: 2, background: k === i ? T.ink : T.g200 }} />
+        <motion.div key={k} animate={{ width: k === i ? 20 : 6, backgroundColor: k === i ? T.ink : T.g200 }} transition={{ type: 'spring', stiffness: 500, damping: 34 }} style={{ height: 6, borderRadius: R.pill }} />
       ))}
     </div>
   )
@@ -428,14 +449,14 @@ export function BarStat({ label, v, max = 100, suffix = '%', tone = T.cocoa, thu
           <span style={{ fontFamily: fS, fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
           <Mono s={12} c={T.ink} style={{ fontWeight: 700, paddingLeft: 10 }}>{v}{suffix}</Mono>
         </div>
-        <div style={{ height: 6, borderRadius: 2, background: T.g200 }}><div style={{ width: `${(v / max) * 100}%`, height: 6, borderRadius: 2, background: tone }} /></div>
+        <div style={{ height: 6, borderRadius: R.pill, background: T.g200 }}><motion.div initial={{ width: 0 }} animate={{ width: `${(v / max) * 100}%` }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} style={{ height: 6, borderRadius: R.pill, background: tone }} /></div>
       </div>
     </div>
   )
 }
 // 5-dot scale — replaces "warmth 2 / 5" mono text.
 export function DotScale({ v, n = 5, tone = T.cocoa }: { v: number; n?: number; tone?: string }) {
-  return <div style={{ display: 'flex', gap: 4 }}>{Array.from({ length: n }, (_, i) => <div key={i} style={{ width: 7, height: 7, borderRadius: 2, background: i < v ? tone : T.g200 }} />)}</div>
+  return <div style={{ display: 'flex', gap: 4 }}>{Array.from({ length: n }, (_, i) => <motion.div key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.05, type: 'spring', stiffness: 500, damping: 22 }} style={{ width: 7, height: 7, borderRadius: R.pill, background: i < v ? tone : T.g200 }} />)}</div>
 }
 
 // Trigger + options panel for time-grain and rail-style pickers.
@@ -449,23 +470,54 @@ export function Dropdown<Opt extends string>({ value, options, onChange, align =
         background: 'none', border: 'none', padding: 0, fontFamily: fS, fontSize: size === 'sm' ? 13 : 14,
         fontWeight: 600, color: T.ink,
       }}>
-        {value}<V4Icon n="caret" s={16} w={2.2} style={open ? { transform: 'rotate(180deg)' } : undefined} />
+        {value}
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 26 }} style={{ display: 'inline-flex' }}>
+          <V4Icon n="caret" s={16} w={2.2} />
+        </motion.span>
       </button>
-      {open && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 8px)', [align]: 0, minWidth: 168, background: T.white,
-          boxShadow: '0 10px 28px rgba(0,0,0,.14)', border: `1px solid ${T.line}`, overflow: 'hidden', zIndex: 10,
-        }}>
-          {options.map((o, i) => (
-            <button key={o} onClick={() => { onChange(o); setOpen(false) }} className="ds-dd-opt" style={{
-              width: '100%', textAlign: 'left', background: o === value ? T.peachSoft : 'transparent', border: 'none',
-              padding: '12px 16px', fontFamily: fS, fontSize: 14, fontWeight: o === value ? 600 : 400, color: T.ink,
-              borderBottom: i < options.length - 1 ? `1px solid ${T.line}` : 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
-            }}>{o}{o === value && <V4Icon n="check" s={15} w={2.2} />}</button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* click-away layer */}
+            <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 9 }} />
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: 'absolute', top: 'calc(100% + 8px)', [align]: 0, minWidth: 168, background: T.white,
+                border: `1px solid ${T.line}`, borderRadius: R.md, overflow: 'hidden', zIndex: 10,
+                transformOrigin: align === 'left' ? 'top left' : 'top right',
+              }}>
+              {options.map((o, i) => (
+                <motion.button key={o} onClick={() => { onChange(o); setOpen(false) }} className="ds-dd-opt"
+                  initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18, delay: 0.03 * i, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    width: '100%', textAlign: 'left', background: o === value ? T.peachSoft : 'transparent', border: 'none',
+                    padding: '12px 16px', fontFamily: fS, fontSize: 14, fontWeight: o === value ? 600 : 400, color: T.ink,
+                    borderBottom: i < options.length - 1 ? `1px solid ${T.line}` : 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+                  }}>{o}{o === value && <V4Icon n="check" s={15} w={2.2} />}</motion.button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// 2 to 4 options in one flat row; replaces dropdowns. `labels` maps a value to the text shown.
+export function Segmented<Opt extends string>({ options, value, onChange, group, labels }: {
+  options: Opt[]; value: Opt; onChange: (v: Opt) => void; group: string; labels?: Partial<Record<Opt, string>>
+}) {
+  return (
+    <div style={{ display: 'inline-flex', background: T.white, padding: 3, gap: 3 }}>
+      {options.map(o => (
+        <button key={o} onClick={() => onChange(o)} aria-pressed={o === value} style={{ position: 'relative', minWidth: 78, height: 36, padding: '0 14px', border: 'none', cursor: 'pointer', background: 'none', fontFamily: fS, fontSize: 13.5, color: T.ink, fontWeight: o === value ? 600 : 400 }}>
+          {o === value && <motion.span layoutId={`seg-${group}`} transition={{ type: 'spring', stiffness: 520, damping: 40 }} style={{ position: 'absolute', inset: 0, background: T.peach, borderRadius: R.sm }} />}
+          <span style={{ position: 'relative' }}>{labels?.[o] ?? o}</span>
+        </button>
+      ))}
     </div>
   )
 }

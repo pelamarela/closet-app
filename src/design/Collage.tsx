@@ -1,11 +1,12 @@
-// v3-styled outfit collage — same real-photo tiering logic as
-// components/ItemCollage.tsx (mains get the big block, secondary/tertiary
-// stack in a sidebar, falls back to an even grid), restyled to v3 tokens
-// (sharp corners, hairline border) instead of the old rounded/RULE look.
-// This is what design-materials/v3 calls OutfitThumb/LookCollage, built
-// against real item photos instead of placeholder tone blocks.
+// Outfit collage. Same piece rules as before (which categories are garments, the worn order, what counts
+// as small) but a new arrangement: every photo keeps its own shape, nothing is cropped, the columns are
+// sized so they all end at the same line, and small things (accessories and the like) sit in their own
+// narrow, readable column instead of floating. See design-materials / the /outfits-test dev page.
 
+import { useEffect, useMemo, useState } from 'react'
+import { SafeImg } from './SafeImg'
 import { T } from './kit'
+import { R } from './radii'
 
 export type CollageItem = {
   id: string
@@ -19,82 +20,162 @@ const posFor = (category: string) => GARMENT_CAT.has(category) ? 'top center' : 
 const MAIN_ORDER: Record<string, number> = { 'one-piece': 0, top: 0, bottom: 1, outerwear: 2, shoes: 3 }
 const byMainOrder = (a: CollageItem, b: CollageItem) => (MAIN_ORDER[a.category] ?? 1) - (MAIN_ORDER[b.category] ?? 1)
 
-const G = 2
+const G = 3
+const REF = 340
 
-function Cell({ item, style }: { item: CollageItem; style?: React.CSSProperties }) {
+type Tile = { item: CollageItem; ar: number; more?: number }
+type Node = Tile | Tile[] // one tile, or a row of tiles sharing a height
+
+// natural shape of each photo, measured once and remembered
+const arCache = new Map<string, number>()
+function useAspects(urls: (string | null)[]): number[] {
+  const [, bump] = useState(0)
+  const key = urls.join('|')
+  useEffect(() => {
+    let alive = true
+    urls.forEach(u => {
+      if (!u || arCache.has(u)) return
+      const img = new Image()
+      img.onload = () => { arCache.set(u, img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1); if (alive) bump(n => n + 1) }
+      img.src = u
+    })
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return urls.map(u => (u ? arCache.get(u) ?? 1 : 1))
+}
+
+const isRow = (n: Node): n is Tile[] => Array.isArray(n)
+const tall = (n: Node) => isRow(n) ? 1 / n.reduce((s, t) => s + t.ar, 0) : 1 / n.ar
+const colTall = (c: Node[]) => c.reduce((s, n) => s + tall(n), 0)
+
+// a column's height is a * width + b (b collects the gaps), so widths can be solved to end exactly level
+function dims(c: Node[]) {
+  let a = 0, b = (c.length - 1) * G
+  for (const n of c) {
+    if (isRow(n)) { const sa = n.reduce((t, x) => t + x.ar, 0); a += 1 / sa; b -= ((n.length - 1) * G) / sa } else a += 1 / n.ar
+  }
+  return { a, b }
+}
+
+function tiers(tiles: Tile[], maxSmall: number) {
+  const sorted = [...tiles].sort((x, y) => byMainOrder(x.item, y.item))
+  const outer = sorted.filter(t => t.item.category === 'outerwear')
+  const inner = sorted.filter(t => GARMENT_CAT.has(t.item.category) && t.item.category !== 'outerwear')
+  const garments = [...outer, ...inner] // outerwear first
+  const shoes = sorted.filter(t => t.item.category === 'shoes')
+  let small = sorted.filter(t => !GARMENT_CAT.has(t.item.category) && t.item.category !== 'shoes')
+  if (small.length > maxSmall) {
+    const rest = small.length - (maxSmall - 1)
+    small = [...small.slice(0, maxSmall - 1), { item: small[maxSmall - 1].item, ar: 1, more: rest }]
+  }
+  return { garments, shoes, small }
+}
+
+function build(t: ReturnType<typeof tiers>, gcols: number, scols: number): Node[][] {
+  const cols: Node[][] = Array.from({ length: gcols }, () => [])
+  const lighter = () => cols.reduce((m, c) => (colTall(c) < colTall(m) ? c : m), cols[0])
+  t.garments.forEach(g => lighter().push(g))
+  t.shoes.forEach(s => lighter().push(s))
+  const side: Node[] = []
+  if (t.small.length >= 4) {
+    // rows as even as possible, so a lone leftover tile never ends up huge
+    const n = t.small.length
+    const rows = Math.max(1, n % scols === 1 ? Math.floor(n / scols) : Math.ceil(n / scols))
+    let at = 0
+    for (let r = 0; r < rows; r++) {
+      const size = Math.ceil((n - at) / (rows - r))
+      const chunk = t.small.slice(at, at + size)
+      at += size
+      side.push(chunk.length === 1 ? chunk[0] : chunk)
+    }
+  } else if (t.small.length > 0) lighter().push(t.small)
+  return [...cols, side].filter(c => c.length > 0)
+}
+
+function measure(cols: Node[][]) {
+  const d = cols.map(dims)
+  const D = d.reduce((s, x) => s + 1 / x.a, 0)
+  const C = d.reduce((s, x) => s + x.b / x.a, 0)
+  const H = (REF - (cols.length - 1) * G + C) / D
+  return { H, w: d.map(x => (H - x.b) / x.a) }
+}
+
+// tries a few column counts and keeps the one where small things stay readable and garments stay big
+function choose(t: ReturnType<typeof tiers>): Node[][] {
+  const nGarm = t.garments.length + t.shoes.length
+  const hasSide = t.small.length >= 4
+  const options: { cols: Node[][]; ok: boolean; score: number }[] = []
+  for (let g = 1; g <= Math.min(3, Math.max(nGarm, 1)); g++) {
+    for (let sc = 1; sc <= (hasSide ? 3 : 1); sc++) {
+      const cols = build(t, g, sc)
+      const m = measure(cols)
+      const sideTile = hasSide ? m.w[m.w.length - 1] / sc / REF : 1
+      const garmMin = Math.min(...m.w.slice(0, hasSide ? -1 : undefined)) / REF
+      const ratio = m.H / REF
+      const ok = sideTile >= 0.17 && garmMin >= 0.17 && ratio <= 2
+      options.push({ cols, ok, score: ok ? Math.abs(ratio - 1.1) : 10 - sideTile })
+    }
+  }
+  const good = options.filter(o => o.ok)
+  return (good.length ? good : options).sort((a, b) => a.score - b.score)[0].cols
+}
+
+function Cell({ tile, square }: { tile: Tile; square: boolean }) {
+  const { item, more } = tile
+  const ar = square ? 1 : tile.ar
   return (
-    <div key={item.id} style={{ overflow: 'hidden', background: T.g200, ...style }}>
-      {item.signedImageUrl
-        ? <img src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: posFor(item.category), display: 'block' }} />
-        : <div style={{ width: '100%', height: '100%', backgroundImage: `repeating-linear-gradient(122deg, ${T.g200} 0 18px, #DFDAD3 18px 36px)` }} />}
+    <div style={{ position: 'relative', width: '100%', aspectRatio: String(ar), overflow: 'hidden', borderRadius: R.sm, background: T.line }}>
+      {item.signedImageUrl && !more && (
+        <SafeImg src={item.signedImageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: posFor(item.category), display: 'block' }} />
+      )}
+      {more != null && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Manrope", system-ui, sans-serif', fontSize: 14, color: T.ink }}>+{more}</div>
+      )}
     </div>
   )
 }
 
-function Grid({ items: cellItems }: { items: CollageItem[] }) {
-  const cols = 2, rows = Math.ceil(cellItems.length / cols)
-  return (
-    <div style={{ display: 'grid', height: '100%', gap: G, gridTemplateColumns: `repeat(${cols}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}>
-      {cellItems.map((item, i) => (
-        <Cell key={item.id} item={item} style={{
-          minHeight: 0,
-          ...(cellItems.length % 2 !== 0 && i === cellItems.length - 1 ? { gridColumn: '1 / -1' } : {}),
-        }} />
-      ))}
-    </div>
-  )
-}
-
-export default function Collage({ items, aspectRatio = '1/1', fill = false, border = true }: {
-  items: CollageItem[]; aspectRatio?: string; fill?: boolean; border?: boolean
+/**
+ * `thumb`: just the first garment, for tiny boxes the caller sizes itself.
+ * `square`: force every tile to 1:1 (photos are cropped) instead of keeping their own shape.
+ * `maxSmall`: most small tiles to show; extra ones become a "+n" tile (use 4 on small cards).
+ * `height`: render at exactly this many px tall; the width follows from the layout, so a row of collages lines up top and bottom.
+ */
+export default function Collage({ items, thumb = false, square = false, maxSmall = 6, height }: {
+  items: CollageItem[]; thumb?: boolean; square?: boolean; maxSmall?: number; height?: number
 }) {
-  const garments = items.filter(i => GARMENT_CAT.has(i.category))
-  const shoes = items.filter(i => i.category === 'shoes')
-  const accessories = items.filter(i => i.category === 'accessory')
-  const other = items.filter(i => !GARMENT_CAT.has(i.category) && i.category !== 'shoes' && i.category !== 'accessory')
+  const ars = useAspects(items.map(i => i.signedImageUrl))
+  const tiles = useMemo<Tile[]>(() => items.map((item, i) => ({ item, ar: square ? 1 : Math.min(Math.max(ars[i], 0.5), 2) })), [items, ars, square])
 
-  const shoesInMain = accessories.length > 0 || garments.length === 0
-  const main = (shoesInMain ? [...garments, ...shoes] : garments).sort(byMainOrder)
-  const secondary = shoesInMain ? accessories : shoes
-  const tertiary = other
-  const m = main.length, s = secondary.length, t = tertiary.length
-  const total = m + s + t
-
-  const renderInner = () => {
-    if (total === 0) return <div style={{ width: '100%', height: '100%', backgroundImage: `repeating-linear-gradient(122deg, ${T.g200} 0 18px, #DFDAD3 18px 36px)` }} />
-    if (total === 1) return <Cell item={items[0]} style={{ height: '100%' }} />
-    if (m === 0 || (s === 0 && t === 0) || total === 2) return <Grid items={[...main, ...secondary, ...tertiary]} />
-
-    const sidebarWeight = s + t * 0.5
-    let leftPct: number
-    if (m === 1) leftPct = sidebarWeight >= 5 ? 75 : 60
-    else if (m === 2) leftPct = sidebarWeight <= 1 ? 65 : sidebarWeight === 2 ? 50 : 60
-    else leftPct = sidebarWeight <= 1 ? 72 : sidebarWeight <= 3 ? 66 : 60
-
+  if (thumb) {
+    const first = [...items].sort(byMainOrder).find(i => GARMENT_CAT.has(i.category)) ?? items[0]
     return (
-      <div style={{ display: 'flex', height: '100%', gap: G }}>
-        <div style={{ flex: `0 0 ${leftPct}%` }}>
-          {m <= 2 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: G, height: '100%' }}>
-              {main.map(item => <Cell key={item.id} item={item} style={{ flex: 1, minHeight: 0 }} />)}
-            </div>
-          ) : <Grid items={main} />}
-        </div>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: G }}>
-          {secondary.map(item => <Cell key={item.id} item={item} style={{ flex: 1, minHeight: 0 }} />)}
-          {tertiary.map(item => <Cell key={item.id} item={item} style={{ flex: 0.55, minHeight: 0 }} />)}
-        </div>
+      <div style={{ width: '100%', height: '100%', overflow: 'hidden', background: T.line }}>
+        {first?.signedImageUrl && <SafeImg src={first.signedImageUrl} alt={first.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: posFor(first.category), display: 'block' }} />}
       </div>
     )
   }
+  if (tiles.length === 0) return <div style={{ width: '100%', aspectRatio: '4/5', background: T.line }} />
 
+  const cols = choose(tiers(tiles, maxSmall))
+  const d = cols.map(dims)
+  const D = d.reduce((s, x) => s + 1 / x.a, 0)
+  const C = d.reduce((s, x) => s + x.b / x.a, 0)
+  const H = `((100cqw - ${(cols.length - 1) * G}px + ${C}px) / ${D})`
+  // for a fixed height, the width that makes every column end exactly there
+  const fixedW = height != null ? Math.round(height * D + (cols.length - 1) * G - C) : null
   return (
-    <div style={{
-      overflow: 'hidden',
-      boxShadow: border ? `inset 0 0 0 1px ${T.line}` : 'none',
-      ...(fill ? { position: 'absolute', inset: 0 } : { width: '100%', aspectRatio }),
-    }}>
-      {renderInner()}
+    <div style={{ containerType: 'inline-size', ...(fixedW != null ? { width: fixedW, flexShrink: 0 } : { width: '100%', minWidth: 0, maxWidth: '100%' }) }}>
+      <div style={{ display: 'flex', gap: G, alignItems: 'flex-start' }}>
+        {cols.map((c, ci) => (
+          <div key={ci} style={{ flex: 'none', width: `calc((${H} - ${d[ci].b}px) / ${d[ci].a})`, display: 'flex', flexDirection: 'column', gap: G }}>
+            {c.map((n, ni) => isRow(n)
+              ? <div key={ni} style={{ display: 'flex', gap: G }}>{n.map((x, k) => <div key={k} style={{ flex: `${square ? 1 : x.ar} 1 0`, minWidth: 0 }}><Cell tile={x} square={square} /></div>)}</div>
+              : <Cell key={ni} tile={n} square={square} />)}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

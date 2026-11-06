@@ -5,18 +5,18 @@
 export type ColorBucket = { key: string; label: string; hex: string }
 
 const BUCKETS: (ColorBucket & { keywords: string[] })[] = [
-  { key: 'black', label: 'Black', hex: '#111111', keywords: ['black'] },
-  { key: 'white', label: 'White', hex: '#F4F2EF', keywords: ['white'] },
-  { key: 'cream', label: 'Cream / beige', hex: '#E8DCCA', keywords: ['cream', 'beige', 'ivory', 'ecru', 'tan', 'sand', 'stone'] },
-  { key: 'brown', label: 'Brown / cognac', hex: '#8B5A2B', keywords: ['cognac', 'brown', 'camel', 'chocolate', 'mocha', 'coffee', 'espresso', 'tobacco'] },
-  { key: 'grey', label: 'Grey', hex: '#8A8884', keywords: ['grey', 'gray', 'charcoal', 'silver'] },
-  { key: 'navy', label: 'Navy / blue', hex: '#2C3E50', keywords: ['navy', 'blue', 'denim', 'indigo', 'cobalt', 'teal'] },
-  { key: 'green', label: 'Green', hex: '#3F5A4A', keywords: ['green', 'olive', 'khaki', 'forest', 'sage', 'emerald', 'mint'] },
-  { key: 'red', label: 'Red', hex: '#8C2F2F', keywords: ['red', 'burgundy', 'maroon', 'wine', 'crimson'] },
-  { key: 'rose', label: 'Pink / rose', hex: '#C98E7C', keywords: ['pink', 'rose', 'blush', 'mauve', 'fuchsia', 'magenta'] },
-  { key: 'orange', label: 'Orange / rust', hex: '#B5602B', keywords: ['orange', 'rust', 'terracotta', 'coral', 'peach', 'apricot'] },
-  { key: 'purple', label: 'Purple', hex: '#6B4E71', keywords: ['purple', 'lavender', 'lilac', 'plum', 'violet'] },
-  { key: 'yellow', label: 'Yellow / gold', hex: '#C9A227', keywords: ['yellow', 'mustard', 'gold', 'golden'] },
+  { key: 'black', label: 'black', hex: '#111111', keywords: ['black'] },
+  { key: 'white', label: 'white', hex: '#F4F2EF', keywords: ['white'] },
+  { key: 'cream', label: 'cream / beige', hex: '#E8DCCA', keywords: ['cream', 'beige', 'ivory', 'ecru', 'tan', 'sand', 'stone'] },
+  { key: 'brown', label: 'brown / cognac', hex: '#8B5A2B', keywords: ['cognac', 'brown', 'camel', 'chocolate', 'mocha', 'coffee', 'espresso', 'tobacco'] },
+  { key: 'grey', label: 'grey', hex: '#8A8884', keywords: ['grey', 'gray', 'charcoal', 'silver'] },
+  { key: 'navy', label: 'navy / blue', hex: '#2C3E50', keywords: ['navy', 'blue', 'denim', 'indigo', 'cobalt', 'teal'] },
+  { key: 'green', label: 'green', hex: '#3F5A4A', keywords: ['green', 'olive', 'khaki', 'forest', 'sage', 'emerald', 'mint'] },
+  { key: 'red', label: 'red', hex: '#8C2F2F', keywords: ['red', 'burgundy', 'maroon', 'wine', 'crimson'] },
+  { key: 'rose', label: 'pink / rose', hex: '#C98E7C', keywords: ['pink', 'rose', 'blush', 'mauve', 'fuchsia', 'magenta'] },
+  { key: 'orange', label: 'orange / rust', hex: '#B5602B', keywords: ['orange', 'rust', 'terracotta', 'coral', 'peach', 'apricot'] },
+  { key: 'purple', label: 'purple', hex: '#6B4E71', keywords: ['purple', 'lavender', 'lilac', 'plum', 'violet'] },
+  { key: 'yellow', label: 'yellow / gold', hex: '#C9A227', keywords: ['yellow', 'mustard', 'gold', 'golden'] },
 ]
 
 export function bucketColor(raw: string | null | undefined): ColorBucket | null {

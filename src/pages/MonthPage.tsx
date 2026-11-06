@@ -1,3 +1,5 @@
+import { motion } from 'motion/react'
+import { rise } from '../design/rise'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useOutfits, type OutfitWithItems } from '../hooks/useOutfits'
@@ -7,7 +9,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, V4Icon, V4Bar, RoundBtn, Btn, Disp, Body, Mono, SecH, Ph, outfitTone } from '../design/kit'
 import Collage from '../design/Collage'
 
-const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const MONTH_FULL = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 const DOW_SHORT = ['m', 't', 'w', 't', 'f', 's', 's']
 
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
@@ -57,7 +59,7 @@ export default function MonthPage() {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <V4Bar back title="Today" onBack={() => navigate('/')} />
+      <V4Bar back title="today" onBack={() => navigate('/')} />
       <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 44px)', zIndex: 24, background: T.paper, padding: '10px 22px 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', borderBottom: `1px solid ${T.line}` }}>
         <div>
           <Mono s={11.5} c={T.cocoa}>{viewYear}</Mono>
@@ -72,9 +74,9 @@ export default function MonthPage() {
         const CalendarBlock = (
           <div style={{ padding: isDesktop ? '18px 0 0' : '18px 22px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
-              {DOW_SHORT.map((d, i) => <div key={i} style={{ textAlign: 'center' }}><Mono s={10} style={{ textTransform: 'uppercase' }}>{d}</Mono></div>)}
+              {DOW_SHORT.map((d, i) => <div key={i} style={{ textAlign: 'center' }}><Mono s={10} >{d}</Mono></div>)}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
+            <motion.div key={`${viewYear}-${viewMonth}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
               {cells.map((day, i) => {
                 if (day == null) return <div key={`b${i}`} />
                 const ds = toDateStr(day)
@@ -82,8 +84,9 @@ export default function MonthPage() {
                 const isToday = ds === todayStr
                 const isSelected = selectedDate === ds
                 return (
-                  <button
+                  <motion.button
                     key={ds}
+                    whileTap={{ scale: 0.92 }}
                     onClick={() => setSelectedDate(prev => prev === ds ? null : ds)}
                     style={{
                       position: 'relative', aspectRatio: '3/4', overflow: 'hidden', padding: 0, cursor: 'pointer',
@@ -96,25 +99,25 @@ export default function MonthPage() {
                         {dayOutfits.slice(0, 3).map(o => <div key={o.id} style={{ flex: 1, height: '100%' }}><Ph tone={outfitTone(o.id)} /></div>)}
                       </div>
                     )}
-                    {dayOutfits.length > 0 && <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 13, background: 'rgba(247,246,245,.9)' }} />}
+                    {dayOutfits.length > 0 && <div style={{ position: 'absolute', top: 2, left: 2, width: 16, height: 13, borderRadius: 2, background: T.paper }} />}
                     <div style={{ position: 'absolute', top: 3, left: 4, fontFamily: fM, fontSize: 9.5, fontWeight: isToday ? 700 : 400, color: dayOutfits.length ? 'rgba(0,0,0,.7)' : T.g400 }}>{day}</div>
                     {/* Painted last so it sits above the tone strips instead of underneath — an inset
                         box-shadow on the button itself gets fully covered by an opaque full-bleed child. */}
-                    {isSelected && <div style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 2px ${T.ink}`, pointerEvents: 'none' }} />}
-                  </button>
+                    {isSelected && <motion.div initial={{ opacity: 0, scale: 1.25 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }} style={{ position: 'absolute', inset: 0, boxShadow: `inset 0 0 0 2px ${T.ink}`, pointerEvents: 'none' }} />}
+                  </motion.button>
                 )
               })}
-            </div>
+            </motion.div>
           </div>
         )
 
         const ListBlock = (
           <div style={{ padding: isDesktop ? '18px 0 0' : '26px 22px 0' }}>
-            <SecH right={selectedDate ? 'Clear' : `All ${outfits.length}`} onRightClick={() => selectedDate ? setSelectedDate(null) : navigate('/settings/stats')}>
-              {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : `Logged in ${MONTH_FULL[viewMonth]}`}
+            <SecH right={selectedDate ? 'clear' : `all ${outfits.length}`} onRightClick={() => selectedDate ? setSelectedDate(null) : navigate('/settings/stats')}>
+              {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : MONTH_FULL[viewMonth]}
             </SecH>
             {visibleOutfits.length === 0 ? (
-              <Body s={13} style={{ padding: '10px 0' }}>No outfits {selectedDate ? 'this day' : 'this month'}.</Body>
+              <Body s={13} style={{ padding: '10px 0' }}>no outfits {selectedDate ? 'this day' : 'this month'}.</Body>
             ) : isDesktop && selectedDate && visibleOutfits.length === 1 ? (() => {
               const o = visibleOutfits[0]
               const d = new Date(o.date_worn + 'T00:00:00')
@@ -124,7 +127,7 @@ export default function MonthPage() {
                   onClick={() => navigate(`/outfits/${o.id}`)}
                   style={{ display: 'block', width: '100%', maxWidth: 320, background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+                  <div style={{ width: '100%', position: 'relative' }}><Collage items={collageItems(o.item_ids)} maxSmall={4} /></div>
                   <Disp s={19} style={{ marginTop: 14 }}>{outfitTitle(o.item_ids, items, 'Outfit')}</Disp>
                   <div style={{ marginTop: 5 }}><Mono s={11.5}>{dow}{o.occasion ? ` · ${o.occasion}` : ''} · {o.item_ids.length} pieces</Mono></div>
                 </button>
@@ -133,24 +136,25 @@ export default function MonthPage() {
               const d = new Date(o.date_worn + 'T00:00:00')
               const dow = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][d.getDay()]
               return (
-                <button
+                <motion.button
                   key={o.id}
+                  {...rise(i)}
                   onClick={() => navigate(`/outfits/${o.id}`)}
                   style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < visibleOutfits.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
                 >
-                  <div style={{ width: 38, height: 48, flexShrink: 0, position: 'relative' }}><Collage items={collageItems(o.item_ids)} fill /></div>
+                  <div style={{ width: 38, height: 48, flexShrink: 0, position: 'relative' }}><Collage items={collageItems(o.item_ids)} thumb /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{outfitTitle(o.item_ids, items, 'Outfit')}</div>
                     <div style={{ marginTop: 2 }}><Mono s={11}>{o.date_worn.slice(8, 10)} {dow}{o.occasion ? ` · ${o.occasion}` : ''} · {o.item_ids.length} pieces</Mono></div>
                   </div>
                   <V4Icon n="next" s={16} w={1.7} c={T.g400} />
-                </button>
+                </motion.button>
               )
             })}
             {/* Logs in retrospect for whatever day is selected — falls back to
                 today when nothing's selected, same as the sidebar/tab-bar action. */}
             <div style={{ marginTop: 20 }}>
-              <Btn full icon="cal" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>Log outfit</Btn>
+              <Btn full icon="cal" onClick={() => navigate('/outfits/new', selectedDate ? { state: { date: selectedDate } } : undefined)}>log outfit</Btn>
             </div>
           </div>
         )

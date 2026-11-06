@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.99.0",
+    "@internationalized/date": "^3.12.4",
     "@supabase/supabase-js": "^2.106.2",
     "browser-image-compression": "^2.0.2",
     "lucide-react": "^1.16.0",
+    "motion": "^14.9.1",
     "react": "^19.2.6",
+    "react-aria-components": "^1.22.1",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1"
   },

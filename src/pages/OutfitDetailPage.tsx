@@ -1,3 +1,6 @@
+import { motion } from 'motion/react'
+import { rise } from '../design/rise'
+import { SafeImg } from '../design/SafeImg'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -6,7 +9,9 @@ import { useOutfitMutations } from '../hooks/useOutfitMutations'
 import type { Outfit, Item } from '../types/database'
 import { outfitTitle } from '../lib/outfitTitle'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Disp, Body, V4Card } from '../design/kit'
+import { catLabel } from '../lib/categoryLabel'
+import { R } from '../design/radii'
 import Collage from '../design/Collage'
 
 type ItemWithMeta = Item & { signedImageUrl: string | null; wearCount: number }
@@ -72,10 +77,10 @@ export default function OutfitDetailPage() {
   }, [id, user])
 
   const handleDelete = async () => {
-    if (!id || !confirm('Delete this outfit?')) return
+    if (!id || !confirm('delete this outfit?')) return
     setDeleting(true); setDeleteError(null)
     try { await deleteOutfit(id); navigate('/outfits') }
-    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'Delete failed') }
+    catch (e) { setDeleting(false); setDeleteError(e instanceof Error ? e.message : 'delete failed') }
   }
 
   const handleRepeat = () => {
@@ -92,7 +97,7 @@ export default function OutfitDetailPage() {
     return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   }
   if (!outfit) {
-    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>Not found.</div>
+    return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>not found.</div>
   }
 
   const d = new Date(outfit.date_worn + 'T00:00:00')
@@ -104,76 +109,77 @@ export default function OutfitDetailPage() {
   // piece — includes things a photo wouldn't capture, like fragrance) and,
   // if there is one, the real photo underneath it — never one instead of the other.
   const CollageBlock = (
-    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative' }}>
-      <Collage items={collageItems} fill />
+    <div style={{ width: '100%', position: 'relative' }}>
+      <Collage items={collageItems} />
     </div>
   )
   const PhotoBlock = outfitImageUrl ? (
-    <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative', marginTop: 16 }}>
+    <div style={{ borderRadius: R.sm, overflow: 'hidden', width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', position: 'relative', marginTop: 16 }}>
       <img src={outfitImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
     </div>
   ) : null
 
+  // pieces worn on the body and shoes are rows; accessories and the like are a small strip of tiles
+  const GARMENT_OR_SHOES = new Set(['top', 'bottom', 'one-piece', 'outerwear', 'shoes'])
+  const ORDER: Record<string, number> = { 'one-piece': 0, top: 0, bottom: 1, outerwear: 2, shoes: 3 }
+  const rowItems = items.filter(i => GARMENT_OR_SHOES.has(i.category)).sort((x, y) => (ORDER[x.category] ?? 9) - (ORDER[y.category] ?? 9))
+  const smallItems = items.filter(i => !GARMENT_OR_SHOES.has(i.category))
+
   const InfoBlock = (
     <>
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-          {outfit.occasion && <Mono s={11} c={T.cocoa} style={{ textTransform: 'uppercase' }}>{outfit.occasion}</Mono>}
-          <Mono s={11}>{dateLabel} · {dow}</Mono>
+        <Disp s={isDesktop ? 36 : 28}>{outfitTitle(items.map(i => i.id), items, 'outfit')}</Disp>
+        <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+          <Pill s="sm" on>{dow} {dateLabel}</Pill>
+          {outfit.occasion && <Pill s="sm">{outfit.occasion}</Pill>}
         </div>
-        <Disp s={25}>{outfitTitle(items.map(i => i.id), items, 'Outfit.')}</Disp>
-        <Body s={13} style={{ marginTop: 5 }}>{items.length} piece{items.length === 1 ? '' : 's'}</Body>
       </div>
       {outfit.weather && (
         <div style={{ marginTop: 18 }}>
-          <V4Card fill={T.peachSoft} shadow={false} pad={15} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <V4Icon n="sun" s={18} w={1.7} c={T.cocoa} />
-            <Body s={13} c={T.cocoa}>{outfit.weather.temp_c}° and {outfit.weather.conditions} that day.{outfit.rating && ` Rated ${outfit.rating}/5.`}</Body>
+          <V4Card fill={T.white} pad={15} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <V4Icon n="sun" s={18} w={1.7} c={T.ink} />
+            <Body s={13} c={T.ink}>{outfit.weather.temp_c}°, {outfit.weather.conditions}{outfit.rating ? `, ${outfit.rating}/5` : ''}</Body>
           </V4Card>
         </div>
       )}
-      <div style={{ marginTop: 18 }}>
-        <Btn full icon="repeat" onClick={handleRepeat}>Wear again</Btn>
-      </div>
       {items.length > 0 && (
         <div style={{ marginTop: 26 }}>
-          <SecH right={`${items.length} pieces`}>In this look</SecH>
-          {items.map((item, i) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(`/wardrobe/${item.id}`)}
-              style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '9px 0', background: 'none', border: 'none', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none', cursor: 'pointer', textAlign: 'left' }}
-            >
-              <div style={{ width: 36, height: 45, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
-                <div style={{ marginTop: 2 }}><Mono s={10.5}>{item.category}</Mono></div>
-              </div>
-              <Mono s={11} c={T.cocoa} style={{ fontWeight: 700 }}>{item.wearCount}×</Mono>
-            </button>
-          ))}
+          <div style={{ display: 'grid', gap: 8 }}>
+            {[...rowItems, ...smallItems].map((item, i) => (
+              <motion.button
+                key={item.id}
+                {...rise(i + 2)}
+                onClick={() => navigate(`/wardrobe/${item.id}`)}
+                style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 14, padding: 8, background: T.white, border: 'none', cursor: 'pointer', textAlign: 'left' }}
+              >
+                <div style={{ width: 48, height: 60, flexShrink: 0, overflow: 'hidden', background: T.line }}>
+                  {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                  <div style={{ fontFamily: fS, fontSize: 13, color: T.g500, marginTop: 2 }}>{catLabel(item.category)}, {item.wearCount}×</div>
+                </div>
+                <V4Icon n="next" s={16} w={1.8} c={T.g400} />
+              </motion.button>
+            ))}
+          </div>
         </div>
       )}
       {outfit.notes && (
         <div style={{ marginTop: 20 }}>
-          <V4Card pad={16}>
-            <div style={{ fontFamily: fS, fontSize: 12, fontWeight: 600, color: T.g400, marginBottom: 5 }}>Note</div>
-            <Body s={14}>{outfit.notes}</Body>
-          </V4Card>
+          <V4Card pad={16}><Body s={14} c={T.ink}>{outfit.notes}</Body></V4Card>
         </div>
       )}
     </>
   )
 
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div style={{ paddingBottom: 120 }}>
       {deleteError && (
         <div style={{ padding: '8px 22px', fontFamily: fM, fontSize: 10, color: T.roseDeep, background: T.roseSoft }}>{deleteError}</div>
       )}
       <V4Bar
-        back title="Month" onBack={() => navigate('/outfits')}
+        back title="month" onBack={() => navigate('/outfits')}
         right={<>
           <button onClick={() => navigate(`/outfits/${id}/edit`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex' }}><V4Icon n="pen" s={20} w={1.6} /></button>
           <button onClick={handleDelete} disabled={deleting} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, padding: 4, display: 'flex', opacity: deleting ? 0.4 : 1 }}><V4Icon n="trash" s={19} w={1.6} /></button>
@@ -190,6 +196,12 @@ export default function OutfitDetailPage() {
           <div style={{ padding: '18px 22px 0' }}>{InfoBlock}</div>
         </>
       )}
+      {/* pinned above the bottom bar, same as the suggest and shop buttons */}
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '0 22px max(0px, calc(24px - var(--v3-sticky-bottom)))', zIndex: 20, pointerEvents: 'none' }}>
+        <div style={{ maxWidth: 1320, margin: '0 auto', pointerEvents: 'auto' }}>
+          <Btn full icon="repeat" onClick={handleRepeat}>repeat</Btn>
+        </div>
+      </div>
     </div>
   )
 }

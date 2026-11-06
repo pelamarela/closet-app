@@ -8,6 +8,7 @@ import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, fM, dotted, V4Bar, V4Icon, Btn, Pill, Switch, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
+import { R } from '../design/radii'
 import type { Category } from '../types/database'
 
 const CATEGORIES: { value: Category; label: string }[] = [
@@ -218,7 +219,7 @@ export default function BatchUploadPage() {
     return (
       <div style={centered}>
         {fileInput}
-        <Btn icon="spark" onClick={() => fileInputRef.current?.click()}>Choose photos</Btn>
+        <Btn icon="spark" onClick={() => fileInputRef.current?.click()}>choose photos</Btn>
       </div>
     )
   }
@@ -230,7 +231,7 @@ export default function BatchUploadPage() {
         <V4Bar />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Reading your photos.</Disp>
+          <Disp s={26}>reading your photos</Disp>
           <div style={{ marginTop: 28, maxWidth: 280 }}>
             <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
               <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
@@ -249,7 +250,7 @@ export default function BatchUploadPage() {
         <V4Bar />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Adding to your closet.</Disp>
+          <Disp s={26}>adding to your closet</Disp>
           <div style={{ marginTop: 28, maxWidth: 280 }}>
             <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
               <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
@@ -267,10 +268,10 @@ export default function BatchUploadPage() {
         <div style={{ width: 56, height: 56, background: T.ink, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <V4Icon n="check" s={24} w={2.2} c="#fff" />
         </div>
-        <Disp s={24} style={{ marginBottom: 8 }}>All done.</Disp>
+        <Disp s={24} style={{ marginBottom: 8 }}>all done</Disp>
         <Body s={13} style={{ marginBottom: error ? 12 : 28 }}>{savedCount} item{savedCount !== 1 ? 's' : ''} added to your closet.</Body>
         {error && <Body s={12} c={T.roseDeep} style={{ marginBottom: 20, maxWidth: 320 }}>{error}</Body>}
-        <Btn onClick={() => navigate('/wardrobe')}>View wardrobe</Btn>
+        <Btn onClick={() => navigate('/wardrobe')}>view wardrobe</Btn>
       </div>
     )
   }
@@ -279,7 +280,7 @@ export default function BatchUploadPage() {
   const progress = ((current + 1) / drafts.length) * 100
 
   const PhotoBlock = (
-    <div style={{ width: '100%', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}`, ...(isDesktop ? {} : { aspectRatio: '4/3' }) }}>
+    <div style={{ borderRadius: R.md, width: '100%', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}`, ...(isDesktop ? {} : { aspectRatio: '4/3' }) }}>
       <img src={draft.preview} alt="" style={isDesktop ? { width: '100%', height: 'auto', display: 'block' } : { width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
     </div>
   )
@@ -287,8 +288,8 @@ export default function BatchUploadPage() {
   const FormBlock = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Name</div>
-        {draft.isDuplicate && <Mono s={9.5} c={T.roseDeep} style={{ textTransform: 'uppercase' }}>already in closet</Mono>}
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>name</div>
+        {draft.isDuplicate && <Mono s={9.5} c={T.roseDeep} >already in closet</Mono>}
       </div>
       <input
         type="text" value={draft.name} onChange={e => update('name', e.target.value)} placeholder="e.g. Black linen blazer" autoFocus
@@ -296,22 +297,22 @@ export default function BatchUploadPage() {
       />
 
       <div style={{ marginTop: 20, marginBottom: 20 }}>
-        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>Category</div>
+        <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500, marginBottom: 8 }}>category</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {CATEGORIES.map(c => <Pill key={c.value} s="sm" on={draft.category === c.value} onClick={() => update('category', c.value)}>{c.label}</Pill>)}
+          {CATEGORIES.map(c => <Pill group="batch-cat" key={c.value} s="sm" on={draft.category === c.value} onClick={() => update('category', c.value)}>{c.label}</Pill>)}
         </div>
       </div>
 
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Warmth</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>warmth</div>
           <Mono s={11}>1 = light · 5 = heavy</Mono>
         </div>
         <DotPicker value={draft.warmth} onChange={v => update('warmth', v)} />
       </div>
       <div style={{ marginBottom: 6 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Formality</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>formality</div>
           <Mono s={11}>1 = casual · 5 = formal</Mono>
         </div>
         <DotPicker value={draft.formality} onChange={v => update('formality', v)} tone={T.roseDeep} />
@@ -321,8 +322,8 @@ export default function BatchUploadPage() {
           weighted heading dropped into the middle of this field group. */}
       <div style={{ marginTop: 20, marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>Sport / gym only</div>
-          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>Excluded from everyday outfit suggestions</div>
+          <div style={{ fontFamily: fS, fontSize: 12.5, color: T.g500 }}>sport / gym only</div>
+          <div style={{ fontFamily: fS, fontSize: 11, color: T.g400, marginTop: 3 }}>excluded from everyday outfit suggestions</div>
         </div>
         <button type="button" onClick={() => update('sport', !draft.sport)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
           <Switch on={draft.sport} />
@@ -330,11 +331,11 @@ export default function BatchUploadPage() {
       </div>
 
       <div>
-        <Field label="Colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />
-        <Field label="Brand" value={draft.brand} onChange={v => update('brand', v)} placeholder="e.g. Toteme" />
-        <Field label="Material" value={draft.material} onChange={v => update('material', v)} placeholder="cotton, wool, silk…" />
-        <Field label="Pattern" value={draft.pattern} onChange={v => update('pattern', v)} placeholder="solid, stripe, floral…" />
-        <Field label="Subcategory" value={draft.subcategory} onChange={v => update('subcategory', v)} placeholder="e.g. blazer, midi skirt…" />
+        <Field label="colour" value={draft.color} onChange={v => update('color', v)} placeholder="white, navy, black…" />
+        <Field label="brand" value={draft.brand} onChange={v => update('brand', v)} placeholder="e.g. Toteme" />
+        <Field label="material" value={draft.material} onChange={v => update('material', v)} placeholder="cotton, wool, silk…" />
+        <Field label="pattern" value={draft.pattern} onChange={v => update('pattern', v)} placeholder="solid, stripe, floral…" />
+        <Field label="subcategory" value={draft.subcategory} onChange={v => update('subcategory', v)} placeholder="e.g. blazer, midi skirt…" />
       </div>
 
       {error && <Body s={12} c={T.roseDeep}>{error}</Body>}
@@ -348,7 +349,6 @@ export default function BatchUploadPage() {
           <button onClick={() => navigate('/wardrobe')} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: fS, fontSize: 13, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: T.ink }}>
             <V4Icon n="back" s={16} w={1.6} /> Cancel
           </button>
-          <Mono s={11}>{current + 1} / {drafts.length}</Mono>
         </div>
         <div style={{ height: 2, background: T.g200, marginTop: 12 }}>
           <div style={{ height: '100%', background: T.ink, width: `${progress}%`, transition: 'width .2s' }} />
@@ -367,17 +367,17 @@ export default function BatchUploadPage() {
         </>
       )}
 
-      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', borderRadius: 2, background: T.paper, backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
           {current > 0 ? (
-            <Btn kind="quiet" flex={1} onClick={() => setCurrent(c => c - 1)}>Back</Btn>
+            <Btn kind="quiet" flex={1} onClick={() => setCurrent(c => c - 1)}>back</Btn>
           ) : (
-            <Btn kind="quiet" flex={1} onClick={handleSkip}>Skip</Btn>
+            <Btn kind="quiet" flex={1} onClick={handleSkip}>skip</Btn>
           )}
           {current < drafts.length - 1 ? (
-            <Btn flex={1.6} disabled={!canAdvance} onClick={() => canAdvance && setCurrent(c => c + 1)}>Next</Btn>
+            <Btn flex={1.6} disabled={!canAdvance} onClick={() => canAdvance && setCurrent(c => c + 1)}>next</Btn>
           ) : (
-            <Btn flex={1.6} disabled={!canAdvance} onClick={handleSaveAll}>Save all {drafts.length}</Btn>
+            <Btn flex={1.6} disabled={!canAdvance} onClick={handleSaveAll}>save all {drafts.length}</Btn>
           )}
         </div>
       </div>

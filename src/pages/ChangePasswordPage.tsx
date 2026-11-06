@@ -68,7 +68,7 @@ export default function ChangePasswordPage() {
         return
       }
       if (updateError.code === 'reauthentication_not_valid') {
-        setError("That code is wrong or expired — check your email for the latest one.")
+        setError("that code is wrong or expired — check your email for the latest one.")
         return
       }
       setError(updateError.message)
@@ -81,21 +81,21 @@ export default function ChangePasswordPage() {
 
   return (
     <div style={{ paddingBottom: 100 }}>
-      <V4Bar back title="Settings" onBack={() => navigate('/settings')} />
+      <V4Bar back title="settings" onBack={() => navigate('/settings')} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>Change password</Disp>
-        <Body s={13} style={{ marginTop: 6 }}>You'll need your current password to confirm.</Body>
+        <Disp s={24}>change password</Disp>
+        <Body s={13} style={{ marginTop: 6 }}>you'll need your current password to confirm.</Body>
       </div>
 
       <form onSubmit={e => { e.preventDefault(); save() }} style={{ padding: '22px 22px 0' }}>
-        <Field label="Current password" value={currentPassword} onChange={setField(setCurrentPassword)} autoComplete="current-password" />
-        <Field label="New password" value={newPassword} onChange={setField(setNewPassword)} autoComplete="new-password" />
-        <Field label="Confirm new password" value={confirmPassword} onChange={setField(setConfirmPassword)} autoComplete="new-password" />
+        <Field label="current password" value={currentPassword} onChange={setField(setCurrentPassword)} autoComplete="current-password" />
+        <Field label="new password" value={newPassword} onChange={setField(setNewPassword)} autoComplete="new-password" />
+        <Field label="confirm new password" value={confirmPassword} onChange={setField(setConfirmPassword)} autoComplete="new-password" />
         <Body s={11.5}>{PASSWORD_HINT}</Body>
 
         {needsNonce && (
           <div style={{ marginTop: 18 }}>
-            <Field label="Confirmation code" value={nonce} onChange={setField(setNonce)} autoComplete="one-time-code" type="text" />
+            <Field label="confirmation code" value={nonce} onChange={setField(setNonce)} autoComplete="one-time-code" type="text" />
           </div>
         )}
 
@@ -103,19 +103,19 @@ export default function ChangePasswordPage() {
           <Body s={12} c={T.roseDeep} style={{ marginTop: 12 }}>{PASSWORD_HINT}</Body>
         )}
         {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-          <Body s={12} c={T.roseDeep} style={{ marginTop: 12 }}>Passwords don't match.</Body>
+          <Body s={12} c={T.roseDeep} style={{ marginTop: 12 }}>passwords don't match.</Body>
         )}
         {info && <Body s={12} c={T.cocoa} style={{ marginTop: 12 }}>{info}</Body>}
         {error && <Body s={12} c={T.roseDeep} style={{ marginTop: 12 }}>{error}</Body>}
-        {done && <Body s={12} c={T.cocoa} style={{ marginTop: 12 }}>Password updated.</Body>}
+        {done && <Body s={12} c={T.cocoa} style={{ marginTop: 12 }}>password updated.</Body>}
 
         {/* Submit lives inside the form so Enter and password-manager "fill & submit"
             affordances work, but stays visually pinned via the fixed footer. */}
-        <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
+        <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', borderRadius: 2, background: T.paper, backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
-            <Btn kind="quiet" flex={1} type="button" onClick={() => navigate('/settings')}>Cancel</Btn>
+            <Btn kind="quiet" flex={1} type="button" onClick={() => navigate('/settings')}>cancel</Btn>
             <Btn flex={1.4} icon="check" type="submit" disabled={saving || !isValid}>
-              {saving ? 'Saving…' : needsNonce ? 'Confirm & update' : 'Update password'}
+              {saving ? 'saving…' : needsNonce ? 'confirm & update' : 'update password'}
             </Btn>
           </div>
         </div>

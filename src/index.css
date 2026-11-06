@@ -15,7 +15,7 @@
   --color-ink: #0A0A0A;
   --color-blush: #DFAFA1;
   --color-cream: #F2E1D0;
-  --color-bg: #F7F6F5;
+  --color-bg: #FFFFFF;
 }
 
 :root {
@@ -24,7 +24,7 @@
   --rule-dashed: 1px dashed rgba(0,0,0,0.18);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
-  --nav-h: calc(60px + env(safe-area-inset-bottom, 0px));
+  --nav-h: calc(80px + env(safe-area-inset-bottom, 0px));
 
   /* v3 shell only (design/Layout.tsx) — the old shell's bottom nav (components/Layout.tsx)
      stays fixed-height at every width, so this must NOT touch --nav-h itself. Sticky
@@ -66,8 +66,8 @@ body {
      container and break position:sticky for every descendant. clip still
      blocks horizontal overflow at the body edge without creating one. */
   overflow-x: clip;
-  font-family: 'Geist', 'Inter', system-ui, sans-serif;
-  background: #F7F6F5;
+  font-family: 'Manrope', system-ui, sans-serif;
+  background: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -87,4 +87,24 @@ body {
   0% { opacity: 0; }
   15%, 85% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* ── Polish layer ─────────────────────────────────────────────────────────── */
+/* Every button gets a tiny press-in, so tappable things feel tappable. */
+button { transition: transform .12s cubic-bezier(.22, 1, .36, 1); -webkit-tap-highlight-color: transparent; }
+button:not(:disabled):active { transform: scale(.98); }
+
+/* Text fields: the underline thickens to ink while typing. */
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+textarea { transition: box-shadow .18s ease; }
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus { outline: none; box-shadow: 0 1px 0 0 #000; }
+
+/* Keyboard focus ring (not shown for mouse/touch). */
+:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+input:focus-visible, textarea:focus-visible { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+  button:not(:disabled):active { transform: none; }
 }

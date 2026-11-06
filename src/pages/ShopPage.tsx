@@ -1,3 +1,7 @@
+import { motion } from 'motion/react'
+import { rise } from '../design/rise'
+import { CountUp } from '../design/CountUp'
+import { SafeImg } from '../design/SafeImg'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setSingleFile } from '../lib/batchState'
@@ -7,7 +11,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, Scrim, Sheet, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W } from '../design/kit'
+import { R } from '../design/radii'
 
 type PairingItem = { id: string; name: string; reason: string }
 type AnalysisResult = {
@@ -27,7 +32,7 @@ const VERDICT_HEADLINE: Record<AnalysisResult['verdict'], string> = {
   skip: "Probably don't.",
 }
 
-const LOADING_STEPS = ['Eyeing it up', 'Cross-checking your closet', 'Making the call']
+const LOADING_STEPS = ['eyeing it up', 'cross-checking your closet', 'making the call']
 
 export default function ShopPage() {
   const navigate = useNavigate()
@@ -49,7 +54,7 @@ export default function ShopPage() {
   const itemMap = new Map(items.map(i => [i.id, i]))
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) { setError('Please upload an image file.'); return }
+    if (!file.type.startsWith('image/')) { setError('please upload an image file.'); return }
     setError(null)
     try {
       const { compressImage } = await import('../lib/imageUtils')
@@ -59,7 +64,7 @@ export default function ShopPage() {
       reader.onload = e => setImagePreview(e.target?.result as string)
       reader.readAsDataURL(compressed)
     } catch {
-      setError('Could not process this image. Try a different photo.')
+      setError('could not process this image. try a different photo.')
     }
   }
 
@@ -87,11 +92,11 @@ export default function ShopPage() {
         items: items.map(({ id, name, category, subcategory, color }) => ({ id, name, category, subcategory, color })),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Analysis failed')
+      if (!res.ok) throw new Error(data.error ?? 'analysis failed')
       setResult(data)
       setView('result')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong')
+      setError(e instanceof Error ? e.message : 'something went wrong')
       setView('input')
     }
     stepTimers.forEach(clearTimeout)
@@ -108,7 +113,7 @@ export default function ShopPage() {
         <V4Bar right={<button onClick={() => setView('input')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Sizing it up.</Disp>
+          <Disp s={26}>sizing it up</Disp>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
             {LOADING_STEPS.map((label, i) => {
               const done = i < loadingStep
@@ -131,7 +136,7 @@ export default function ShopPage() {
   // ── Result ────────────────────────────────────────────────────────────────
   if (view === 'result' && result) {
     const PhotoBlock = imagePreview && (
-      <div style={{ width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', overflow: 'hidden' }}>
+      <div style={{ borderRadius: R.md, width: '100%', aspectRatio: isDesktop ? '3/4' : '4/3', overflow: 'hidden' }}>
         <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
     )
@@ -146,48 +151,48 @@ export default function ShopPage() {
         </V4Card>
         <div style={{ marginTop: 22 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
-            <Disp s={44} c={T.cocoa} style={{ letterSpacing: '-.03em' }}>{result.style_match}%</Disp>
+            <Disp s={44} c={T.cocoa}><CountUp to={result.style_match} />%</Disp>
             <Body s={13.5} style={{ paddingBottom: 6 }}>style match</Body>
           </div>
           {(result.pros.length > 0 || result.concerns.length > 0) && (
             <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {result.pros.map((p, i) => (
-                <div key={`p${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <motion.div key={`p${i}`} {...rise(i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <V4Icon n="check" s={14} w={2.4} c={T.cocoa} style={{ flexShrink: 0, marginTop: 2 }} />
                   <Body s={13.5} c={T.g700}>{p}</Body>
-                </div>
+                </motion.div>
               ))}
               {result.concerns.map((c, i) => (
-                <div key={`c${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <motion.div key={`c${i}`} {...rise(result.pros.length + i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                   <V4Icon n="close" s={13} w={2.2} c={T.roseDeep} style={{ flexShrink: 0, marginTop: 2 }} />
                   <Body s={13.5} c={T.g700}>{c}</Body>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
         </div>
         {result.pairing_items.length > 0 && (
           <div style={{ marginTop: 24 }}>
-            <SecH>You already own</SecH>
+            <SecH>you already own</SecH>
             {result.pairing_items.map((p, i) => {
               const item = itemMap.get(p.id)
               return (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '10px 0', borderBottom: i < result.pairing_items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
+                <motion.div key={p.id} {...rise(i + 2, 8)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '10px 0', borderBottom: i < result.pairing_items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
                   <div style={{ width: 40, height: 50, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                    {item?.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                    {item?.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{p.name}</div>
                     <div style={{ marginTop: 2 }}><Body s={12} c={T.g500}>{p.reason}</Body></div>
                   </div>
-                </div>
+                </motion.div>
               )
             })}
           </div>
         )}
         {result.outfit_ideas.length > 0 && (
           <div style={{ marginTop: 24 }}>
-            <SecH>It could work with</SecH>
+            <SecH>it could work with</SecH>
             {result.outfit_ideas.map((idea, i) => {
               const saved = savedIdeas.has(i)
               return (
@@ -197,7 +202,7 @@ export default function ShopPage() {
                     onClick={async () => { if (saved) return; await saveIdea('', idea, result.pairing_items.map(p => p.id)); setSavedIdeas(prev => new Set(prev).add(i)) }}
                     style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, marginTop: 6, cursor: saved ? 'default' : 'pointer', fontFamily: fS, fontSize: 12.5, color: saved ? T.g400 : T.cocoa }}
                   >
-                    <V4Icon n="bookmark" s={13} w={1.7} />{saved ? 'Saved to ideas' : 'Save to ideas'}
+                    <V4Icon n="bookmark" s={13} w={1.7} />{saved ? 'saved to ideas' : 'save to ideas'}
                   </button>
                 </div>
               )
@@ -205,15 +210,15 @@ export default function ShopPage() {
           </div>
         )}
         <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
-          <Btn kind="quiet" flex={1} icon="cam" onClick={reset}>New photo</Btn>
-          <Btn flex={1} icon="hanger" onClick={() => { if (imageFile) setSingleFile(imageFile); navigate('/wardrobe/new') }}>Add to closet</Btn>
+          <Btn kind="quiet" flex={1} icon="cam" onClick={reset}>new photo</Btn>
+          <Btn flex={1} icon="hanger" onClick={() => { if (imageFile) setSingleFile(imageFile); navigate('/wardrobe/new') }}>add to closet</Btn>
         </div>
       </>
     )
 
     return (
       <div style={{ paddingBottom: 40 }}>
-        <V4Bar back title="Closet" onBack={() => navigate('/wardrobe')} right={<Mono s={11}>claude sonnet</Mono>} />
+        <V4Bar back title="closet" onBack={() => navigate('/wardrobe')} right={<Mono s={11}>claude sonnet</Mono>} />
         {isDesktop ? (
           <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 44, alignItems: 'start', padding: '10px 0 0' }}>
             <div style={{ position: 'sticky', top: 'calc(var(--v3-header-h) + 20px)' }}>{PhotoBlock}</div>
@@ -234,7 +239,7 @@ export default function ShopPage() {
 
   const UploadArea = imagePreview ? (
     <div style={{ position: 'relative', maxWidth: 280, margin: '0 auto' }}>
-      <div style={{ aspectRatio: '3/4', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
+      <div style={{ borderRadius: R.md, aspectRatio: '3/4', overflow: 'hidden', boxShadow: `inset 0 0 0 1px ${T.line}` }}>
         <img src={imagePreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </div>
       <button onClick={reset} style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, background: 'rgba(0,0,0,.7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -248,12 +253,12 @@ export default function ShopPage() {
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       style={{
-        border: `1.5px dashed ${dragging ? T.ink : T.g200}`, background: dragging ? 'rgba(0,0,0,.03)' : 'transparent',
-        padding: '56px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer',
+        borderRadius: 2, border: `1.5px dashed ${dragging ? T.ink : T.g200}`, background: dragging ? 'rgba(0,0,0,.03)' : 'transparent',
+        flex: 1, justifyContent: 'center', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer',
       }}
     >
       <V4Icon n="cam" s={30} w={1.4} c={T.g400} />
-      <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, color: T.ink }}>Upload photo</div>
+      <div style={{ fontFamily: fS, fontSize: 14.5, fontWeight: 500, color: T.ink }}>upload photo</div>
       <Mono s={10.5} style={{ textAlign: 'center' }}>tap to select or drag & drop</Mono>
     </div>
   )
@@ -261,42 +266,21 @@ export default function ShopPage() {
   const CTA = (
     <>
       {error && <Body s={12.5} c={T.roseDeep} style={{ marginBottom: 8 }}>{error}</Body>}
-      <Btn full icon="spark" disabled={!imagePreview} onClick={handleAnalyze}>Should I buy it?</Btn>
+      <Btn full icon="spark" disabled={!imagePreview} onClick={handleAnalyze}>should i buy it?</Btn>
     </>
   )
 
-  if (!isDesktop) {
-    return (
-      <>
-        {fileInput}
-        <Scrim onClick={() => navigate('/wardrobe')}>
-          <Sheet
-            onClick={e => e.stopPropagation()}
-            title={<Disp s={22}>Thinking about<br />something?</Disp>}
-            right={<button onClick={() => navigate('/wardrobe')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={20} w={1.8} /></button>}
-            footer={CTA}
-          >
-            <div style={{ padding: '18px 22px 26px' }}>
-              <Body s={14}>Upload a photo of something you're considering. I'll check it against your style and what you already own.</Body>
-              <div style={{ marginTop: 20 }}>{UploadArea}</div>
-            </div>
-          </Sheet>
-        </Scrim>
-      </>
-    )
-  }
-
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100svh - var(--v3-header-h) - var(--v3-sticky-bottom) - 92px)', minHeight: 420 }}>
       {fileInput}
-      <V4Bar right={<button onClick={() => navigate('/wardrobe')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={25}>Thinking about<br />something?</Disp>
-        <Body s={14} style={{ marginTop: 8 }}>Upload a photo of something you're considering. I'll check it against your style and what you already own.</Body>
+        <Disp s={22}>thinking about something?</Disp>
+        <Body s={14} style={{ marginTop: 6 }}>upload a photo, i'll check it against your closet.</Body>
       </div>
-      <div style={{ padding: '22px 22px 0' }}>{UploadArea}</div>
-      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '14px 22px 20px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}` }}>
-        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto' }}>{CTA}</div>
+      {/* the upload box takes all the space down to the button */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '16px 22px 16px' }}>{UploadArea}</div>
+      <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '0 22px max(0px, calc(24px - var(--v3-sticky-bottom)))', zIndex: 20, pointerEvents: 'none' }}>
+        <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', pointerEvents: 'auto' }}>{CTA}</div>
       </div>
     </div>
   )

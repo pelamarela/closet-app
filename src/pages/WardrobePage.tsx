@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'motion/react'
 import { useState, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useItems } from '../hooks/useItems'
@@ -86,28 +87,22 @@ export default function WardrobePage() {
   if (loading) return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.g400 }}>loading…</div>
   if (error) return <div style={{ padding: '40px 22px', fontFamily: fM, fontSize: 11, color: T.roseDeep }}>{error}</div>
 
-  const SelectToggle = selectMode ? (
-    <button onClick={exitSelectMode} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>Cancel</button>
-  ) : (
-    <button onClick={() => setSelectMode(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.g500 }}>{isDesktop ? 'Select' : `${items.length} items · select`}</button>
+  // same small header button as add and check, on every size
+  const headBtn: React.CSSProperties = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, height: 40, padding: '0 12px', background: 'transparent', color: T.ink, border: `1px solid ${T.g200}`, cursor: 'pointer', fontFamily: fS, fontSize: 13.5, fontWeight: 500 }
+  const SelectToggle = (
+    <button onClick={selectMode ? exitSelectMode : () => setSelectMode(true)} style={headBtn}>
+      <V4Icon n={selectMode ? 'close' : 'check'} s={15} w={1.9} />{selectMode ? 'cancel' : 'select'}
+    </button>
   )
 
+  // no page title (the top bar already says closet) and no shop button (shop is in the bottom bar): just the two actions
   const Header = (
-    <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: isDesktop ? 'flex-end' : 'center', justifyContent: 'space-between' }}>
-      <div>
-        <Disp s={30}>Closet</Disp>
-        {isDesktop && <Body s={14} style={{ marginTop: 6 }}>{items.length} pieces</Body>}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-        {isDesktop && SelectToggle}
-        <input ref={addFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFiles} />
-        <button onClick={() => addFileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: `${T.g200}55`, color: T.ink, border: 'none', cursor: 'pointer' }}>
-          <V4Icon n="plus" s={15} w={1.9} /><span style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600 }}>Add</span>
-        </button>
-        <button onClick={() => navigate('/shop')} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 12px', background: T.peachSoft, color: T.cocoa, border: 'none', cursor: 'pointer' }}>
-          <V4Icon n="bag" s={15} w={1.8} /><span style={{ fontFamily: fS, fontSize: 12.5, fontWeight: 600 }}>Shop</span>
-        </button>
-      </div>
+    <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+      {SelectToggle}
+      <input ref={addFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFiles} />
+      <button onClick={() => addFileRef.current?.click()} style={headBtn}>
+        <V4Icon n="plus" s={15} w={1.9} />add
+      </button>
     </div>
   )
 
@@ -116,9 +111,9 @@ export default function WardrobePage() {
       <div style={{ paddingBottom: 32 }}>
         {Header}
         <div style={{ padding: '30px 22px 0' }}>
-          <Disp s={22}>Nothing here yet.</Disp>
-          <Body s={14} style={{ marginTop: 8 }}>Add your first piece to start building your closet.</Body>
-          <div style={{ marginTop: 20 }}><Btn full icon="plus" onClick={() => addFileRef.current?.click()}>Add first item</Btn></div>
+          <Disp s={22}>nothing here yet</Disp>
+          <Body s={14} style={{ marginTop: 8 }}>add your first piece to start building your closet.</Body>
+          <div style={{ marginTop: 20 }}><Btn full icon="plus" onClick={() => addFileRef.current?.click()}>add first item</Btn></div>
         </div>
       </div>
     )
@@ -128,37 +123,44 @@ export default function WardrobePage() {
     <div style={{ paddingBottom: 32 }}>
       <div style={{ position: 'sticky', top: 'var(--v3-header-h)', zIndex: 25, background: T.paper, paddingBottom: 10, borderBottom: `1px solid ${T.line}` }}>
         {Header}
-        {!isDesktop && (
-          <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-            {SelectToggle}
-          </div>
-        )}
         <div style={{ display: 'flex', gap: 8, padding: '14px 22px 0', overflowX: 'auto' }}>
           {FILTERS.map(f => (
-            <Pill key={f.value} on={filter === f.value} s="sm" count={countFor(f.value)} onClick={() => setFilter(f.value)}>{f.label}</Pill>
+            <Pill group="closet-filter" key={f.value} on={filter === f.value} s="sm" count={countFor(f.value)} onClick={() => setFilter(f.value)}>{f.label}</Pill>
           ))}
         </div>
       </div>
       <div style={{ padding: '16px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.ink }}>{staleOnly ? 'Not worn in a year' : 'Recently added'}</div>
-        {staleOnly && <button onClick={() => setStaleOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>Clear</button>}
+        <div style={{ fontFamily: fS, fontSize: 13, fontWeight: 500, color: T.ink }}>{staleOnly ? 'not worn in a year' : 'recently added'}</div>
+        {staleOnly && <button onClick={() => setStaleOnly(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fS, fontSize: 13, color: T.cocoa }}>clear</button>}
       </div>
       <div style={{ padding: '10px 22px 0' }}>
         {filtered.length === 0 ? (
-          <Body s={13} style={{ padding: '20px 0' }}>No {filter === 'all' ? 'items' : FILTERS.find(f => f.value === filter)?.label.toLowerCase()}.</Body>
+          <Body s={13} style={{ padding: '20px 0' }}>no {filter === 'all' ? 'items' : FILTERS.find(f => f.value === filter)?.label.toLowerCase()}.</Body>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(auto-fill, minmax(110px, 1fr))' : 'repeat(4, 1fr)', gap: 8 }}>
-            {filtered.map(item => (
-              <ItemTile
+            <AnimatePresence mode="popLayout">
+            {filtered.map((item, i) => (
+              <motion.div
                 key={item.id}
+                layout
+                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1], delay: Math.min(i, 24) * 0.025, layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } }}
+              >
+              <ItemTile
                 src={item.signedImageUrl}
                 alt={item.name}
                 crop={['top', 'bottom', 'one-piece', 'outerwear'].includes(item.category) ? 'top' : 'center'}
                 worn={wearCountById[item.id] ?? 0}
                 sel={selectMode ? selectedIds.has(item.id) : undefined}
-                onClick={() => selectMode ? toggleSelect(item.id) : navigate(`/wardrobe/${item.id}`)}
+                onClick={() => selectMode ? toggleSelect(item.id) : navigate(`/wardrobe/${item.id}`, { viewTransition: true })}
+                vtName={`item-${item.id}`}
               />
+              </motion.div>
             ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
@@ -167,23 +169,23 @@ export default function WardrobePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
             <V4Icon n="archive" s={20} w={1.6} c={T.cocoa} />
             <Body s={13} style={{ flex: 1 }}>{staleItems.length} piece{staleItems.length === 1 ? '' : 's'} haven't left the closet in a year.</Body>
-            <Pill s="sm" onClick={() => setStaleOnly(true)}>Review</Pill>
+            <Pill s="sm" onClick={() => setStaleOnly(true)}>review</Pill>
           </div>
         </div>
       )}
       {selectMode && (
-        <div style={{ position: 'fixed', left: 'var(--v3-sidenav-w)', right: 0, bottom: 'var(--v3-sticky-bottom)', padding: '14px 22px', background: 'rgba(247,246,245,.96)', backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}`, zIndex: 20 }}>
+        <div style={{ position: 'fixed', left: 'var(--v3-sidenav-w)', right: 0, bottom: 'var(--v3-sticky-bottom)', padding: '14px 22px', borderRadius: 2, background: T.paper, backdropFilter: 'blur(10px)', borderTop: `1px solid ${T.line}`, zIndex: 20 }}>
           <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10 }}>
             {confirmArchive ? (
               <>
                 <Mono s={11} c={T.roseDeep} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>archive {selectedIds.size} item{selectedIds.size !== 1 ? 's' : ''}?</Mono>
-                <Btn kind="quiet" onClick={() => setConfirmArchive(false)}>Cancel</Btn>
-                <Btn kind="peach" disabled={archiving} onClick={handleArchive}>{archiving ? 'Archiving…' : 'Confirm'}</Btn>
+                <Btn kind="quiet" onClick={() => setConfirmArchive(false)}>cancel</Btn>
+                <Btn kind="peach" disabled={archiving} onClick={handleArchive}>{archiving ? 'archiving…' : 'confirm'}</Btn>
               </>
             ) : (
               <>
-                <Btn kind="quiet" flex={1} onClick={() => setSelectedIds(new Set(filtered.map(i => i.id)))}>Select all</Btn>
-                <Btn kind="primary" flex={1.4} disabled={selectedIds.size === 0} onClick={() => setConfirmArchive(true)}>Archive {selectedIds.size > 0 ? selectedIds.size : ''}</Btn>
+                <Btn kind="quiet" flex={1} onClick={() => setSelectedIds(new Set(filtered.map(i => i.id)))}>select all</Btn>
+                <Btn kind="primary" flex={1.4} disabled={selectedIds.size === 0} onClick={() => setConfirmArchive(true)}>archive {selectedIds.size > 0 ? selectedIds.size : ''}</Btn>
               </>
             )}
           </div>

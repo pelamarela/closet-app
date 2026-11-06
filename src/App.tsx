@@ -22,6 +22,14 @@ import IdeaEditPage from './pages/IdeaEditPage'
 import ArchivedPage from './pages/ArchivedPage'
 import StatsPage from './pages/StatsPage'
 import ConstantsPage from './pages/ConstantsPage'
+import LabPage from './pages/LabPage'
+import AuditPage from './pages/AuditPage'
+import HomePreviewPage from './pages/HomePreviewPage'
+import OverhaulPage from './pages/OverhaulPage'
+import PreviewPage from './pages/PreviewPage'
+import NavVariantsPage from './pages/NavVariantsPage'
+import OutfitTestPage from './pages/OutfitTestPage'
+import HeaderVariantsPage from './pages/HeaderVariantsPage'
 
 // Two shells during the v3 migration: pages that have been rebuilt against
 // design/kit.tsx render under V3Layout (persistent header, 4 tabs + raised
@@ -34,8 +42,8 @@ function ProtectedShell({ Shell }: { Shell: ComponentType }) {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100svh', background: '#F7F6F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: 10, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.06em' }}>loading…</span>
+      <div style={{ minHeight: '100svh', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: '"Manrope", system-ui, sans-serif', fontSize: 10, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.06em' }}>loading…</span>
       </div>
     )
   }
@@ -51,6 +59,14 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          {import.meta.env.DEV && <Route path="/lab" element={<LabPage />} />}
+          {import.meta.env.DEV && <Route path="/audit" element={<AuditPage />} />}
+          {import.meta.env.DEV && <Route path="/home-preview" element={<HomePreviewPage />} />}
+          {import.meta.env.DEV && <Route path="/overhaul" element={<OverhaulPage />} />}
+          {import.meta.env.DEV && <Route path="/preview" element={<PreviewPage />} />}
+          {import.meta.env.DEV && <Route path="/nav" element={<NavVariantsPage />} />}
+          {import.meta.env.DEV && <Route path="/outfits-test" element={<OutfitTestPage />} />}
+          {import.meta.env.DEV && <Route path="/header" element={<HeaderVariantsPage />} />}
           <Route element={<ProtectedShell Shell={V3Layout} />}>
             <Route path="/" element={<TodayPage />} />
             <Route path="/outfits" element={<MonthPage />} />

@@ -1,3 +1,4 @@
+import { SafeImg } from '../design/SafeImg'
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -58,22 +59,22 @@ export default function ArchivedPage() {
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      <V4Bar back title="Settings" onBack={() => navigate('/settings')} />
+      <V4Bar back title="settings" onBack={() => navigate('/settings')} />
       <div style={{ padding: '4px 22px 0' }}>
-        <Disp s={24}>Archived</Disp>
+        <Disp s={24}>archived</Disp>
         <Body s={13} style={{ marginTop: 6 }}>{items.length} item{items.length !== 1 ? 's' : ''}</Body>
       </div>
 
       {items.length === 0 ? (
         <div style={{ padding: '30px 22px 0' }}>
-          <Body s={14}>Nothing archived — items you archive from the Closet show up here to restore or delete permanently.</Body>
+          <Body s={14}>nothing archived — items you archive from the closet show up here to restore or delete permanently.</Body>
         </div>
       ) : (
         <div style={{ padding: '22px 22px 0' }}>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
               <div style={{ width: 48, height: 60, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                {item.signedImageUrl && <img src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {item.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: fS, fontSize: 13.5, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
@@ -81,13 +82,13 @@ export default function ArchivedPage() {
               </div>
               {confirmDelete === item.id ? (
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <Pill s="sm" onClick={() => setConfirmDelete(null)}>Cancel</Pill>
-                  <Pill s="sm" tone="peach" on onClick={() => handleDelete(item.id)}>{busy === item.id ? '…' : 'Delete'}</Pill>
+                  <Pill s="sm" onClick={() => setConfirmDelete(null)}>cancel</Pill>
+                  <Pill s="sm" tone="peach" on onClick={() => handleDelete(item.id)}>{busy === item.id ? '…' : 'delete'}</Pill>
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <Pill s="sm" onClick={() => handleRestore(item.id)}>{busy === item.id ? '…' : 'Restore'}</Pill>
-                  <Pill s="sm" onClick={() => setConfirmDelete(item.id)}>Delete</Pill>
+                  <Pill s="sm" onClick={() => handleRestore(item.id)}>{busy === item.id ? '…' : 'restore'}</Pill>
+                  <Pill s="sm" onClick={() => setConfirmDelete(item.id)}>delete</Pill>
                 </div>
               )}
             </div>

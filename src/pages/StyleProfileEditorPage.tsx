@@ -9,7 +9,7 @@ import { COLOR_SEASONS } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
 import { T, fS, dotted, V4Bar, V4Icon, Btn, Pill, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
 
-const GENERATE_STEPS = ['Going through your outfits', 'Spotting your patterns', 'Writing it up']
+const GENERATE_STEPS = ['going through your outfits', 'spotting your patterns', 'writing it up']
 
 export default function StyleProfileEditorPage() {
   const navigate = useNavigate()
@@ -40,7 +40,7 @@ export default function StyleProfileEditorPage() {
   }, [user])
 
   const generateFromOutfits = async () => {
-    if (outfits.length < 5) { setGenerateError('Log at least 5 outfits first so I have enough to work with.'); return }
+    if (outfits.length < 5) { setGenerateError('log at least 5 outfits first so i have enough to work with.'); return }
     setGenerating(true); setGenerateStep(0); setGenerateError(null)
     const stepTimers = [setTimeout(() => setGenerateStep(1), 900), setTimeout(() => setGenerateStep(2), 1900)]
     try {
@@ -49,10 +49,10 @@ export default function StyleProfileEditorPage() {
         items: items.map(i => ({ id: i.id, name: i.name, category: i.category, color: i.color, brand: i.brand, subcategory: i.subcategory })),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Generation failed')
+      if (!res.ok) throw new Error(data.error ?? 'generation failed')
       if (data.profile) setText(data.profile)
     } catch (e) {
-      setGenerateError(e instanceof Error ? e.message : 'Generation failed')
+      setGenerateError(e instanceof Error ? e.message : 'generation failed')
     } finally { stepTimers.forEach(clearTimeout); setGenerating(false) }
   }
 
@@ -62,7 +62,7 @@ export default function StyleProfileEditorPage() {
         <V4Bar />
         <div style={{ padding: '40px 40px 0' }}>
           <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>Reading your outfits.</Disp>
+          <Disp s={26}>reading your outfits</Disp>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
             {GENERATE_STEPS.map((label, i) => {
               const done = i < generateStep
@@ -94,10 +94,10 @@ export default function StyleProfileEditorPage() {
 
   return (
     <div style={{ paddingBottom: 100 }}>
-      <V4Bar back title="Me" onBack={() => navigate('/settings')} right={<Mono s={11} c={isDirty ? T.roseDeep : T.g400}>{isDirty ? 'unsaved' : 'saved'}</Mono>} />
+      <V4Bar back title="me" onBack={() => navigate('/settings')} right={<Mono s={11} c={isDirty ? T.roseDeep : T.g400}>{isDirty ? 'unsaved' : 'saved'}</Mono>} />
       <div style={{ padding: '8px 22px 0' }}>
-        <Disp s={27}>How I dress</Disp>
-        <Body s={13.5} style={{ marginTop: 6 }}>Written in your words and read verbatim before every suggestion.</Body>
+        <Disp s={27}>how i dress</Disp>
+        <Body s={13.5} style={{ marginTop: 6 }}>written in your words and read verbatim before every suggestion.</Body>
       </div>
       <div style={{ padding: '20px 22px 0' }}>
         <V4Card pad={17} style={{ minHeight: 220, position: 'relative' }}>
@@ -110,7 +110,7 @@ export default function StyleProfileEditorPage() {
         </V4Card>
       </div>
       <div style={{ padding: '22px 22px 0' }}>
-        <SecH right="Used when shopping">Colour season</SecH>
+        <SecH right="used when shopping">colour season</SecH>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {COLOR_SEASONS.map(s => <Pill key={s.value} on={colorSeason === s.value} tone="peach" onClick={() => setColorSeason(prev => prev === s.value ? null : s.value)}>{s.label}</Pill>)}
         </div>
@@ -118,17 +118,17 @@ export default function StyleProfileEditorPage() {
       </div>
       <div style={{ padding: '24px 22px 0' }}>
         <V4Card fill={T.peachSoft} shadow={false} pad={17}>
-          <Disp s={17}>Or let me write it.</Disp>
-          <Body s={13.5} c={T.cocoa} style={{ marginTop: 6 }}>I'll read your {outfits.length} logged outfits and draft this for you to edit.</Body>
+          <Disp s={17}>or let me write it</Disp>
+          <Body s={13.5} c={T.cocoa} style={{ marginTop: 6 }}>i'll read your {outfits.length} logged outfits and draft this for you to edit.</Body>
           {generateError && <Body s={12} c={T.roseDeep} style={{ marginTop: 8 }}>{generateError}</Body>}
-          <div style={{ marginTop: 15 }}><Btn kind="white" icon="spark" style={{ height: 46, fontSize: 14 }} onClick={generateFromOutfits}>Draft from my history</Btn></div>
+          <div style={{ marginTop: 15 }}><Btn kind="white" icon="spark" style={{ height: 46, fontSize: 14 }} onClick={generateFromOutfits}>draft from my history</Btn></div>
         </V4Card>
       </div>
       <div style={{ position: 'fixed', bottom: 'var(--v3-sticky-bottom)', left: 'var(--v3-sidenav-w)', right: 0, padding: '16px 22px 28px', background: T.paper, borderTop: `1px solid ${T.line}` }}>
         <div style={{ maxWidth: CONTENT_MAX_W, margin: '0 auto', display: 'flex', gap: 10, position: 'relative' }}>
           {saveError && <Body s={12} c={T.roseDeep} style={{ position: 'absolute', top: -26, left: 0 }}>{saveError}</Body>}
-          <Btn kind="quiet" flex={1} onClick={() => navigate('/settings')}>Discard</Btn>
-          <Btn flex={1.5} icon="check" disabled={saving || !isDirty} onClick={save}>{saving ? 'Saving…' : 'Save'}</Btn>
+          <Btn kind="quiet" flex={1} onClick={() => navigate('/settings')}>discard</Btn>
+          <Btn flex={1.5} icon="check" disabled={saving || !isDirty} onClick={save}>{saving ? 'saving…' : 'save'}</Btn>
         </div>
       </div>
     </div>
