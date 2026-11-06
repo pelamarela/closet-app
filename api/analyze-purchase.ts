@@ -52,8 +52,8 @@ type AnalysisResult = {
   style_match: number
   pros: string[]
   concerns: string[]
-  style_analysis: string
-  closet_compatibility: string
+  quip: string
+  summary: string
   pairing_items: PairingItem[]
   outfit_ideas: string[]
 }
@@ -94,23 +94,23 @@ Return ONLY a JSON object with exactly these fields:
   "style_match": <integer 0-100>,
   "pros": ["<3-5 word reason it works>", ...],
   "concerns": ["<3-5 word concern>", ...],
-  "style_analysis": "<2-3 sentences: does this item fit her aesthetic, vibe, and personal style? Reference her style profile specifically.>",
-  "closet_compatibility": "<2-3 sentences: how versatile is this with her existing wardrobe? How many items does it work with?>",
+  "quip": "<one playful, whimsical line, max 9 words, lowercase, that sums up the call. Like a witty friend, not a report. No emoji.>",
+  "summary": "<ONE short paragraph, max 35 words: the honest why, covering her style fit and how it sits with what she already owns (name one or two real pieces at most).>",
   "pairing_items": [
-    { "id": "<exact item id from wardrobe>", "name": "<item name>", "reason": "<why these work together in 1 sentence>" }
+    { "id": "<exact item id from wardrobe>", "name": "<item name>", "reason": "<max 8 words>" }
   ],
   "outfit_ideas": [
-    "<specific outfit: item + 2-3 wardrobe pieces by name, describe the vibe>"
+    "<one line, max 18 words: this piece + 2 wardrobe pieces by name>"
   ]
 }
 
 Rules:
-- style_match: score 0-100 based on three specific questions: (1) Does this item match her style profile — her aesthetic, colours, silhouettes? (2) How many items in her existing wardrobe does it actually pair with — concretely count them? (3) Does it fill a genuine gap or duplicate something she already has? A low answer on any of these should pull the score down significantly. Do not default to a high number — if the wardrobe context is thin or the item is a poor fit, score accordingly.${color_season ? '\n- If a color season is provided, weigh whether the item\'s color sits within that palette — a clear mismatch (e.g. a muted-palette client considering a neon/icy-bright piece) should pull style_match down and be named as a concern; mention the color-season fit explicitly in style_analysis.' : ''}
+- style_match: score 0-100 based on three specific questions: (1) Does this item match her style profile — her aesthetic, colours, silhouettes? (2) How many items in her existing wardrobe does it actually pair with — concretely count them? (3) Does it fill a genuine gap or duplicate something she already has? A low answer on any of these should pull the score down significantly. Do not default to a high number — if the wardrobe context is thin or the item is a poor fit, score accordingly.${color_season ? '\n- If a color season is provided, weigh whether the item\'s color sits within that palette — a clear mismatch (e.g. a muted-palette client considering a neon/icy-bright piece) should pull style_match down and be named as a concern; mention the color-season fit in the summary.' : ''}
 - verdict is derived from style_match: 80+ = "buy", 50-79 = "maybe", below 50 = "skip"
-- pros: 3-5 short bullets (≤5 words each) — why it works: style, versatility, gap it fills
-- concerns: 0-3 short bullets (≤5 words each) — honest issues; empty array [] if none
-- pairing_items: pick 3-5 of the best matches from the wardrobe using exact IDs — skip if wardrobe is empty
-- outfit_ideas: 2-3 complete looks using this new piece + existing wardrobe items by name
+- pros: 2-4 short bullets (≤5 words each) — why it works: style, versatility, gap it fills
+- concerns: 0-2 short bullets (≤5 words each) — honest issues; empty array [] if none
+- pairing_items: pick up to 4 of the best matches from the wardrobe using exact IDs — skip if wardrobe is empty
+- outfit_ideas: 2 complete looks using this new piece + existing wardrobe items by name
 - Be honest — if it doesn't work, say so clearly`
 
   const responseSchema = {
@@ -120,8 +120,8 @@ Rules:
       style_match: { type: 'integer' },
       pros: { type: 'array', items: { type: 'string' } },
       concerns: { type: 'array', items: { type: 'string' } },
-      style_analysis: { type: 'string' },
-      closet_compatibility: { type: 'string' },
+      quip: { type: 'string' },
+      summary: { type: 'string' },
       pairing_items: {
         type: 'array',
         items: {
@@ -137,7 +137,7 @@ Rules:
       },
       outfit_ideas: { type: 'array', items: { type: 'string' } },
     },
-    required: ['verdict', 'style_match', 'pros', 'concerns', 'style_analysis', 'closet_compatibility', 'pairing_items', 'outfit_ideas'],
+    required: ['verdict', 'style_match', 'pros', 'concerns', 'quip', 'summary', 'pairing_items', 'outfit_ideas'],
     additionalProperties: false,
   }
 
@@ -180,8 +180,8 @@ Rules:
       style_match: styleMatch,
       pros: parsed.pros ?? [],
       concerns: parsed.concerns ?? [],
-      style_analysis: parsed.style_analysis ?? '',
-      closet_compatibility: parsed.closet_compatibility ?? '',
+      quip: parsed.quip ?? '',
+      summary: parsed.summary ?? '',
       pairing_items: parsed.pairing_items,
       outfit_ideas: parsed.outfit_ideas ?? [],
     }

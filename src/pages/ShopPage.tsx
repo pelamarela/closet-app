@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { rise } from '../design/rise'
 import { CountUp } from '../design/CountUp'
 import { SafeImg } from '../design/SafeImg'
+import LoadingWave from '../design/LoadingWave'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setSingleFile } from '../lib/batchState'
@@ -11,7 +12,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W, BouncingDots } from '../design/kit'
 import { R } from '../design/radii'
 
 type PairingItem = { id: string; name: string; reason: string }
@@ -20,16 +21,16 @@ type AnalysisResult = {
   style_match: number
   pros: string[]
   concerns: string[]
-  style_analysis: string
-  closet_compatibility: string
+  quip: string
+  summary: string
   pairing_items: PairingItem[]
   outfit_ideas: string[]
 }
 
 const VERDICT_HEADLINE: Record<AnalysisResult['verdict'], string> = {
-  buy: 'Yes, get it.',
-  maybe: "It's a maybe.",
-  skip: "Probably don't.",
+  buy: 'yes, take it home',
+  maybe: 'hmm, maybe',
+  skip: 'not this one',
 }
 
 const LOADING_STEPS = ['eyeing it up', 'cross-checking your closet', 'making the call']
@@ -112,7 +113,7 @@ export default function ShopPage() {
       <div style={{ ...dotted, minHeight: '70vh' }}>
         <V4Bar right={<button onClick={() => setView('input')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
         <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
+          <LoadingWave />
           <Disp s={26}>sizing it up</Disp>
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
             {LOADING_STEPS.map((label, i) => {
@@ -120,10 +121,10 @@ export default function ShopPage() {
               const active = i === loadingStep
               return (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
-                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className={done ? 'ds-pop' : undefined} style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {done && <V4Icon n="check" s={11} w={2.8} />}
                   </div>
-                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
+                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>{active && <BouncingDots size={3} gap={3} color={T.g400} />}
                 </div>
               )
             })}
@@ -143,70 +144,71 @@ export default function ShopPage() {
 
     const InfoBlock = (
       <>
-        <V4Card fill={T.peach} shadow={false} pad={18}>
-          <Mono s={11} c={T.cocoa}>the verdict</Mono>
-          <Disp s={28} style={{ marginTop: 7 }}>{VERDICT_HEADLINE[result.verdict]}</Disp>
-          {result.style_analysis && <Body s={14} c={T.g700} style={{ marginTop: 9 }}>{result.style_analysis}</Body>}
-          {result.closet_compatibility && <Body s={14} c={T.g700} style={{ marginTop: 8 }}>{result.closet_compatibility}</Body>}
-        </V4Card>
-        <div style={{ marginTop: 22 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
-            <Disp s={44} c={T.cocoa}><CountUp to={result.style_match} />%</Disp>
-            <Body s={13.5} style={{ paddingBottom: 6 }}>style match</Body>
+        <V4Card fill={T.peach} pad={22}>
+          <Disp s={32}>{VERDICT_HEADLINE[result.verdict]}</Disp>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 14 }}>
+            <Disp s={64} c={T.cocoa} style={{ lineHeight: 1 }}><CountUp to={result.style_match} />%</Disp>
+            <Body s={14} c={T.cocoa} style={{ paddingBottom: 6 }}>your style</Body>
           </div>
-          {(result.pros.length > 0 || result.concerns.length > 0) && (
-            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {result.pros.map((p, i) => (
-                <motion.div key={`p${i}`} {...rise(i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <V4Icon n="check" s={14} w={2.4} c={T.cocoa} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <Body s={13.5} c={T.g700}>{p}</Body>
-                </motion.div>
-              ))}
-              {result.concerns.map((c, i) => (
-                <motion.div key={`c${i}`} {...rise(result.pros.length + i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <V4Icon n="close" s={13} w={2.2} c={T.roseDeep} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <Body s={13.5} c={T.g700}>{c}</Body>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-        {result.pairing_items.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <SecH>you already own</SecH>
-            {result.pairing_items.map((p, i) => {
-              const item = itemMap.get(p.id)
-              return (
-                <motion.div key={p.id} {...rise(i + 2, 8)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '10px 0', borderBottom: i < result.pairing_items.length - 1 ? `1px solid ${T.line}` : 'none' }}>
-                  <div style={{ width: 40, height: 50, flexShrink: 0, overflow: 'hidden', background: T.g200 }}>
-                    {item?.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: fS, fontSize: 14, fontWeight: 500 }}>{p.name}</div>
-                    <div style={{ marginTop: 2 }}><Body s={12} c={T.g500}>{p.reason}</Body></div>
-                  </div>
-                </motion.div>
-              )
-            })}
+          {result.quip && <Body s={15} c={T.cocoaDeep} style={{ marginTop: 12 }}>{result.quip}</Body>}
+        </V4Card>
+
+        {result.summary && <Body s={14.5} c={T.g700} style={{ marginTop: 22 }}>{result.summary}</Body>}
+
+        {(result.pros.length > 0 || result.concerns.length > 0) && (
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {result.pros.slice(0, 4).map((p, i) => (
+              <motion.div key={`p${i}`} {...rise(i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <V4Icon n="check" s={14} w={2.4} c={T.cocoa} style={{ flexShrink: 0, marginTop: 3 }} />
+                <Body s={14} c={T.g700}>{p}</Body>
+              </motion.div>
+            ))}
+            {result.concerns.slice(0, 2).map((c, i) => (
+              <motion.div key={`c${i}`} {...rise(result.pros.length + i, 8)} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <V4Icon n="close" s={13} w={2.2} c={T.roseDeep} style={{ flexShrink: 0, marginTop: 4 }} />
+                <Body s={14} c={T.g700}>{c}</Body>
+              </motion.div>
+            ))}
           </div>
         )}
+
+        {result.pairing_items.length > 0 && (
+          <div style={{ marginTop: 28 }}>
+            <SecH>you own these</SecH>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8 }}>
+              {result.pairing_items.map((p, i) => {
+                const item = itemMap.get(p.id)
+                return (
+                  <motion.button key={p.id} {...rise(i, 8)} onClick={() => navigate(`/wardrobe/${p.id}`)} aria-label={p.name}
+                    style={{ aspectRatio: '3/4', padding: 0, border: 'none', background: T.surface, overflow: 'hidden', cursor: 'pointer', display: 'block' }}>
+                    {item?.signedImageUrl && <SafeImg src={item.signedImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                  </motion.button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {result.outfit_ideas.length > 0 && (
-          <div style={{ marginTop: 24 }}>
-            <SecH>it could work with</SecH>
-            {result.outfit_ideas.map((idea, i) => {
-              const saved = savedIdeas.has(i)
-              return (
-                <div key={i} style={{ padding: '10px 0', borderBottom: i < result.outfit_ideas.length - 1 ? `1px solid ${T.line}` : 'none' }}>
-                  <Body s={13.5} c={T.g700} style={{ lineHeight: 1.5 }}>{idea}</Body>
-                  <button
-                    onClick={async () => { if (saved) return; await saveIdea('', idea, result.pairing_items.map(p => p.id)); setSavedIdeas(prev => new Set(prev).add(i)) }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, marginTop: 6, cursor: saved ? 'default' : 'pointer', fontFamily: fS, fontSize: 12.5, color: saved ? T.g400 : T.cocoa }}
-                  >
-                    <V4Icon n="bookmark" s={13} w={1.7} />{saved ? 'saved to ideas' : 'save to ideas'}
-                  </button>
-                </div>
-              )
-            })}
+          <div style={{ marginTop: 28 }}>
+            <SecH>ideas</SecH>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {result.outfit_ideas.map((idea, i) => {
+                const saved = savedIdeas.has(i)
+                return (
+                  <div key={i} style={{ background: T.surface, padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <Body s={14} c={T.g700} style={{ flex: 1 }}>{idea}</Body>
+                    <button
+                      aria-label={saved ? 'saved' : 'save idea'}
+                      onClick={async () => { if (saved) return; await saveIdea('', idea, result.pairing_items.map(p => p.id)); setSavedIdeas(prev => new Set(prev).add(i)) }}
+                      style={{ background: 'none', border: 'none', padding: 2, cursor: saved ? 'default' : 'pointer', color: saved ? T.g400 : T.cocoa, display: 'flex' }}
+                    >
+                      <V4Icon n="bookmark" s={18} w={saved ? 2.4 : 1.7} />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
         <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
