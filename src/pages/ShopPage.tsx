@@ -27,10 +27,14 @@ type AnalysisResult = {
   outfit_ideas: string[]
 }
 
-const VERDICT_HEADLINE: Record<AnalysisResult['verdict'], string> = {
-  buy: 'yes, take it home',
-  maybe: 'hmm, maybe',
-  skip: 'not this one',
+// the headline follows the score, so a 91 and an 81 don't get the same words
+function verdictHeadline(score: number): string {
+  if (score >= 90) return "it's you, buy it"
+  if (score >= 80) return 'yes, take it home'
+  if (score >= 65) return 'leaning yes'
+  if (score >= 50) return 'hmm, maybe'
+  if (score >= 35) return "i'd walk past"
+  return 'hard pass'
 }
 
 const LOADING_STEPS = ['eyeing it up', 'cross-checking your closet', 'making the call']
@@ -144,13 +148,22 @@ export default function ShopPage() {
 
     const InfoBlock = (
       <>
-        <V4Card fill={T.peach} pad={22}>
-          <Disp s={32}>{VERDICT_HEADLINE[result.verdict]}</Disp>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 14 }}>
-            <Disp s={64} c={T.cocoa} style={{ lineHeight: 1 }}><CountUp to={result.style_match} />%</Disp>
-            <Body s={14} c={T.cocoa} style={{ paddingBottom: 6 }}>your style</Body>
+        <V4Card fill={T.peach} pad={24}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '20px 40px' }}>
+            <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+              <Disp s={34}>{verdictHeadline(result.style_match)}</Disp>
+              {result.quip && <Body s={15} c={T.cocoaDeep} style={{ marginTop: 10 }}>{result.quip}</Body>}
+            </div>
+            <div style={{ flex: '1 1 200px', maxWidth: 320 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                <Disp s={64} c={T.cocoa} style={{ lineHeight: 1 }}><CountUp to={result.style_match} />%</Disp>
+                <Body s={14} c={T.cocoa}>your style</Body>
+              </div>
+              <div style={{ marginTop: 12, height: 6, background: T.roseSoft, borderRadius: 2, overflow: 'hidden' }}>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100, result.style_match))}%` }} transition={{ duration: 0.9, ease: 'easeOut' }} style={{ height: '100%', background: T.cocoa }} />
+              </div>
+            </div>
           </div>
-          {result.quip && <Body s={15} c={T.cocoaDeep} style={{ marginTop: 12 }}>{result.quip}</Body>}
         </V4Card>
 
         {result.summary && <Body s={14.5} c={T.g700} style={{ marginTop: 22 }}>{result.summary}</Body>}

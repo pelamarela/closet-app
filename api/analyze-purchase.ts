@@ -94,7 +94,7 @@ Return ONLY a JSON object with exactly these fields:
   "style_match": <integer 0-100>,
   "pros": ["<3-5 word reason it works>", ...],
   "concerns": ["<3-5 word concern>", ...],
-  "quip": "<one playful, whimsical line, max 9 words, lowercase, that sums up the call. Like a witty friend, not a report. No emoji.>",
+  "quip": "<one playful, whimsical line, max 9 words, lowercase, that sums up the call. A witty friend with a wink, never a description of the garment. Examples: "your closet already said this twice", "finally, something with a little mischief". No emoji.>",
   "summary": "<ONE short paragraph, max 35 words: the honest why, covering her style fit and how it sits with what she already owns (name one or two real pieces at most).>",
   "pairing_items": [
     { "id": "<exact item id from wardrobe>", "name": "<item name>", "reason": "<max 8 words>" }
