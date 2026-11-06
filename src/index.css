@@ -108,3 +108,8 @@ input:focus-visible, textarea:focus-visible { outline: none; }
   button { transition: none; }
   button:not(:disabled):active { transform: none; }
 }
+
+/* a finished step pops */
+@keyframes ds-pop { 0% { transform: scale(.4); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.ds-pop { animation: ds-pop .38s ease-out; }
+@media (prefers-reduced-motion: reduce) { .ds-pop { animation: none; } }
