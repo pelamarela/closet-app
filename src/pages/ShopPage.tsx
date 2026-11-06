@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import { rise } from '../design/rise'
 import { CountUp } from '../design/CountUp'
 import { SafeImg } from '../design/SafeImg'
-import LoadingWave from '../design/LoadingWave'
+import LoadingScreen from '../design/LoadingScreen'
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setSingleFile } from '../lib/batchState'
@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useItems } from '../hooks/useItems'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, dotted, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W, BouncingDots } from '../design/kit'
+import { T, fS, V4Icon, V4Bar, Btn, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W } from '../design/kit'
 import { R } from '../design/radii'
 
 type PairingItem = { id: string; name: string; reason: string }
@@ -37,7 +37,7 @@ function verdictHeadline(score: number): string {
   return 'hard pass'
 }
 
-const LOADING_STEPS = ['eyeing it up', 'cross-checking your closet', 'making the call']
+const LOADING_STEPS = ['squinting at it', 'holding it up to your closet', 'making the call']
 
 export default function ShopPage() {
   const navigate = useNavigate()
@@ -113,29 +113,7 @@ export default function ShopPage() {
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (view === 'loading') {
-    return (
-      <div style={{ ...dotted, minHeight: '70vh' }}>
-        <V4Bar right={<button onClick={() => setView('input')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
-        <div style={{ padding: '40px 40px 0' }}>
-          <LoadingWave />
-          <Disp s={26}>sizing it up</Disp>
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {LOADING_STEPS.map((label, i) => {
-              const done = i < loadingStep
-              const active = i === loadingStep
-              return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
-                  <div className={done ? 'ds-pop' : undefined} style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {done && <V4Icon n="check" s={11} w={2.8} />}
-                  </div>
-                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>{active && <BouncingDots size={3} gap={3} color={T.g400} />}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="sizing it up" steps={LOADING_STEPS} step={loadingStep} onClose={() => setView('input')} />
   }
 
   // ── Result ────────────────────────────────────────────────────────────────

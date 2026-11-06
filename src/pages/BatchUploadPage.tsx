@@ -1,3 +1,4 @@
+import LoadingScreen from '../design/LoadingScreen'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { compressImage } from '../lib/imageUtils'
@@ -7,7 +8,7 @@ import { useItemMutations } from '../hooks/useItemMutations'
 import { useItems } from '../hooks/useItems'
 import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, fM, dotted, V4Bar, V4Icon, Btn, Pill, Switch, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, Btn, Pill, Switch, Disp, Body, Mono, CONTENT_MAX_W } from '../design/kit'
 import { R } from '../design/radii'
 import type { Category } from '../types/database'
 
@@ -226,40 +227,12 @@ export default function BatchUploadPage() {
 
   if (stage === 'analyzing') {
     const pct = analyzeProgress.total > 0 ? (analyzeProgress.done / analyzeProgress.total) * 100 : 0
-    return (
-      <div style={{ ...dotted, minHeight: '100svh' }}>
-        <V4Bar />
-        <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>reading your photos</Disp>
-          <div style={{ marginTop: 28, maxWidth: 280 }}>
-            <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
-              <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
-            </div>
-            <Body s={14}>{analyzeProgress.done} of {analyzeProgress.total} analyzed…</Body>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="reading your photos" progress={pct} label={`${analyzeProgress.done} of ${analyzeProgress.total} analyzed…`} />
   }
 
   if (stage === 'saving') {
     const pct = drafts.length > 0 ? (savedCount / drafts.length) * 100 : 0
-    return (
-      <div style={{ ...dotted, minHeight: '100svh' }}>
-        <V4Bar />
-        <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>adding to your closet</Disp>
-          <div style={{ marginTop: 28, maxWidth: 280 }}>
-            <div style={{ width: '100%', height: 2, background: T.g200, marginBottom: 14 }}>
-              <div style={{ height: '100%', background: T.ink, width: `${pct}%`, transition: 'width .3s' }} />
-            </div>
-            <Body s={14}>saving {Math.min(savedCount + 1, drafts.length)} of {drafts.length}…</Body>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="adding to your closet" progress={pct} label={`saving ${Math.min(savedCount + 1, drafts.length)} of ${drafts.length}…`} />
   }
 
   if (stage === 'done') {

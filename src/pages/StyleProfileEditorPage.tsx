@@ -1,3 +1,4 @@
+import LoadingScreen from '../design/LoadingScreen'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -7,7 +8,7 @@ import { useOutfits } from '../hooks/useOutfits'
 import { useAuth } from '../hooks/useAuth'
 import { COLOR_SEASONS } from '../lib/colorSeasons'
 import type { ColorSeason } from '../types/database'
-import { T, fS, dotted, V4Bar, V4Icon, Btn, Pill, Disp, Body, Mono, SecH, V4Card , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, V4Bar, Btn, Pill, Disp, Body, Mono, SecH, V4Card, CONTENT_MAX_W } from '../design/kit'
 
 const GENERATE_STEPS = ['going through your outfits', 'spotting your patterns', 'writing it up']
 
@@ -57,29 +58,7 @@ export default function StyleProfileEditorPage() {
   }
 
   if (generating) {
-    return (
-      <div style={{ ...dotted, minHeight: '100svh' }}>
-        <V4Bar />
-        <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>reading your outfits</Disp>
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {GENERATE_STEPS.map((label, i) => {
-              const done = i < generateStep
-              const active = i === generateStep
-              return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
-                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {done && <V4Icon n="check" s={11} w={2.8} />}
-                  </div>
-                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="reading your outfits" steps={GENERATE_STEPS} step={generateStep} />
   }
 
   const save = async () => {

@@ -1,6 +1,7 @@
 import { rise } from '../design/rise'
 import { motion } from 'motion/react'
 import { SafeImg } from '../design/SafeImg'
+import LoadingScreen from '../design/LoadingScreen'
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -12,7 +13,7 @@ import { getLocation, getCurrentWeather, type WeatherData } from '../lib/weather
 import { getOccasionPresets } from '../lib/occasionPresets'
 import { useIdeaMutations } from '../hooks/useIdeaMutations'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted , CONTENT_MAX_W } from '../design/kit'
+import { T, fS, V4Icon, V4Bar, Btn, RoundBtn, Pill, ItemTile, Disp, Body, Mono, SecH, V4Card, Dots, dotted, CONTENT_MAX_W } from '../design/kit'
 import { catLabel } from '../lib/categoryLabel'
 import Collage from '../design/Collage'
 
@@ -25,7 +26,7 @@ const ANCHOR_CATS = [
   { value: 'shoes', label: catLabel('shoes') }, { value: 'accessory', label: catLabel('accessory') },
 ]
 
-const LOADING_STEPS = ['checking the weather', 'reading your style profile', 'choosing from your closet']
+const LOADING_STEPS = ['peeking at the weather', 'remembering your taste', 'pulling it together']
 
 export default function SuggestPage() {
   const navigate = useNavigate()
@@ -156,31 +157,7 @@ export default function SuggestPage() {
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (view === 'loading') {
-    return (
-      <div style={{ ...dotted, minHeight: '70vh' }}>
-        <V4Bar right={<button onClick={() => setView('brief')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.ink, display: 'flex' }}><V4Icon n="close" s={22} w={1.8} /></button>} />
-        <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>having a look through your closet</Disp>
-          <div style={{ marginTop: 28 }}>
-          <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {LOADING_STEPS.map((label, i) => {
-              const done = i < loadingStep
-              const active = i === loadingStep
-              return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
-                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {done && <V4Icon n="check" s={11} w={2.8} />}
-                  </div>
-                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
-                </div>
-              )
-            })}
-          </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="rummaging through your closet" steps={LOADING_STEPS} step={loadingStep} onClose={() => setView('brief')} />
   }
 
   // ── Error ─────────────────────────────────────────────────────────────────

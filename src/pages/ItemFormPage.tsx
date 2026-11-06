@@ -1,3 +1,4 @@
+import LoadingScreen from '../design/LoadingScreen'
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -9,7 +10,7 @@ import { catLabel } from '../lib/categoryLabel'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import type { ItemFormData } from '../hooks/useItems'
 import type { Category } from '../types/database'
-import { T, fS, fM, dotted, V4Icon, V4Bar, Btn, Pill, Switch, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
+import { T, fS, fM, V4Icon, V4Bar, Btn, Pill, Switch, Disp, Body, Mono, SecH, CONTENT_MAX_W } from '../design/kit'
 
 const ANALYZE_STEPS = ['reading the photo', 'identifying the piece', 'filling in the details']
 
@@ -205,29 +206,7 @@ export default function ItemFormPage() {
   }
 
   if (analyzing) {
-    return (
-      <div style={{ ...dotted, minHeight: '100svh' }}>
-        <V4Bar />
-        <div style={{ padding: '40px 40px 0' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 100, display: 'block', marginBottom: 24 }} />
-          <Disp s={26}>reading your photo</Disp>
-          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 15 }}>
-            {ANALYZE_STEPS.map((label, i) => {
-              const done = i < analyzeStep
-              const active = i === analyzeStep
-              return (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: done || active ? 1 : .4 }}>
-                  <div style={{ width: 20, height: 20, background: done ? T.ink : 'transparent', border: done ? 'none' : `1.5px solid ${T.g200}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {done && <V4Icon n="check" s={11} w={2.8} />}
-                  </div>
-                  <Body s={14} c={done ? T.ink : T.g500}>{label}</Body>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen title="reading your photo" steps={ANALYZE_STEPS} step={analyzeStep} />
   }
 
   const PhotoBlock = (
