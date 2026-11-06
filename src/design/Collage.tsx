@@ -102,19 +102,19 @@ function measure(cols: Node[][]) {
 }
 
 // tries a few column counts and keeps the one where small things stay readable and garments stay big
-function choose(t: ReturnType<typeof tiers>): Node[][] {
+function choose(t: ReturnType<typeof tiers>, portrait: boolean): Node[][] {
   const nGarm = t.garments.length + t.shoes.length
   const hasSide = t.small.length >= 4
   const options: { cols: Node[][]; ok: boolean; score: number }[] = []
-  for (let g = 1; g <= Math.min(3, Math.max(nGarm, 1)); g++) {
+  for (let g = 1; g <= Math.min(portrait ? 2 : 3, Math.max(nGarm, 1)); g++) {
     for (let sc = 1; sc <= (hasSide ? 3 : 1); sc++) {
       const cols = build(t, g, sc)
       const m = measure(cols)
       const sideTile = hasSide ? m.w[m.w.length - 1] / sc / REF : 1
       const garmMin = Math.min(...m.w.slice(0, hasSide ? -1 : undefined)) / REF
       const ratio = m.H / REF
-      const ok = sideTile >= 0.17 && garmMin >= 0.17 && ratio <= 2
-      options.push({ cols, ok, score: ok ? Math.abs(ratio - 1.1) : 10 - sideTile })
+      const ok = sideTile >= 0.17 && garmMin >= 0.17 && ratio <= (portrait ? 2.6 : 2)
+      options.push({ cols, ok, score: ok ? Math.abs(ratio - (portrait ? 1.5 : 1.1)) : 10 - sideTile })
     }
   }
   const good = options.filter(o => o.ok)
@@ -140,10 +140,11 @@ function Cell({ tile, square }: { tile: Tile; square: boolean }) {
  * `thumb`: just the first garment, for tiny boxes the caller sizes itself.
  * `square`: force every tile to 1:1 (photos are cropped) instead of keeping their own shape.
  * `maxSmall`: most small tiles to show; extra ones become a "+n" tile (use 4 on small cards).
+ * `portrait`: lay it out taller than wide (fewer columns), for the big collage on detail pages.
  * `height`: render at exactly this many px tall; the width follows from the layout, so a row of collages lines up top and bottom.
  */
-export default function Collage({ items, thumb = false, square = false, maxSmall = 6, height }: {
-  items: CollageItem[]; thumb?: boolean; square?: boolean; maxSmall?: number; height?: number
+export default function Collage({ items, thumb = false, square = false, maxSmall = 6, height, portrait = false }: {
+  items: CollageItem[]; thumb?: boolean; square?: boolean; maxSmall?: number; height?: number; portrait?: boolean
 }) {
   const ars = useAspects(items.map(i => i.signedImageUrl))
   const tiles = useMemo<Tile[]>(() => items.map((item, i) => ({ item, ar: square ? 1 : Math.min(Math.max(ars[i], 0.5), 2) })), [items, ars, square])
@@ -158,7 +159,7 @@ export default function Collage({ items, thumb = false, square = false, maxSmall
   }
   if (tiles.length === 0) return <div style={{ width: '100%', aspectRatio: '4/5', background: T.line }} />
 
-  const cols = choose(tiers(tiles, maxSmall))
+  const cols = choose(tiers(tiles, maxSmall), portrait)
   const d = cols.map(dims)
   const D = d.reduce((s, x) => s + 1 / x.a, 0)
   const C = d.reduce((s, x) => s + x.b / x.a, 0)
