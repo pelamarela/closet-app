@@ -185,7 +185,7 @@ export default function TodayPage() {
       <div style={{ padding: `0 ${gutter}px` }}>
         <V4Card fill="transparent" pad={0} style={{ borderBottom: `1px solid ${T.line}`, paddingBottom: 18 }}>
           <motion.button {...rise(0)} onClick={() => navigate(`/outfits/${todayOutfit.id}`)} aria-label="open outfit" style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}>
-            <Collage items={collageItems(todayOutfit.item_ids)} />
+            <Collage items={collageItems(todayOutfit.item_ids)} portrait={isDesktop} maxHeight={isDesktop ? 'calc(100svh - var(--v3-header-h) - 300px)' : undefined} />
           </motion.button>
           <Disp s={21} style={{ marginTop: 14 }}>{outfitTitle(todayOutfit.item_ids, items, 'outfit')}</Disp>
           {todayOutfit.occasion && <Body s={13.5} style={{ marginTop: 4 }}>{todayOutfit.occasion}</Body>}
