@@ -127,19 +127,19 @@ export default function ShopPage() {
     const InfoBlock = (
       <>
         <V4Card fill={T.peach} pad={24}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '20px 40px' }}>
-            <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-              <Disp s={34}>{verdictHeadline(result.style_match)}</Disp>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'end', gap: 24 }}>
+            <div>
+              <Disp s={34} style={{ fontSize: 'clamp(26px, 6vw, 34px)' }}>{verdictHeadline(result.style_match)}</Disp>
               {result.quip && <Body s={15} c={T.cocoaDeep} style={{ marginTop: 10 }}>{result.quip}</Body>}
             </div>
-            <div style={{ flex: '1 1 200px', maxWidth: 320 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                <Disp s={64} c={T.cocoa} style={{ lineHeight: 1 }}><CountUp to={result.style_match} />%</Disp>
-                <Body s={14} c={T.cocoa}>your style</Body>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <Disp s={64} c={T.cocoa} style={{ fontSize: 'clamp(44px, 12vw, 64px)', lineHeight: 1 }}><CountUp to={result.style_match} />%</Disp>
               </div>
-              <div style={{ marginTop: 12, height: 6, background: T.roseSoft, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ marginTop: 10, height: 6, background: T.roseSoft, borderRadius: 2, overflow: 'hidden' }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100, result.style_match))}%` }} transition={{ duration: 0.9, ease: 'easeOut' }} style={{ height: '100%', background: T.cocoa }} />
               </div>
+              <Body s={13} c={T.cocoa} style={{ marginTop: 6 }}>your style</Body>
             </div>
           </div>
         </V4Card>
