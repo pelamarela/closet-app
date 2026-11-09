@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, Pill, Btn, Disp, Body, Mono, V4Card } from '../design/kit'
+import { Teasers } from './LoginTeasersPage'
 
 type Mode = 'signin' | 'signup'
 
@@ -115,6 +116,10 @@ export default function LoginPage() {
           </Btn>
         </div>
       </form>
+
+      <div style={{ padding: '0 22px 28px', display: 'flex', justifyContent: 'center' }}>
+        <Teasers />
+      </div>
     </>
   )
 

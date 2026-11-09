@@ -30,6 +30,7 @@ import PreviewPage from './pages/PreviewPage'
 import NavVariantsPage from './pages/NavVariantsPage'
 import OutfitTestPage from './pages/OutfitTestPage'
 import HeaderVariantsPage from './pages/HeaderVariantsPage'
+import LoginTeasersPage from './pages/LoginTeasersPage'
 
 // Two shells during the v3 migration: pages that have been rebuilt against
 // design/kit.tsx render under V3Layout (persistent header, 4 tabs + raised
@@ -67,6 +68,7 @@ export default function App() {
           {import.meta.env.DEV && <Route path="/nav" element={<NavVariantsPage />} />}
           {import.meta.env.DEV && <Route path="/outfits-test" element={<OutfitTestPage />} />}
           {import.meta.env.DEV && <Route path="/header" element={<HeaderVariantsPage />} />}
+          {import.meta.env.DEV && <Route path="/login-teasers" element={<LoginTeasersPage />} />}
           <Route element={<ProtectedShell Shell={V3Layout} />}>
             <Route path="/" element={<TodayPage />} />
             <Route path="/outfits" element={<MonthPage />} />
