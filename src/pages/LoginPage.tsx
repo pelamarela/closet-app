@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, dotted, Pill, Btn, Disp, Body, Mono, V4Card } from '../design/kit'
+import { T, fS, Pill, Btn, Disp, Body, Mono, V4Card } from '../design/kit'
 
 type Mode = 'signin' | 'signup'
 
@@ -75,17 +75,11 @@ export default function LoginPage() {
   const content = (
     <>
       <div style={{ padding: '36px 22px 0', display: 'flex', justifyContent: 'center' }}>
-        <img src="/brand/umbrella-icon.png" alt="closet" style={{ width: 88, height: 88, objectFit: 'contain', display: 'block' }} />
+        <img src="/logo.png" alt="pelamarela" style={{ width: 88, height: 88, objectFit: 'contain', display: 'block' }} />
       </div>
 
       <div style={{ padding: '22px 22px 0', textAlign: 'center' }}>
         <Disp s={34} style={{ lineHeight: 1.1 }}>your closet,<br />on every device</Disp>
-      </div>
-
-      <div style={{ padding: '28px 22px 0' }}>
-        <div style={{ ...dotted, height: 80, display: 'flex', alignItems: 'center', padding: '0 18px' }}>
-          <img src="/brand/wave.png" alt="" style={{ width: 46, opacity: .95, display: 'block' }} />
-        </div>
       </div>
 
       <div style={{ padding: '22px 22px 0' }}>
