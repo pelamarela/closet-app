@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, Pill, Btn, Disp, Body, Mono, V4Card } from '../design/kit'
+import { T, fS, Pill, Btn, Disp, Body, Mono } from '../design/kit'
 import { Teasers } from './LoginTeasersPage'
 
 type Mode = 'signin' | 'signup'
@@ -127,7 +127,7 @@ export default function LoginPage() {
     return (
       <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 430 }}>
-          <V4Card pad={0} style={{ overflow: 'hidden' }}>{content}</V4Card>
+          {content}
           {Footer}
         </div>
       </div>
