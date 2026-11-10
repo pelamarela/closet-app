@@ -165,7 +165,8 @@ function RailPiece({ piece: { n, hem, tag }, i, lean }: { piece: Piece; i: numbe
 
 // The rail strip itself; place it at the top of a positioned, overflow-hidden page.
 // `scale` shrinks the whole rail (phones); tag text is enlarged by the same factor so it stays readable.
-export function LoginRail({ scale = 1 }: { scale?: number }) {
+// `top` moves the whole rail down (phones: below the status bar).
+export function LoginRail({ scale = 1, top = '0px' }: { scale?: number; top?: string }) {
   const [rail] = useState(randomRail)
   const x = useMotionValue(0)
   const vel = useRef(SPEED)
@@ -193,7 +194,7 @@ export function LoginRail({ scale = 1 }: { scale?: number }) {
     return () => timers.forEach(clearTimeout)
   }, [])
   return (
-    <div aria-hidden style={{ position: 'absolute', left: 0, top: 0, width: `${100 / scale}%`, height: 300, pointerEvents: 'none', transform: `scale(${scale})`, transformOrigin: '0 0', ...vars({ '--tk': String(1 / scale) }) }}>
+    <div aria-hidden style={{ position: 'absolute', left: 0, top, width: `${100 / scale}%`, height: 300, pointerEvents: 'none', transform: `scale(${scale})`, transformOrigin: '0 0', ...vars({ '--tk': String(1 / scale) }) }}>
       <style>{CSS}</style>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 46, height: 2, background: T.cocoa, zIndex: 100 }} />
       <motion.div style={{ position: 'absolute', left: 0, top: 40, display: 'flex', x, pointerEvents: 'auto' }}>

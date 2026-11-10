@@ -79,12 +79,12 @@ export default function LoginPage(props: { teaser?: string }) {
 
   const content = (
     <>
-      <div style={{ padding: '36px 22px 0', display: 'flex', justifyContent: 'center' }}>
-        <img src="/logo.png" alt="pelamarela" style={{ width: 88, height: 88, objectFit: 'contain', display: 'block' }} />
+      <div style={{ padding: isDesktop ? '36px 22px 0' : '20px 22px 0', display: 'flex', justifyContent: 'center' }}>
+        <img src="/logo.png" alt="pelamarela" style={{ width: isDesktop ? 88 : 56, height: isDesktop ? 88 : 56, objectFit: 'contain', display: 'block' }} />
       </div>
 
-      <div style={{ padding: '22px 22px 0', textAlign: 'center' }}>
-        <RotatingHeadline size={34} />
+      <div style={{ padding: isDesktop ? '22px 22px 0' : '14px 22px 0', textAlign: 'center' }}>
+        <RotatingHeadline size={isDesktop ? 34 : 20} />
       </div>
 
       <div style={{ padding: '22px 22px 0' }}>
@@ -138,8 +138,9 @@ export default function LoginPage(props: { teaser?: string }) {
 
   return (
     <div style={{ minHeight: '100svh', background: T.paper, position: 'relative', overflow: 'hidden' }}>
-      <LoginRail scale={0.62} />
-      <div style={{ maxWidth: 430, margin: '0 auto', paddingTop: 150, position: 'relative', zIndex: 10 }}>
+      {/* below the phone's status bar, with some air */}
+      <LoginRail scale={0.62} top="calc(env(safe-area-inset-top, 0px) + 18px)" />
+      <div style={{ maxWidth: 430, margin: '0 auto', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 168px)', position: 'relative', zIndex: 10 }}>
         {content}
         {Footer}
       </div>
