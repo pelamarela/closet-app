@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { T, fS, Pill, Btn, Body, Mono } from '../design/kit'
-import { Teasers } from './LoginTeasersPage'
 import { LoginRail, RotatingHeadline } from './LoginRail'
 
 type Mode = 'signin' | 'signup'
@@ -23,7 +22,7 @@ function Field({ label, type, value, onChange, autoComplete }: {
 }
 
 // Desktop: a clothes rail runs across the top (LoginRail), the form sits below it.
-// Phone: the form with the teaser cards underneath.
+// Phone: the same rail, shrunk, with the form below it.
 // `teaser` is only passed by the local dev options page and no longer changes anything here.
 export default function LoginPage(props: { teaser?: string }) {
   void props
@@ -122,11 +121,6 @@ export default function LoginPage(props: { teaser?: string }) {
         </div>
       </form>
 
-      {!isDesktop && (
-        <div style={{ padding: '0 22px 28px', display: 'flex', justifyContent: 'center' }}>
-          <Teasers />
-        </div>
-      )}
     </>
   )
 
@@ -143,9 +137,12 @@ export default function LoginPage(props: { teaser?: string }) {
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: T.paper, maxWidth: 430, margin: '0 auto' }}>
-      {content}
-      {Footer}
+    <div style={{ minHeight: '100svh', background: T.paper, position: 'relative', overflow: 'hidden' }}>
+      <LoginRail scale={0.62} />
+      <div style={{ maxWidth: 430, margin: '0 auto', paddingTop: 150, position: 'relative', zIndex: 10 }}>
+        {content}
+        {Footer}
+      </div>
     </div>
   )
 }

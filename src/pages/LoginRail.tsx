@@ -75,8 +75,8 @@ function SwingTag({ text, i }: { text: string; i: number }) {
         <path d="M3 0 C 12 4, -4 10, 6 14 S 14 22, 14 25" fill="none" stroke={T.ink} strokeWidth={1} />
       </svg>
       <div style={{
-        position: 'absolute', left: 14 - 34, top: 24, width: 68, boxSizing: 'border-box', padding: '15px 7px 9px',
-        background: T.ink, color: T.paper, fontFamily: fS, fontSize: 10.5, lineHeight: 1.25, textAlign: 'center',
+        position: 'absolute', left: 'calc(14px - 34px * var(--tk, 1))', top: 24, width: 'calc(68px * var(--tk, 1))', boxSizing: 'border-box', padding: '15px 7px 9px',
+        background: T.ink, color: T.paper, fontFamily: fS, fontSize: 'calc(10.5px * var(--tk, 1))', lineHeight: 1.25, textAlign: 'center', textWrap: 'balance',
         clipPath: 'polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px)', transform: `rotate(${i % 2 ? -4 : 5}deg)`, transformOrigin: '50% 0',
       }}>
         <div style={{ position: 'absolute', left: '50%', top: 5, width: 5, height: 5, marginLeft: -2.5, borderRadius: R.pill, background: T.paper }} />
@@ -90,11 +90,11 @@ function SwingTag({ text, i }: { text: string; i: number }) {
 function WovenLabel({ text, i }: { text: string; i: number }) {
   return (
     <div className="lr-anim" style={swingStyle(i, 1.5, 4)}>
-      <div style={{ position: 'absolute', left: -26, top: 0, width: 52, background: T.roseSoft, color: T.cocoa, textAlign: 'center', transform: `rotate(${i % 2 ? -6 : 7}deg)` }}>
+      <div style={{ position: 'absolute', left: 'calc(-26px * var(--tk, 1))', top: 0, width: 'calc(52px * var(--tk, 1))', background: T.roseSoft, color: T.cocoa, textAlign: 'center', transform: `rotate(${i % 2 ? -6 : 7}deg)` }}>
         <div style={{ height: 4, background: T.peachDeep }} />
         <div style={{ padding: '4px 4px 6px' }}>
-          <div style={{ fontFamily: fS, fontSize: 9.5, lineHeight: 1.1 }}>worn</div>
-          <div style={{ fontFamily: fM, fontSize: 15, lineHeight: 1.1, fontWeight: 600 }}>{text.replace('worn ', '')}</div>
+          <div style={{ fontFamily: fS, fontSize: 'calc(9.5px * var(--tk, 1))', lineHeight: 1.1 }}>worn</div>
+          <div style={{ fontFamily: fM, fontSize: 'calc(15px * var(--tk, 1))', lineHeight: 1.1, fontWeight: 600 }}>{text.replace('worn ', '')}</div>
         </div>
       </div>
     </div>
@@ -108,7 +108,7 @@ function Ribbon({ text, i }: { text: string; i: number }) {
       <div style={{ position: 'absolute', left: -1, top: 0, width: 1.5, height: 14, background: T.peachDeep, transform: 'rotate(-20deg)', transformOrigin: 'top' }} />
       <div style={{
         position: 'absolute', left: 2, top: 10, padding: '5px 18px 5px 9px', whiteSpace: 'nowrap',
-        background: T.peach, color: T.ink, fontFamily: fS, fontSize: 10.5, lineHeight: 1.2,
+        background: T.peach, color: T.ink, fontFamily: fS, fontSize: 'calc(10.5px * var(--tk, 1))', lineHeight: 1.2,
         clipPath: 'polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%)', transform: `rotate(${i % 2 ? 4 : 7}deg)`, transformOrigin: '0 0',
       }}>{text}</div>
     </div>
@@ -153,7 +153,8 @@ function RailPiece({ n, i, lean, tag }: { n: string; i: number; lean: MotionValu
 }
 
 // The rail strip itself; place it at the top of a positioned, overflow-hidden page.
-export function LoginRail() {
+// `scale` shrinks the whole rail (phones); tag text is enlarged by the same factor so it stays readable.
+export function LoginRail({ scale = 1 }: { scale?: number }) {
   const [rail] = useState(shuffledRail)
   const x = useMotionValue(0)
   const vel = useRef(SPEED)
@@ -181,7 +182,7 @@ export function LoginRail() {
     return () => timers.forEach(clearTimeout)
   }, [])
   return (
-    <div aria-hidden style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 300, pointerEvents: 'none' }}>
+    <div aria-hidden style={{ position: 'absolute', left: 0, top: 0, width: `${100 / scale}%`, height: 300, pointerEvents: 'none', transform: `scale(${scale})`, transformOrigin: '0 0', ...vars({ '--tk': String(1 / scale) }) }}>
       <style>{CSS}</style>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 46, height: 2, background: T.cocoa, zIndex: 100 }} />
       <motion.div style={{ position: 'absolute', left: 0, top: 40, display: 'flex', x, pointerEvents: 'auto' }}>
