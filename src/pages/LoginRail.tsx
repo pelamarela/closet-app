@@ -1,6 +1,6 @@
 // Desktop login: a clothes rail across the top of the page. One endless conveyor at a constant speed that eases to a
 // stop every few seconds (the garments swing from the slowdown). Tags under some pieces carry the app's features:
-// shop verdicts (swing tag), wear counts (woven label), occasions (ribbon). The order is shuffled on every visit.
+// shop verdicts (swing tag), wear counts (woven label), occasions (ribbon). Every visit draws a new set of pieces and tags.
 // Also exports the rotating headline. The review page with the other options lives only locally (/login-ideas).
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
@@ -19,13 +19,28 @@ const CSS = `
 const vars = (v: Record<string, string>) => v as CSSProperties
 const pic = (n: string) => `/rail/${n}.jpg`
 
-// Pieces on the rail and the tag each one carries (if any).
-const PIECES: [string, string | null][] = [
-  ['022', 'worn 23×'], ['118', 'yes, take it home'], ['040', 'perfect for work'], ['021', 'worn 41×'],
-  ['052', 'perfect for weekend'], ['053', "i'd walk past"], ['054', "it's you, buy it"],
-  ['069', null], ['045', null], ['050', null], ['091', null], ['111', null], ['086', null], ['042', null], ['019', null], ['066', null],
+// Every visit hangs a different rail: 16 pieces drawn at random from this pool, and a random mix of tags.
+// [photo in /rail, where its hem sits in the photo (0-1) so tags hang just below the garment]
+const POOL: [string, number][] = [
+  ['011', 0.88], ['019', 0.923], ['021', 0.9], ['022', 0.897], ['039', 0.923], ['040', 0.869],
+  ['041', 0.874], ['042', 0.894], ['045', 0.911], ['049', 0.877], ['050', 0.826], ['052', 0.886],
+  ['053', 0.851], ['054', 0.929], ['066', 0.909], ['069', 0.843], ['074', 0.943], ['081', 0.84],
+  ['084', 0.914], ['085', 0.857], ['086', 0.774], ['088', 0.914], ['089', 0.92], ['091', 0.751],
+  ['102', 0.943], ['111', 0.82], ['112', 0.911], ['114', 0.9], ['115', 0.949], ['116', 0.949],
+  ['117', 0.923], ['118', 0.923], ['128', 0.937], ['139', 0.923], ['143', 0.926], ['144', 0.871],
+  ['145', 0.797], ['156', 0.877], ['160', 0.931], ['161', 0.811], ['166', 0.934], ['174', 0.837],
+  ['176', 0.857], ['177', 0.889], ['178', 0.851], ['179', 0.883], ['180', 0.931], ['185', 0.926],
+  ['193', 0.926], ['194', 0.846], ['195', 0.92], ['196', 0.831], ['197', 0.846], ['198', 0.891],
+  ['203', 0.954], ['204', 0.911], ['207', 0.946], ['215', 0.929], ['219', 0.931], ['221', 0.923],
+  ['227', 0.931], ['228', 0.857], ['244', 0.9], ['246', 0.823], ['248', 0.863],
 ]
-// Slots that get a tagged piece: never two side by side, also across the loop seam.
+const ON_RAIL = 16
+
+// What the tags can say, by kind. Each visit uses 3 shop verdicts, 2 wear counts and 2 occasions.
+const SHOP_LINES = ['yes, take it home', "i'd walk past", "it's you, buy it", 'hmm, maybe', 'leaning yes', 'hard pass']
+const WORN_LINES = ['worn 23×', 'worn 41×', 'worn 2×', 'worn 0×', 'worn 12×', 'worn 7×', 'worn 30×']
+const OCCASION_LINES = ['perfect for work', 'perfect for weekend', 'perfect for dinner', 'perfect for travel']
+// Slots that get a tag: never two side by side, also across the loop seam.
 const TAG_SLOTS = [0, 2, 4, 7, 9, 11, 13]
 
 function shuffle<A>(a: A[]): A[] {
@@ -37,28 +52,24 @@ function shuffle<A>(a: A[]): A[] {
   return b
 }
 
-function shuffledRail(): [string, string | null][] {
-  const tagged = shuffle(PIECES.filter(p => p[1]))
-  const plain = shuffle(PIECES.filter(p => !p[1]))
-  return PIECES.map((_, slot) => (TAG_SLOTS.includes(slot) ? tagged.shift() : plain.shift())!)
+type Piece = { n: string; hem: number; tag: string | null }
+
+function randomRail(): Piece[] {
+  const pieces = shuffle(POOL).slice(0, ON_RAIL)
+  const tags = shuffle([...shuffle(SHOP_LINES).slice(0, 3), ...shuffle(WORN_LINES).slice(0, 2), ...shuffle(OCCASION_LINES).slice(0, 2)])
+  return pieces.map(([n, hem], slot) => ({ n, hem, tag: TAG_SLOTS.includes(slot) ? tags[TAG_SLOTS.indexOf(slot)] : null }))
 }
 
 const PITCH = 132
-const LOOP = PIECES.length * PITCH
+const LOOP = ON_RAIL * PITCH
 const SPEED = -46 // px per second
-
-// Where each garment's hem sits in its photo (0-1); tags hang from the hem, below the garment.
-const HEM: Record<string, number> = {
-  '022': 0.899, '069': 0.846, '118': 0.924, '045': 0.911, '040': 0.87, '050': 0.827, '091': 0.753, '021': 0.9,
-  '111': 0.82, '052': 0.887, '086': 0.776, '053': 0.851, '042': 0.896, '054': 0.929, '019': 0.923, '066': 0.91,
-}
 
 type TagKind = 'shop' | 'worn' | 'occasion'
 const tagKind = (text: string): TagKind => (text.startsWith('worn') ? 'worn' : text.startsWith('perfect for') ? 'occasion' : 'shop')
 
 // attach point on the garment box (124 wide, photo starts 49px down), just inside the hem
-function tagAnchor(kind: TagKind, n: string): { left: number; top: number } {
-  const top = 49 + (HEM[n] ?? 0.88) * 124 - 3
+function tagAnchor(kind: TagKind, hem: number): { left: number; top: number } {
+  const top = 49 + hem * 124 - 3
   const x = kind === 'occasion' ? 0.36 : kind === 'worn' ? 0.44 : 0.6
   return { left: x * 124, top }
 }
@@ -120,7 +131,7 @@ function Tag({ text, i }: { text: string; i: number }) {
   return kind === 'worn' ? <WovenLabel text={text} i={i} /> : kind === 'occasion' ? <Ribbon text={text} i={i} /> : <SwingTag text={text} i={i} />
 }
 
-function RailPiece({ n, i, lean, tag }: { n: string; i: number; lean: MotionValue<number>; tag: string | null }) {
+function RailPiece({ piece: { n, hem, tag }, i, lean }: { piece: Piece; i: number; lean: MotionValue<number> }) {
   const [scope, animate] = useAnimate()
   const busy = useRef(false)
   const swing = async () => {
@@ -141,7 +152,7 @@ function RailPiece({ n, i, lean, tag }: { n: string; i: number; lean: MotionValu
             {tag && (
               <motion.div initial={{ opacity: 0, scale: 0.6, rotate: 30 }} animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 150, damping: 9, delay: 0.4 + (i % 5) * 0.08 }}
-                style={{ position: 'absolute', ...tagAnchor(tagKind(tag), n), transformOrigin: '0 0', pointerEvents: 'none', zIndex: 2 }}>
+                style={{ position: 'absolute', ...tagAnchor(tagKind(tag), hem), transformOrigin: '0 0', pointerEvents: 'none', zIndex: 2 }}>
                 <Tag text={tag} i={i} />
               </motion.div>
             )}
@@ -155,7 +166,7 @@ function RailPiece({ n, i, lean, tag }: { n: string; i: number; lean: MotionValu
 // The rail strip itself; place it at the top of a positioned, overflow-hidden page.
 // `scale` shrinks the whole rail (phones); tag text is enlarged by the same factor so it stays readable.
 export function LoginRail({ scale = 1 }: { scale?: number }) {
-  const [rail] = useState(shuffledRail)
+  const [rail] = useState(randomRail)
   const x = useMotionValue(0)
   const vel = useRef(SPEED)
   const speedRef = useRef(SPEED)
@@ -186,7 +197,7 @@ export function LoginRail({ scale = 1 }: { scale?: number }) {
       <style>{CSS}</style>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 46, height: 2, background: T.cocoa, zIndex: 100 }} />
       <motion.div style={{ position: 'absolute', left: 0, top: 40, display: 'flex', x, pointerEvents: 'auto' }}>
-        {[0, 1].flatMap(c => rail.map(([n, tag], i) => <RailPiece key={`${c}-${n}`} n={n} i={i} lean={lean} tag={tag} />))}
+        {[0, 1].flatMap(c => rail.map((p, i) => <RailPiece key={`${c}-${p.n}`} piece={p} i={i} lean={lean} />))}
       </motion.div>
     </div>
   )
