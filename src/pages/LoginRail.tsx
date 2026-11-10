@@ -205,8 +205,8 @@ export function RotatingHeadline({ size = 34 }: { size?: number }) {
       <div>your closet,</div>
       <div style={{ position: 'relative', height: size * 1.15, overflow: 'hidden' }} aria-live="off">
         <AnimatePresence initial={false}>
-          <motion.div key={k} initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -60, opacity: 0 }}
-            transition={{ duration: 0.7, ease: [0.65, 0, 0.35, 1] }} style={{ position: 'absolute', left: 0, right: 0, whiteSpace: 'nowrap' }}>
+          <motion.div key={k} initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+            transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }} style={{ position: 'absolute', left: 0, right: 0, whiteSpace: 'nowrap' }}>
             {SECOND_LINES[k]}
           </motion.div>
         </AnimatePresence>
