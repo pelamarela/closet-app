@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useBreakpoint } from '../hooks/useBreakpoint'
-import { T, fS, Pill, Btn, Disp, Body, Mono } from '../design/kit'
+import { T, fS, Pill, Btn, Body, Mono } from '../design/kit'
 import { Teasers } from './LoginTeasersPage'
+import { LoginRail, RotatingHeadline } from './LoginRail'
 
 type Mode = 'signin' | 'signup'
 
@@ -21,7 +22,11 @@ function Field({ label, type, value, onChange, autoComplete }: {
   )
 }
 
-export default function LoginPage() {
+// Desktop: a clothes rail runs across the top (LoginRail), the form sits below it.
+// Phone: the form with the teaser cards underneath.
+// `teaser` is only passed by the local dev options page and no longer changes anything here.
+export default function LoginPage(props: { teaser?: string }) {
+  void props
   const navigate = useNavigate()
   const { isDesktop } = useBreakpoint()
   const [mode, setMode] = useState<Mode>('signin')
@@ -80,7 +85,7 @@ export default function LoginPage() {
       </div>
 
       <div style={{ padding: '22px 22px 0', textAlign: 'center' }}>
-        <Disp s={34} style={{ lineHeight: 1.1 }}>your closet,<br />on every device</Disp>
+        <RotatingHeadline size={34} />
       </div>
 
       <div style={{ padding: '22px 22px 0' }}>
@@ -117,16 +122,19 @@ export default function LoginPage() {
         </div>
       </form>
 
-      <div style={{ padding: '0 22px 28px', display: 'flex', justifyContent: 'center' }}>
-        <Teasers />
-      </div>
+      {!isDesktop && (
+        <div style={{ padding: '0 22px 28px', display: 'flex', justifyContent: 'center' }}>
+          <Teasers />
+        </div>
+      )}
     </>
   )
 
   if (isDesktop) {
     return (
-      <div style={{ minHeight: '100svh', background: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 430 }}>
+      <div style={{ minHeight: '100svh', background: T.paper, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '210px 0 0', boxSizing: 'border-box' }}>
+        <LoginRail />
+        <div style={{ width: 430, position: 'relative', zIndex: 10 }}>
           {content}
           {Footer}
         </div>

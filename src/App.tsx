@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import type { ComponentType } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
@@ -31,6 +32,10 @@ import NavVariantsPage from './pages/NavVariantsPage'
 import OutfitTestPage from './pages/OutfitTestPage'
 import HeaderVariantsPage from './pages/HeaderVariantsPage'
 import LoginTeasersPage from './pages/LoginTeasersPage'
+// Login options review page: kept only on this machine (gitignored), so it loads only when the file is there.
+const localPages = import.meta.glob<{ default: ComponentType }>('./pages/LoginIdeasPage.tsx')
+const loadIdeas = localPages['./pages/LoginIdeasPage.tsx']
+const LoginIdeasPage = loadIdeas ? lazy(loadIdeas) : null
 
 // Two shells during the v3 migration: pages that have been rebuilt against
 // design/kit.tsx render under V3Layout (persistent header, 4 tabs + raised
@@ -69,6 +74,7 @@ export default function App() {
           {import.meta.env.DEV && <Route path="/outfits-test" element={<OutfitTestPage />} />}
           {import.meta.env.DEV && <Route path="/header" element={<HeaderVariantsPage />} />}
           {import.meta.env.DEV && <Route path="/login-teasers" element={<LoginTeasersPage />} />}
+          {import.meta.env.DEV && LoginIdeasPage && <Route path="/login-ideas" element={<Suspense fallback={null}><LoginIdeasPage /></Suspense>} />}
           <Route element={<ProtectedShell Shell={V3Layout} />}>
             <Route path="/" element={<TodayPage />} />
             <Route path="/outfits" element={<MonthPage />} />

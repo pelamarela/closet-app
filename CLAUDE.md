@@ -2,7 +2,7 @@
 
 ## Locale
 
-US vs EU not yet settled for this project. Ask before writing any date or copy.
+Not relevant for this personal project. Never ask about US vs EU here; keep the wording the app already uses (e.g. "closet").
 
 ## Design rule: no AI-slop (FORCED)
 

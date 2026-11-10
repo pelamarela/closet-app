@@ -31,3 +31,6 @@ dist-ssr
 # local sample photos cropped from screenshots for the outfit test page
 public/preview/
 design-materials/closet-items/
+
+# login options review page, kept local only
+src/pages/LoginIdeasPage.tsx
