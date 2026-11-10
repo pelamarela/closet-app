@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Manrope:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;box-sizing:border-box}
+body{width:1200px;height:630px;overflow:hidden;position:relative;font-family:"Tenor Sans",sans-serif;color:#1B1210;background:#fff}
+.rail{position:absolute;height:3px;background:#3E2022}
+.p{position:absolute;display:flex;flex-direction:column;align-items:center}
+.p .ph{position:relative}
+.p img.g{display:block;width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;filter:brightness(1.05)}
+h1{font-weight:400;line-height:1.05}
+.swing{position:absolute;background:#1B1210;color:#fff;font-family:Manrope;text-align:center;text-wrap:balance;clip-path:polygon(14% 0,86% 0,100% 14%,100% 100%,0 100%,0 14%)}
+.swing i{position:absolute;left:50%;border-radius:50%;background:#fff}
+.woven{position:absolute;background:#ECCFC4;color:#3E2022;text-align:center;font-family:Manrope}
+.rib{position:absolute;background:#E1AFA1;color:#1B1210;font-family:Manrope;white-space:nowrap}
+</style></head><body>
+<script>
+const P='file:///Users/spelaanzeljcgacnik/Downloads/claude-hub/closet-app/public';
+const hanger=(s)=>'<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="#3E2022" stroke-width=".55" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5a2 2 0 1 1 2-2M12 7.5v2M3.5 17.5 12 11.5l8.5 6M4 17.5h16"/></svg>';
+// k = scale relative to login piece (124px photo)
+function tag(t,k,i){
+  if(!t) return '';
+  const [kind,txt]=t;
+  if(kind==='swing') return '<svg style="position:absolute;left:-3px;top:0;overflow:visible" width="'+30*k+'" height="'+26*k+'"><path d="M3 0 C 12 4, -4 10, 6 14 S 14 22, 14 25" transform="scale('+k+')" fill="none" stroke="#1B1210" stroke-width="1"/></svg><div class="swing" style="left:'+(14*k-36*k)+'px;top:'+24*k+'px;width:'+72*k+'px;padding:'+15*k+'px '+7*k+'px '+9*k+'px;font-size:'+11*k+'px;line-height:1.25;transform:rotate('+(i%2?-4:5)+'deg);transform-origin:50% 0"><i style="top:'+5*k+'px;width:'+5*k+'px;height:'+5*k+'px;margin-left:'+(-2.5*k)+'px"></i>'+txt+'</div>';
+  if(kind==='worn') return '<div class="woven" style="left:'+(-27*k)+'px;top:0;width:'+54*k+'px;transform:rotate('+(i%2?-6:7)+'deg)"><div style="height:'+4*k+'px;background:#D49A8A"></div><div style="padding:'+4*k+'px '+4*k+'px '+6*k+'px"><div style="font-size:'+9.5*k+'px;line-height:1.1">worn</div><div style="font-size:'+15*k+'px;line-height:1.1;font-weight:600">'+txt+'</div></div></div>';
+  return '<div style="position:absolute;left:-1px;top:0;width:'+1.5*k+'px;height:'+14*k+'px;background:#D49A8A;transform:rotate(-20deg);transform-origin:top"></div><div class="rib" style="left:2px;top:'+10*k+'px;padding:'+5*k+'px '+18*k+'px '+5*k+'px '+9*k+'px;font-size:'+11*k+'px;line-height:1.2;clip-path:polygon(0 0,100% 0,calc(100% - '+8*k+'px) 50%,100% 100%,0 100%);transform:rotate('+(i%2?4:7)+'deg);transform-origin:0 0">'+txt+'</div>';
+}
+const ax={swing:.6,worn:.44,rib:.36};
+// x = centre, y = rail y, s = photo size
+function piece(n,hem,x,y,s,t,i,rot,bg){
+  const k=s/124, hs=60*k;
+  const tg=t?'<div style="position:absolute;left:'+ax[t[0]]*s+'px;top:'+(hem*s-3*k-0)+'px;z-index:2">'+tag(t,Math.min(k,1.6),i)+'</div>':'';
+  return '<div class="p" style="left:'+(x-s/2)+'px;top:'+(y-hs*0.27)+'px;width:'+s+'px;transform:rotate('+(rot||0)+'deg);transform-origin:50% '+hs*0.27+'px;z-index:'+(t?10-i:1)+'"><div style="position:relative;z-index:3;line-height:0">'+hanger(hs)+'</div>'+'<div class="ph" style="background:'+(bg||'#fff')+';width:'+s+'px;height:'+s+'px;margin-top:'+(-hs*0.4)+'px"><img class="g" src="'+P+'/rail/'+n+'.jpg">'+tg+'</div></div>';
+}
+const v=location.hash.slice(1);
+let h='';
+if(v==='a'){ // split: words left, four big pieces right with tags
+  document.body.style.background='#FCF9F4';
+  h+='<img src="'+P+'/logo.png" style="position:absolute;left:72px;top:72px;width:84px">';
+  h+='<h1 style="position:absolute;left:72px;bottom:84px;font-size:76px">your closet,<br>finally<br>sorted</h1>';
+  h+='<div class="rail" style="left:500px;right:0;top:92px"></div>';
+  const ps=[['088',.914,null],['145',.797,['rib','perfect for work']],['176',.857,['swing','yes, take it home']],['115',.949,['worn','23×']]];
+  ps.forEach((p,i)=>h+=piece(p[0],p[1],600+i*165,92,200,p[2],i,[-1.5,1,-1,1.5][i],'#FCF9F4'));
+}
+if(v==='b'){ // full rail centred with tags, headline beneath in one line
+  h+='<div class="rail" style="left:0;right:0;top:120px"></div>';
+  const ps=[['019',.923,null],['040',.869,['swing','yes, take it home']],['145',.797,null],['088',.914,['worn','41×']],['176',.857,null],['112',.911,['rib','perfect for dinner']],['069',.843,null]];
+  ps.forEach((p,i)=>h+=piece(p[0],p[1],-10+i*203,120,176,p[2],i,[-2,1.5,-1,2,-1.5,1,-2][i]));
+  h+='<div style="position:absolute;left:0;right:0;bottom:70px;display:flex;align-items:center;justify-content:center;gap:28px"><img src="'+P+'/logo.png" style="width:78px"><h1 style="font-size:64px">your closet, finally sorted</h1></div>';
+}
+if(v==='c'){ // one outfit, big; headline left
+  h+='<div style="position:absolute;right:0;top:0;bottom:0;width:560px;background:#F7F6F5"></div>';
+  h+='<img src="'+P+'/logo.png" style="position:absolute;left:72px;top:72px;width:84px">';
+  h+='<h1 style="position:absolute;left:72px;bottom:84px;font-size:76px">your closet,<br>on rotation</h1>';
+  h+='<div class="rail" style="left:640px;right:0;top:100px"></div>';
+  h+=piece('145',.797,780,100,250,['rib','perfect for work'],0,-1.5,'#F7F6F5');
+  h+=piece('088',.914,1030,100,250,['worn','23×'],1,1.5,'#F7F6F5');
+}
+if(v==='d'){ // b flipped: logo + headline on top, rail below
+  h+='<div style="position:absolute;left:0;right:0;top:80px;display:flex;align-items:center;justify-content:center;gap:28px"><img src="'+P+'/logo.png" style="width:78px"><h1 style="font-size:64px">your closet, finally sorted</h1></div>';
+  h+='<div class="rail" style="left:0;right:0;top:258px"></div>';
+  const ps=[['049',.877,null],['052',.886,['swing','yes, take it home']],['117',.923,null],['143',.926,['worn','41×']],['139',.923,null],['166',.934,['rib','perfect for dinner']],['185',.926,null]];
+  ps.forEach((p,i)=>h+=piece(p[0],p[1],-10+i*203,258,176,p[2],i,[-2,1.5,-1,2,-1.5,1,-2][i]));
+}
+document.body.innerHTML+=h;
+</script></body></html>
